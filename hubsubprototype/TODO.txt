@@ -1,0 +1,3 @@
+* pub-sub should probably be a Service instead of a routine run by an Activity
+* should the dictionary have a more portable form than Java Enum?
+* hub should queue up message to release to clients when they register...maybe
