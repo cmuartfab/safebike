@@ -11,6 +11,8 @@
 #include "libswiftnav/sbp_messages.h"
 #include "libswiftnav/sbp_utils.h"
 
+#define PIKSI_TTY_PATH "/dev/ttyUSB2"
+
 static sbp_msg_callbacks_node_t g_message_callback_node_1;
 static sbp_msg_callbacks_node_t g_message_callback_node_2;
 static sbp_msg_callbacks_node_t g_message_callback_node_3;
@@ -82,12 +84,16 @@ void message_callback(uint16_t sender_id, uint8_t len, uint8_t msg[], void *cont
   printf("new message: sender_id %d\n", sender_id);
 }
 
-int main() {
+int main(int argc, char *argv[]) {
   int error; // error checking
 
+  if(argc < 2) {
+    printf("%s /dev/tty.something\n", argv[0]);
+    exit(-1);
+  }
+
   // open a serial connection to the piksi
-  char *path = "/dev/tty.usbserial-00001014";
-  int fd = open_serial_connection(path);
+  int fd = open_serial_connection(argv[1]);
   if(fd < 0) {
     printf("Could not open serial connection: %d\n", fd);
     exit(-1);
