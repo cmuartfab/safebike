@@ -1,4 +1,8 @@
 # pesky os x files
 .DS_Store
 
+# compiled files
+*.o
+*.a
+read_piksi
 
