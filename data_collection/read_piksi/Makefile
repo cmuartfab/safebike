@@ -3,7 +3,7 @@ CFLAGS = -I. -Wall
 MAKE = make
 DEPS = 
 LIBS = libswiftnav-static.a
-OBJ = read_piksi.o
+OBJ = 
 OUT=read_piksi
 
 .PHONY: all
