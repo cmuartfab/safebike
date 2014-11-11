@@ -1,0 +1,3 @@
+[submodule "data_collection/lib/libswiftnav"]
+	path = data_collection/lib/libswiftnav
+	url = https://github.com/swift-nav/libswiftnav.git
