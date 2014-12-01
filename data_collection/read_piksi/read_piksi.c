@@ -11,6 +11,7 @@
 #include "libswiftnav/sbp_messages.h"
 #include "libswiftnav/sbp_utils.h"
 
+static sbp_msg_callbacks_node_t g_message_callback_node;
 
 int open_serial_connection(char *path) {
   int return_code = 0;
@@ -64,10 +65,10 @@ int open_serial_connection(char *path) {
   }
 }
 
-uint32_t serial_read(uint8_t *buff, uint32_t n, void *context)
-{
+uint32_t serial_read(uint8_t *buff, uint32_t n, void *context) {
   uint32_t bytes_read = 0;
   int fd = (int)context; // context pointer is really just fd
+  // printf("reading from fd %d\n", fd);
   while (bytes_read < n) {
     // do some pointer math so we add to the buffer where we left off
     bytes_read += read(fd, buff + bytes_read, n - bytes_read);
@@ -75,12 +76,18 @@ uint32_t serial_read(uint8_t *buff, uint32_t n, void *context)
   return bytes_read;
 }
 
+void message_callback(uint16_t sender_id, uint8_t len, uint8_t msg[], void *context) {
+  printf("new message: sender_id %d\n", sender_id);
+}
+
 int main() {
+  int error; // error checking
+
   // open a serial connection to the piksi
   char *path = "/dev/tty.usbserial-00001014";
   int fd = open_serial_connection(path);
   if(fd < 0) {
-    printf("Could not open serial connection: %n\n", fd);
+    printf("Could not open serial connection: %d\n", fd);
     exit(-1);
   }
 
@@ -88,8 +95,34 @@ int main() {
   sbp_state_t s;
   sbp_state_init(&s);
   sbp_state_set_io_context(&s, (void *)fd);
+
+  // setup callback for all messages
+  // error = sbp_register_callback(&s, SBP_STARTUP, &message_callback, NULL, &g_message_callback_node);
+  // printf("sbp_register_callback: %d\n", error);
+  error = sbp_register_callback(&s, SBP_HEARTBEAT, &message_callback, NULL, &g_message_callback_node);
+  printf("sbp_register_callback: %d\n", error);
+  error = sbp_register_callback(&s, SBP_GPS_TIME, &message_callback, NULL, &g_message_callback_node);
+  printf("sbp_register_callback: %d\n", error);
+  // error = sbp_register_callback(&s, SBP_DOPS, &message_callback, NULL, &g_message_callback_node);
+  // printf("sbp_register_callback: %d\n", error);
+  // error = sbp_register_callback(&s, SBP_POS_ECEF, &message_callback, NULL, &g_message_callback_node);
+  // printf("sbp_register_callback: %d\n", error);
+  // error = sbp_register_callback(&s, SBP_POS_LLH, &message_callback, NULL, &g_message_callback_node);
+  // printf("sbp_register_callback: %d\n", error);
+  // error = sbp_register_callback(&s, SBP_BASELINE_ECEF, &message_callback, NULL, &g_message_callback_node);
+  // printf("sbp_register_callback: %d\n", error);
+  // error = sbp_register_callback(&s, SBP_BASELINE_NED, &message_callback, NULL, &g_message_callback_node);
+  // printf("sbp_register_callback: %d\n", error);
+  // error = sbp_register_callback(&s, SBP_VEL_ECEF, &message_callback, NULL, &g_message_callback_node);
+  // printf("sbp_register_callback: %d\n", error);
+  // error = sbp_register_callback(&s, SBP_VEL_NED, &message_callback, NULL, &g_message_callback_node);
+  // printf("sbp_register_callback: %d\n", error);
+
   while(true) {
-    sbp_process(&s, &serial_read);
+    error = sbp_process(&s, &serial_read);
+    if(error != 0) {
+      printf("sbp_process: %d\n", error);
+    }
   }
 
   // serial test program
