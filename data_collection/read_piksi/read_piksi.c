@@ -11,7 +11,9 @@
 #include "libswiftnav/sbp_messages.h"
 #include "libswiftnav/sbp_utils.h"
 
-static sbp_msg_callbacks_node_t g_message_callback_node;
+static sbp_msg_callbacks_node_t g_message_callback_node_1;
+static sbp_msg_callbacks_node_t g_message_callback_node_2;
+static sbp_msg_callbacks_node_t g_message_callback_node_3;
 
 int open_serial_connection(char *path) {
   int return_code = 0;
@@ -97,11 +99,11 @@ int main() {
   sbp_state_set_io_context(&s, (void *)fd);
 
   // setup callback for all messages
-  // error = sbp_register_callback(&s, SBP_STARTUP, &message_callback, NULL, &g_message_callback_node);
-  // printf("sbp_register_callback: %d\n", error);
-  error = sbp_register_callback(&s, SBP_HEARTBEAT, &message_callback, NULL, &g_message_callback_node);
+  error = sbp_register_callback(&s, SBP_STARTUP, &message_callback, NULL, &g_message_callback_node_1);
   printf("sbp_register_callback: %d\n", error);
-  error = sbp_register_callback(&s, SBP_GPS_TIME, &message_callback, NULL, &g_message_callback_node);
+  error = sbp_register_callback(&s, SBP_HEARTBEAT, &message_callback, NULL, &g_message_callback_node_2);
+  printf("sbp_register_callback: %d\n", error);
+  error = sbp_register_callback(&s, SBP_GPS_TIME, &message_callback, NULL, &g_message_callback_node_3);
   printf("sbp_register_callback: %d\n", error);
   // error = sbp_register_callback(&s, SBP_DOPS, &message_callback, NULL, &g_message_callback_node);
   // printf("sbp_register_callback: %d\n", error);
