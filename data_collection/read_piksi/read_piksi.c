@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <termios.h>
 #include <unistd.h>
+#include <string.h>
 
 #include "libswiftnav/sbp.h"
 #include "libswiftnav/sbp_messages.h"
@@ -14,9 +15,28 @@
 #define PIKSI_TTY_PATH "/dev/ttyUSB2"
 #define PIKSI_TTY_BAUD B1000000
 
-static sbp_msg_callbacks_node_t g_message_callback_node_1;
-static sbp_msg_callbacks_node_t g_message_callback_node_2;
-static sbp_msg_callbacks_node_t g_message_callback_node_3;
+
+/* Structs that messages from Piksi will feed. */
+
+static sbp_pos_llh_t      pos_llh;
+static sbp_baseline_ned_t baseline_ned;
+static sbp_vel_ned_t      vel_ned;
+static sbp_dops_t         dops;
+static sbp_gps_time_t     gps_time;
+
+/*
+ * SBP callback nodes must be statically allocated. Each message ID / callback
+ * pair must have a unique sbp_msg_callbacks_node_t associated with it.
+ */
+
+static sbp_msg_callbacks_node_t pos_llh_node;
+static sbp_msg_callbacks_node_t baseline_ned_node;
+static sbp_msg_callbacks_node_t vel_ned_node;
+static sbp_msg_callbacks_node_t dops_node;
+static sbp_msg_callbacks_node_t gps_time_node;
+
+
+/* Serial reading handlers */
 
 int open_serial_connection(char *path, speed_t baud_rate) {
   int return_code = 0;
@@ -70,6 +90,7 @@ int open_serial_connection(char *path, speed_t baud_rate) {
   }
 }
 
+
 uint32_t serial_read(uint8_t *buff, uint32_t n, void *context) {
   uint32_t bytes_read = 0;
   int fd = (int)context; // context pointer is really just fd
@@ -81,9 +102,118 @@ uint32_t serial_read(uint8_t *buff, uint32_t n, void *context) {
   return bytes_read;
 }
 
-void message_callback(uint16_t sender_id, uint8_t len, uint8_t msg[], void *context) {
-  printf("new message: sender_id %d\n", sender_id);
+
+/*
+ * Callback functions to interpret SBP messages.
+ * Every message ID has a callback associated with it to
+ * receive and interpret the message payload.
+ */
+
+void sbp_pos_llh_callback(u16 sender_id, u8 len, u8 msg[], void *context) {
+  pos_llh = *(sbp_pos_llh_t *)msg;
 }
+
+void sbp_baseline_ned_callback(u16 sender_id, u8 len, u8 msg[], void *context) {
+  baseline_ned = *(sbp_baseline_ned_t *)msg;
+}
+
+void sbp_vel_ned_callback(u16 sender_id, u8 len, u8 msg[], void *context) {
+  vel_ned = *(sbp_vel_ned_t *)msg;
+}
+
+void sbp_dops_callback(u16 sender_id, u8 len, u8 msg[], void *context) {
+  dops = *(sbp_dops_t *)msg;
+}
+
+void sbp_gps_time_callback(u16 sender_id, u8 len, u8 msg[], void *context) {
+  gps_time = *(sbp_gps_time_t *)msg;
+}
+
+
+void callback_setup(sbp_state_t *sbp_state_p)
+{
+  int error; // error checking
+
+  /* Register a node and callback, and associate them with a specific message ID. */
+  error = sbp_register_callback(sbp_state_p, SBP_GPS_TIME, &sbp_gps_time_callback, NULL, &gps_time_node);
+  printf("sbp_register_callback: %d\n", error);
+
+  error = sbp_register_callback(sbp_state_p, SBP_POS_LLH, &sbp_pos_llh_callback, NULL, &pos_llh_node);
+  printf("sbp_register_callback: %d\n", error);
+  
+  error = sbp_register_callback(sbp_state_p, SBP_BASELINE_NED, &sbp_baseline_ned_callback, NULL, &baseline_ned_node);
+  printf("sbp_register_callback: %d\n", error);
+  
+  error = sbp_register_callback(sbp_state_p, SBP_VEL_NED, &sbp_vel_ned_callback, NULL, &vel_ned_node);
+  printf("sbp_register_callback: %d\n", error);
+  
+  error = sbp_register_callback(sbp_state_p, SBP_DOPS, &sbp_dops_callback, NULL, &dops_node);
+  printf("sbp_register_callback: %d\n", error);
+}
+
+
+void callback_data_print(void) {
+  // init output string
+  /* Use sprintf to right justify floating point prints. */
+  char rj[30];
+  /* Only want 1 call to SH_SendString as semihosting is quite slow.
+   * sprintf everything to this array and then print using array. */
+  char str[1000];
+  int str_i;
+  str_i = 0;
+  memset(str, 0, sizeof(str));
+
+  str_i += sprintf(str + str_i, "\n\n\n\n");
+
+  /* Print GPS time. */
+  str_i += sprintf(str + str_i, "GPS Time:\n");
+  str_i += sprintf(str + str_i, "\tWeek\t\t: %6d\n", (int)gps_time.wn);
+  sprintf(rj, "%6.2f", ((float)gps_time.tow)/1e3);
+  str_i += sprintf(str + str_i, "\tSeconds\t: %9s\n", rj);
+  str_i += sprintf(str + str_i, "\n");
+
+  /* Print absolute position. */
+  str_i += sprintf(str + str_i, "Absolute Position:\n");
+  sprintf(rj, "%4.10lf", pos_llh.lat);
+  str_i += sprintf(str + str_i, "\tLatitude\t: %17s\n", rj);
+  sprintf(rj, "%4.10lf", pos_llh.lon);
+  str_i += sprintf(str + str_i, "\tLongitude\t: %17s\n", rj);
+  sprintf(rj, "%4.10lf", pos_llh.height);
+  str_i += sprintf(str + str_i, "\tHeight\t: %17s\n", rj);
+  str_i += sprintf(str + str_i, "\tSatellites\t:     %02d\n", pos_llh.n_sats);
+  str_i += sprintf(str + str_i, "\n");
+
+  /* Print NED (North/East/Down) baseline (position vector from base to rover). */
+  str_i += sprintf(str + str_i, "Baseline (mm):\n");
+  str_i += sprintf(str + str_i, "\tNorth\t\t: %6d\n", (int)baseline_ned.n);
+  str_i += sprintf(str + str_i, "\tEast\t\t: %6d\n", (int)baseline_ned.e);
+  str_i += sprintf(str + str_i, "\tDown\t\t: %6d\n", (int)baseline_ned.d);
+  str_i += sprintf(str + str_i, "\n");
+
+  /* Print NED velocity. */
+  str_i += sprintf(str + str_i, "Velocity (mm/s):\n");
+  str_i += sprintf(str + str_i, "\tNorth\t\t: %6d\n", (int)vel_ned.n);
+  str_i += sprintf(str + str_i, "\tEast\t\t: %6d\n", (int)vel_ned.e);
+  str_i += sprintf(str + str_i, "\tDown\t\t: %6d\n", (int)vel_ned.d);
+  str_i += sprintf(str + str_i, "\n");
+
+  /* Print Dilution of Precision metrics. */
+  str_i += sprintf(str + str_i, "Dilution of Precision:\n");
+  sprintf(rj, "%4.2f", ((float)dops.gdop/100));
+  str_i += sprintf(str + str_i, "\tGDOP\t\t: %7s\n", rj);
+  sprintf(rj, "%4.2f", ((float)dops.hdop/100));
+  str_i += sprintf(str + str_i, "\tHDOP\t\t: %7s\n", rj);
+  sprintf(rj, "%4.2f", ((float)dops.pdop/100));
+  str_i += sprintf(str + str_i, "\tPDOP\t\t: %7s\n", rj);
+  sprintf(rj, "%4.2f", ((float)dops.tdop/100));
+  str_i += sprintf(str + str_i, "\tTDOP\t\t: %7s\n", rj);
+  sprintf(rj, "%4.2f", ((float)dops.vdop/100));
+  str_i += sprintf(str + str_i, "\tVDOP\t\t: %7s\n", rj);
+  str_i += sprintf(str + str_i, "\n");
+
+  printf("%s", str);
+}
+
 
 int main(int argc, char *argv[]) {
   int error; // error checking
@@ -106,31 +236,16 @@ int main(int argc, char *argv[]) {
   sbp_state_set_io_context(&s, (void *)fd);
 
   // setup callback for all messages
-  error = sbp_register_callback(&s, SBP_STARTUP, &message_callback, NULL, &g_message_callback_node_1);
-  printf("sbp_register_callback: %d\n", error);
-  error = sbp_register_callback(&s, SBP_HEARTBEAT, &message_callback, NULL, &g_message_callback_node_2);
-  printf("sbp_register_callback: %d\n", error);
-  error = sbp_register_callback(&s, SBP_GPS_TIME, &message_callback, NULL, &g_message_callback_node_3);
-  printf("sbp_register_callback: %d\n", error);
-  // error = sbp_register_callback(&s, SBP_DOPS, &message_callback, NULL, &g_message_callback_node);
-  // printf("sbp_register_callback: %d\n", error);
-  // error = sbp_register_callback(&s, SBP_POS_ECEF, &message_callback, NULL, &g_message_callback_node);
-  // printf("sbp_register_callback: %d\n", error);
-  // error = sbp_register_callback(&s, SBP_POS_LLH, &message_callback, NULL, &g_message_callback_node);
-  // printf("sbp_register_callback: %d\n", error);
-  // error = sbp_register_callback(&s, SBP_BASELINE_ECEF, &message_callback, NULL, &g_message_callback_node);
-  // printf("sbp_register_callback: %d\n", error);
-  // error = sbp_register_callback(&s, SBP_BASELINE_NED, &message_callback, NULL, &g_message_callback_node);
-  // printf("sbp_register_callback: %d\n", error);
-  // error = sbp_register_callback(&s, SBP_VEL_ECEF, &message_callback, NULL, &g_message_callback_node);
-  // printf("sbp_register_callback: %d\n", error);
-  // error = sbp_register_callback(&s, SBP_VEL_NED, &message_callback, NULL, &g_message_callback_node);
-  // printf("sbp_register_callback: %d\n", error);
+  callback_setup(&s);
 
   while(true) {
     error = sbp_process(&s, &serial_read);
-    if(error != 0) {
-      printf("sbp_process: %d\n", error);
+    // if(error != 0) {
+    //   printf("sbp_process: %d\n", error);
+    // }
+    if(error == 1) {
+      // new data available
+      callback_data_print();
     }
   }
 
