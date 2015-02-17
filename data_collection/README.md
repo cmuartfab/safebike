@@ -14,6 +14,10 @@ Installed cmake
 
 Make repos directory and cloned safebike repo. Remember that libswiftnav is a submodule. Need to run `git submodule init` and `git submodules update`.
 
+Compile libswiftnav using their directions (on http://docs.swift-nav.com/libswiftnav/install.html).
+
+
+
 Resources:
 http://thethingsystem.com/dev/Bootstrapping-the-BeagleBone-Black-with-Debian.html
 
