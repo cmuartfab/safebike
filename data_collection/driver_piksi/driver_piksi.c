@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -11,6 +12,7 @@
 #include "include/libswiftnav/sbp.h"
 #include "include/libswiftnav/sbp_messages.h"
 #include "include/libswiftnav/sbp_utils.h"
+
 
 /* Not all OSes have this speed defined */
 #if !defined(B1000000)
@@ -43,14 +45,14 @@ static sbp_msg_callbacks_node_t gps_time_node;
 
 /* Serial reading handlers */
 
-int open_serial_connection(char *path, speed_t baud_rate) {
+int open_serial_connection(const char *path, speed_t baud_rate) {
   int return_code = 0;
   int fd = 0;
   
   // open unix-style file with termios
   return_code = open(path, O_RDWR | O_NONBLOCK);
   if(!isatty(return_code)) {
-    printf("connectionOpen: %s is not a tty!", path);
+    printf("connectionOpen: %s is not a tty!\n", path);
     close(return_code);
   } else {
     fd = return_code;
@@ -157,7 +159,12 @@ void callback_setup(sbp_state_t *sbp_state_p)
 }
 
 
-void callback_data_print(void) {
+void callback_data_print(FILE *data_file) {
+  if(data_file == NULL) {
+    printf("[ERROR] callback_data_print got invalid file pointer!\n");
+    exit(-1);
+  }
+
   // init output string
   /* Use sprintf to right justify floating point prints. */
   char rj[30];
@@ -216,29 +223,42 @@ void callback_data_print(void) {
   str_i += sprintf(str + str_i, "\tVDOP\t\t: %7s\n", rj);
   str_i += sprintf(str + str_i, "\n");
 
-  printf("%s", str);
+  fprintf(data_file, "%s", str);
 }
 
 
 int main(int argc, char *argv[]) {
   int error; // error checking
 
-  if(argc < 2) {
-    printf("[ERROR] Missing arguments. Example: $ %s /dev/tty.something\n", argv[0]);
+  // check arguments
+  if(argc < 3) {
+    printf("[ERROR] Missing arguments. "
+           "Example: $ %s /dev/tty.something data/output/file.csv\n", argv[0]);
+    exit(-1);
+  }
+  // assign arguments
+  const char *piksi_path = argv[1];
+  const char *data_file_path = argv[2];
+
+  // open a serial connection to the piksi
+  int piksi_fd = open_serial_connection(piksi_path, PIKSI_TTY_BAUD);
+  if(piksi_fd < 0) {
+    printf("[ERROR] Could not open serial connection %s !\n", piksi_path);
     exit(-1);
   }
 
-  // open a serial connection to the piksi
-  int fd = open_serial_connection(argv[1], PIKSI_TTY_BAUD);
-  if(fd < 0) {
-    printf("[ERROR] Could not open serial connection %d\n", fd);
+  // open data file
+  FILE *data_file = fopen(data_file_path, "w");
+  if(data_file == NULL) {
+    printf("[ERROR] Could not open data file %s !\n", data_file_path);
+    printf("[ERROR] fopen returned '%s'.\n", strerror(errno));
     exit(-1);
   }
 
   // pass in the fd as context
   sbp_state_t s;
   sbp_state_init(&s);
-  sbp_state_set_io_context(&s, (void *)fd);
+  sbp_state_set_io_context(&s, (void *)piksi_fd);
 
   // setup callback for all messages
   callback_setup(&s);
@@ -250,17 +270,8 @@ int main(int argc, char *argv[]) {
     // }
     if(error == 1) {
       // new data available
-      callback_data_print();
+      callback_data_print(data_file);
     }
   }
-
-  // serial test program
-  // uint8_t sample_buffer[256];
-  // uint32_t i = 0;
-  // while(1) {
-  //   serial_read(&sample_buffer, 256, (void *)fd);
-  //   printf("read %d samples\n", i);
-  //   i++;
-  // }
 
 }
