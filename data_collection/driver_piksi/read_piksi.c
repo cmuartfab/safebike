@@ -8,9 +8,9 @@
 #include <unistd.h>
 #include <string.h>
 
-#include "libswiftnav/sbp.h"
-#include "libswiftnav/sbp_messages.h"
-#include "libswiftnav/sbp_utils.h"
+#include "include/libswiftnav/sbp.h"
+#include "include/libswiftnav/sbp_messages.h"
+#include "include/libswiftnav/sbp_utils.h"
 
 #define PIKSI_TTY_PATH "/dev/ttyUSB2"
 #define PIKSI_TTY_BAUD B1000000
