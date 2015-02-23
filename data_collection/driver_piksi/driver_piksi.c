@@ -233,12 +233,14 @@ int main(int argc, char *argv[]) {
   // check arguments
   if(argc < 3) {
     printf("[ERROR] Missing arguments. "
-           "Example: $ %s /dev/tty.something data/output/file.csv\n", argv[0]);
+           "Example: $ %s data/output/file_base_path /dev/tty.something\n", argv[0]);
     exit(-1);
   }
   // assign arguments
-  const char *piksi_path = argv[1];
-  const char *data_file_path = argv[2];
+  const char *data_file_base_path = argv[1];
+  char *data_file_path = malloc(strlen(data_file_base_path) + 5);
+  sprintf(data_file_path, "%s.csv", data_file_base_path);
+  const char *piksi_path = argv[2];
 
   // open a serial connection to the piksi
   int piksi_fd = open_serial_connection(piksi_path, PIKSI_TTY_BAUD);
