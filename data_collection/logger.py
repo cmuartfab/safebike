@@ -7,6 +7,7 @@ This script acts as a supervisor for one or more data collection
 
 import os
 import subprocess
+import time
 
 
 class DataDriver:
@@ -32,11 +33,15 @@ class DataDriver:
     self.subprocess_handle = None
     self.newly_ended = False
 
-  def run(self):
-    process_args = [self.exec_path] + ["./stuff"] + self.exec_args
+  def make_data_base_path(self, data_timestamp):
+    return "./%s/%s/%s" % (g_data_directory, data_timestamp, self.name)
+
+  def run(self, data_base_path):
+    process_args = [self.exec_path] + [data_base_path] + self.exec_args
     self.subprocess_handle = subprocess.Popen(process_args,
                                               stdout=subprocess.PIPE,
                                               stderr=subprocess.PIPE)
+    print("%s: ran %s" % (self.name, "\""+"\" \"".join(process_args)+"\""))
 
   def feed(self):
     # update the process status
@@ -60,15 +65,25 @@ class DataDriver:
       print("%s: %s" % (self.name, line))
 
 
+g_data_directory = "./data"
 g_driver_list = [
   DataDriver("piksi", "./driver_piksi/driver_piksi", ["/dev/tty.asdf"])
 ]
 
 
 def main():
-  for driver in g_driver_list:
-    driver.run()
+  data_timestamp =  time.ctime()
 
+  # make data folder
+  if not os.path.exists(g_data_directory):
+    os.mkdir(g_data_directory)
+  os.mkdir("/".join([g_data_directory, data_timestamp]))
+
+  # kick off processes
+  for driver in g_driver_list:
+    driver.run(driver.make_data_base_path(data_timestamp))
+
+  # check in on processes regularly
   while True:
     for driver in g_driver_list:
       driver.feed() 
