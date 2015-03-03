@@ -1,0 +1,352 @@
+   1               		.file	"nrk_watchdog.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__RAMPZ__ = 0x3b
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+  10               		.text
+  11               	.Ltext0:
+ 317               	.global	nrk_watchdog_disable
+ 319               	nrk_watchdog_disable:
+ 320               		.stabd	46,0,0
+   1:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** /******************************************************************************
+   2:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** *  Nano-RK, a real-time operating system for sensor networks.
+   3:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** *  Copyright (C) 2007, Real-Time and Multimedia Lab, Carnegie Mellon University
+   4:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** *  All rights reserved.
+   5:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** *
+   6:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** *  This is the Open Source Version of Nano-RK included as part of a Dual
+   7:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** *  Licensing Model. If you are unsure which license to use please refer to:
+   8:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** *  http://www.nanork.org/nano-RK/wiki/Licensing
+   9:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** *
+  10:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** *  This program is free software: you can redistribute it and/or modify
+  11:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** *  it under the terms of the GNU General Public License as published by
+  12:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** *  the Free Software Foundation, version 2.0 of the License.
+  13:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** *
+  14:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** *  This program is distributed in the hope that it will be useful,
+  15:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  16:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  17:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** *  GNU General Public License for more details.
+  18:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** *
+  19:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** *  You should have received a copy of the GNU General Public License
+  20:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  21:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** *
+  22:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** *  Contributing Authors (specific to this file):
+  23:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** *  Anthony Rowe
+  24:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** *******************************************************************************/
+  25:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** 
+  26:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** #include <include.h>
+  27:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** #include <nrk_watchdog.h>
+  28:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** #include <nrk_error.h>
+  29:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** #include <nrk.h>
+  30:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** #include <avr/wdt.h>
+  31:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** #include <util/atomic.h>
+  32:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** 
+  33:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** void nrk_watchdog_disable()
+  34:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** {
+ 322               	.LM0:
+ 323               	.LFBB1:
+ 324               	/* prologue: function */
+ 325               	/* frame size = 0 */
+ 326               	/* stack size = 0 */
+ 327               	.L__stack_usage = 0
+ 328               	.LBB16:
+ 329               	.LBB17:
+  35:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** nrk_watchdog_reset();
+  36:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+  37:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** {
+  38:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** 	MCUSR &= ~(1<<WDRF);
+  39:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** 	WDTCSR |= (1<<WDCE) | (1<<WDE);
+  40:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** 	WDTCSR = 0;
+  41:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** }
+  42:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** }
+  43:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** 
+  44:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** void nrk_watchdog_enable()
+  45:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** {
+  46:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** // Enable watchdog with 1024K cycle timeout
+  47:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** // No Interrupt Trigger
+  48:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+  49:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** {
+  50:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** nrk_watchdog_reset();
+  51:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** MCUSR &= ~(1<<WDRF);
+  52:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** WDTCSR |= (1<<WDCE) | (1<<WDE);
+  53:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** WDTCSR = (1<<WDE) | (1<<WDP2) | (1<<WDP0);
+  54:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** }
+  55:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** 
+  56:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** }
+  57:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** 
+  58:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** int8_t nrk_watchdog_check()
+  59:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** {
+  60:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** 
+  61:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** if((MCUSR & (1<<WDRF))==0) return NRK_OK;
+  62:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** return NRK_ERROR;
+  63:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** }
+  64:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** 
+  65:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** inline void nrk_watchdog_reset()
+  66:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** {
+  67:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** wdt_reset();
+ 331               	.LM1:
+ 332               	/* #APP */
+ 333               	 ;  67 "../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c" 1
+ 334 0000 A895      		wdr
+ 335               	 ;  0 "" 2
+ 336               	/* #NOAPP */
+ 337               	.LBE17:
+ 338               	.LBE16:
+ 339               	.LBB18:
+  36:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** {
+ 341               	.LM2:
+ 342 0002 9FB7      		in r25,__SREG__
+ 343               	.LBB19:
+ 344               	.LBB20:
+ 346               	.Ltext1:
+   1:/opt/local/avr/include/util/atomic.h **** /* Copyright (c) 2007 Dean Camera
+   2:/opt/local/avr/include/util/atomic.h ****    All rights reserved.
+   3:/opt/local/avr/include/util/atomic.h **** 
+   4:/opt/local/avr/include/util/atomic.h ****    Redistribution and use in source and binary forms, with or without
+   5:/opt/local/avr/include/util/atomic.h ****    modification, are permitted provided that the following conditions are met:
+   6:/opt/local/avr/include/util/atomic.h **** 
+   7:/opt/local/avr/include/util/atomic.h ****    * Redistributions of source code must retain the above copyright
+   8:/opt/local/avr/include/util/atomic.h ****      notice, this list of conditions and the following disclaimer.
+   9:/opt/local/avr/include/util/atomic.h **** 
+  10:/opt/local/avr/include/util/atomic.h ****    * Redistributions in binary form must reproduce the above copyright
+  11:/opt/local/avr/include/util/atomic.h ****      notice, this list of conditions and the following disclaimer in
+  12:/opt/local/avr/include/util/atomic.h ****      the documentation and/or other materials provided with the
+  13:/opt/local/avr/include/util/atomic.h ****      distribution.
+  14:/opt/local/avr/include/util/atomic.h **** 
+  15:/opt/local/avr/include/util/atomic.h ****    * Neither the name of the copyright holders nor the names of
+  16:/opt/local/avr/include/util/atomic.h ****      contributors may be used to endorse or promote products derived
+  17:/opt/local/avr/include/util/atomic.h ****      from this software without specific prior written permission.
+  18:/opt/local/avr/include/util/atomic.h **** 
+  19:/opt/local/avr/include/util/atomic.h ****   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  20:/opt/local/avr/include/util/atomic.h ****   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  21:/opt/local/avr/include/util/atomic.h ****   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  22:/opt/local/avr/include/util/atomic.h ****   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  23:/opt/local/avr/include/util/atomic.h ****   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  24:/opt/local/avr/include/util/atomic.h ****   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  25:/opt/local/avr/include/util/atomic.h ****   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  26:/opt/local/avr/include/util/atomic.h ****   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  27:/opt/local/avr/include/util/atomic.h ****   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  28:/opt/local/avr/include/util/atomic.h ****   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  29:/opt/local/avr/include/util/atomic.h ****   POSSIBILITY OF SUCH DAMAGE.
+  30:/opt/local/avr/include/util/atomic.h **** */
+  31:/opt/local/avr/include/util/atomic.h **** 
+  32:/opt/local/avr/include/util/atomic.h **** /* $Id: atomic.h 2158 2010-06-10 15:48:28Z joerg_wunsch $ */
+  33:/opt/local/avr/include/util/atomic.h **** 
+  34:/opt/local/avr/include/util/atomic.h **** #ifndef _UTIL_ATOMIC_H_
+  35:/opt/local/avr/include/util/atomic.h **** #define _UTIL_ATOMIC_H_ 1
+  36:/opt/local/avr/include/util/atomic.h **** 
+  37:/opt/local/avr/include/util/atomic.h **** #include <avr/io.h>
+  38:/opt/local/avr/include/util/atomic.h **** #include <avr/interrupt.h>
+  39:/opt/local/avr/include/util/atomic.h **** 
+  40:/opt/local/avr/include/util/atomic.h **** #if !defined(__DOXYGEN__)
+  41:/opt/local/avr/include/util/atomic.h **** /* Internal helper functions. */
+  42:/opt/local/avr/include/util/atomic.h **** static __inline__ uint8_t __iSeiRetVal(void)
+  43:/opt/local/avr/include/util/atomic.h **** {
+  44:/opt/local/avr/include/util/atomic.h ****     sei();
+  45:/opt/local/avr/include/util/atomic.h ****     return 1;
+  46:/opt/local/avr/include/util/atomic.h **** }
+  47:/opt/local/avr/include/util/atomic.h **** 
+  48:/opt/local/avr/include/util/atomic.h **** static __inline__ uint8_t __iCliRetVal(void)
+  49:/opt/local/avr/include/util/atomic.h **** {
+  50:/opt/local/avr/include/util/atomic.h ****     cli();
+ 348               	.LM3:
+ 349               	/* #APP */
+ 350               	 ;  50 "/opt/local/avr/include/util/atomic.h" 1
+ 351 0004 F894      		cli
+ 352               	 ;  0 "" 2
+ 353               	/* #NOAPP */
+ 354               	.LBE20:
+ 355               	.LBE19:
+ 357               	.Ltext2:
+  38:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** 	WDTCSR |= (1<<WDCE) | (1<<WDE);
+ 359               	.LM4:
+ 360 0006 84B7      		in r24,0x34
+ 361 0008 877F      		andi r24,lo8(-9)
+ 362 000a 84BF      		out 0x34,r24
+  39:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** 	WDTCSR = 0;
+ 364               	.LM5:
+ 365 000c E0E6      		ldi r30,lo8(96)
+ 366 000e F0E0      		ldi r31,0
+ 367 0010 8081      		ld r24,Z
+ 368 0012 8861      		ori r24,lo8(24)
+ 369 0014 8083      		st Z,r24
+  40:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** }
+ 371               	.LM6:
+ 372 0016 1082      		st Z,__zero_reg__
+ 373               	.LBB21:
+ 374               	.LBB22:
+ 376               	.Ltext3:
+  51:/opt/local/avr/include/util/atomic.h ****     return 1;
+  52:/opt/local/avr/include/util/atomic.h **** }
+  53:/opt/local/avr/include/util/atomic.h **** 
+  54:/opt/local/avr/include/util/atomic.h **** static __inline__ void __iSeiParam(const uint8_t *__s)
+  55:/opt/local/avr/include/util/atomic.h **** {
+  56:/opt/local/avr/include/util/atomic.h ****     sei();
+  57:/opt/local/avr/include/util/atomic.h ****     __asm__ volatile ("" ::: "memory");
+  58:/opt/local/avr/include/util/atomic.h ****     (void)__s;
+  59:/opt/local/avr/include/util/atomic.h **** }
+  60:/opt/local/avr/include/util/atomic.h **** 
+  61:/opt/local/avr/include/util/atomic.h **** static __inline__ void __iCliParam(const uint8_t *__s)
+  62:/opt/local/avr/include/util/atomic.h **** {
+  63:/opt/local/avr/include/util/atomic.h ****     cli();
+  64:/opt/local/avr/include/util/atomic.h ****     __asm__ volatile ("" ::: "memory");
+  65:/opt/local/avr/include/util/atomic.h ****     (void)__s;
+  66:/opt/local/avr/include/util/atomic.h **** }
+  67:/opt/local/avr/include/util/atomic.h **** 
+  68:/opt/local/avr/include/util/atomic.h **** static __inline__ void __iRestore(const  uint8_t *__s)
+  69:/opt/local/avr/include/util/atomic.h **** {
+  70:/opt/local/avr/include/util/atomic.h ****     SREG = *__s;
+ 378               	.LM7:
+ 379 0018 9FBF      		out __SREG__,r25
+  71:/opt/local/avr/include/util/atomic.h ****     __asm__ volatile ("" ::: "memory");
+ 381               	.LM8:
+ 382 001a 0895      		ret
+ 383               	.LBE22:
+ 384               	.LBE21:
+ 385               	.LBE18:
+ 390               	.Lscope1:
+ 392               		.stabd	78,0,0
+ 394               	.global	nrk_watchdog_enable
+ 396               	nrk_watchdog_enable:
+ 397               		.stabd	46,0,0
+ 399               	.Ltext4:
+  45:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** // Enable watchdog with 1024K cycle timeout
+ 401               	.LM9:
+ 402               	.LFBB2:
+ 403               	/* prologue: function */
+ 404               	/* frame size = 0 */
+ 405               	/* stack size = 0 */
+ 406               	.L__stack_usage = 0
+ 407               	.LBB23:
+  48:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** {
+ 409               	.LM10:
+ 410 001c 9FB7      		in r25,__SREG__
+ 411               	.LBB24:
+ 412               	.LBB25:
+ 414               	.Ltext5:
+  50:/opt/local/avr/include/util/atomic.h ****     return 1;
+ 416               	.LM11:
+ 417               	/* #APP */
+ 418               	 ;  50 "/opt/local/avr/include/util/atomic.h" 1
+ 419 001e F894      		cli
+ 420               	 ;  0 "" 2
+ 421               	/* #NOAPP */
+ 422               	.LBE25:
+ 423               	.LBE24:
+ 424               	.LBB26:
+ 425               	.LBB27:
+ 427               	.Ltext6:
+ 429               	.LM12:
+ 430               	/* #APP */
+ 431               	 ;  67 "../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c" 1
+ 432 0020 A895      		wdr
+ 433               	 ;  0 "" 2
+ 434               	/* #NOAPP */
+ 435               	.LBE27:
+ 436               	.LBE26:
+  51:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** WDTCSR |= (1<<WDCE) | (1<<WDE);
+ 438               	.LM13:
+ 439 0022 84B7      		in r24,0x34
+ 440 0024 877F      		andi r24,lo8(-9)
+ 441 0026 84BF      		out 0x34,r24
+  52:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** WDTCSR = (1<<WDE) | (1<<WDP2) | (1<<WDP0);
+ 443               	.LM14:
+ 444 0028 E0E6      		ldi r30,lo8(96)
+ 445 002a F0E0      		ldi r31,0
+ 446 002c 8081      		ld r24,Z
+ 447 002e 8861      		ori r24,lo8(24)
+ 448 0030 8083      		st Z,r24
+  53:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** }
+ 450               	.LM15:
+ 451 0032 8DE0      		ldi r24,lo8(13)
+ 452 0034 8083      		st Z,r24
+ 453               	.LBB28:
+ 454               	.LBB29:
+ 456               	.Ltext7:
+  70:/opt/local/avr/include/util/atomic.h ****     __asm__ volatile ("" ::: "memory");
+ 458               	.LM16:
+ 459 0036 9FBF      		out __SREG__,r25
+ 461               	.LM17:
+ 462 0038 0895      		ret
+ 463               	.LBE29:
+ 464               	.LBE28:
+ 465               	.LBE23:
+ 470               	.Lscope2:
+ 472               		.stabd	78,0,0
+ 474               	.global	nrk_watchdog_check
+ 476               	nrk_watchdog_check:
+ 477               		.stabd	46,0,0
+ 479               	.Ltext8:
+  59:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** 
+ 481               	.LM18:
+ 482               	.LFBB3:
+ 483               	/* prologue: function */
+ 484               	/* frame size = 0 */
+ 485               	/* stack size = 0 */
+ 486               	.L__stack_usage = 0
+  61:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** return NRK_ERROR;
+ 488               	.LM19:
+ 489 003a 04B6      		in __tmp_reg__,0x34
+ 490 003c 03FE      		sbrs __tmp_reg__,3
+ 491 003e 00C0      		rjmp .L5
+  62:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** }
+ 493               	.LM20:
+ 494 0040 8FEF      		ldi r24,lo8(-1)
+ 495 0042 0895      		ret
+ 496               	.L5:
+  61:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** return NRK_ERROR;
+ 498               	.LM21:
+ 499 0044 81E0      		ldi r24,lo8(1)
+  63:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** 
+ 501               	.LM22:
+ 502 0046 0895      		ret
+ 504               	.Lscope3:
+ 506               		.stabd	78,0,0
+ 508               	.global	nrk_watchdog_reset
+ 510               	nrk_watchdog_reset:
+ 511               		.stabd	46,0,0
+  66:../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c **** wdt_reset();
+ 513               	.LM23:
+ 514               	.LFBB4:
+ 515               	/* prologue: function */
+ 516               	/* frame size = 0 */
+ 517               	/* stack size = 0 */
+ 518               	.L__stack_usage = 0
+ 520               	.LM24:
+ 521               	/* #APP */
+ 522               	 ;  67 "../../src/kernel/hal/atmega128rfa1/nrk_watchdog.c" 1
+ 523 0048 A895      		wdr
+ 524               	 ;  0 "" 2
+ 525               	/* #NOAPP */
+ 526 004a 0895      		ret
+ 528               	.Lscope4:
+ 530               		.stabd	78,0,0
+ 531               		.comm	nrk_kernel_stk_ptr,2,1
+ 532               		.comm	nrk_idle_task_stk,128,1
+ 533               		.comm	error_num,1,1
+ 534               		.comm	error_task,1,1
+ 535               		.comm	_nrk_signal_list,4,1
+ 542               	.Letext0:
+ 543               		.ident	"GCC: (GNU) 4.9.1"
+ 544               	.global __do_clear_bss
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 nrk_watchdog.c
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccK0XE21.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccK0XE21.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccK0XE21.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccK0XE21.s:5      *ABS*:000000000000003b __RAMPZ__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccK0XE21.s:6      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccK0XE21.s:7      *ABS*:0000000000000001 __zero_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccK0XE21.s:319    .text:0000000000000000 nrk_watchdog_disable
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccK0XE21.s:396    .text:000000000000001c nrk_watchdog_enable
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccK0XE21.s:476    .text:000000000000003a nrk_watchdog_check
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccK0XE21.s:510    .text:0000000000000048 nrk_watchdog_reset
+                            *COM*:0000000000000002 nrk_kernel_stk_ptr
+                            *COM*:0000000000000080 nrk_idle_task_stk
+                            *COM*:0000000000000001 error_num
+                            *COM*:0000000000000001 error_task
+                            *COM*:0000000000000004 _nrk_signal_list
+
+UNDEFINED SYMBOLS
+__do_clear_bss

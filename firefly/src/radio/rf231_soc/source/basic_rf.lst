@@ -1,0 +1,3493 @@
+   1               		.file	"basic_rf.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__RAMPZ__ = 0x3b
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+  10               		.text
+  11               	.Ltext0:
+ 331               	rf_cmd:
+ 332               		.stabd	46,0,0
+   1:../../src/radio/rf231_soc/source/basic_rf.c **** /******************************************************************************
+   2:../../src/radio/rf231_soc/source/basic_rf.c **** *  Nano-RK, a real-time operating system for sensor networks.
+   3:../../src/radio/rf231_soc/source/basic_rf.c **** *  Copyright (C) 2007, Real-Time and Multimedia Lab, Carnegie Mellon University
+   4:../../src/radio/rf231_soc/source/basic_rf.c **** *  All rights reserved.
+   5:../../src/radio/rf231_soc/source/basic_rf.c **** *
+   6:../../src/radio/rf231_soc/source/basic_rf.c **** *  This is the Open Source Version of Nano-RK included as part of a Dual
+   7:../../src/radio/rf231_soc/source/basic_rf.c **** *  Licensing Model. If you are unsure which license to use please refer to:
+   8:../../src/radio/rf231_soc/source/basic_rf.c **** *  http://www.nanork.org/nano-RK/wiki/Licensing
+   9:../../src/radio/rf231_soc/source/basic_rf.c **** *
+  10:../../src/radio/rf231_soc/source/basic_rf.c **** *  This program is free software: you can redistribute it and/or modify
+  11:../../src/radio/rf231_soc/source/basic_rf.c **** *  it under the terms of the GNU General Public License as published by
+  12:../../src/radio/rf231_soc/source/basic_rf.c **** *  the Free Software Foundation, version 2.0 of the License.
+  13:../../src/radio/rf231_soc/source/basic_rf.c **** *
+  14:../../src/radio/rf231_soc/source/basic_rf.c **** *  This program is distributed in the hope that it will be useful,
+  15:../../src/radio/rf231_soc/source/basic_rf.c **** *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  16:../../src/radio/rf231_soc/source/basic_rf.c **** *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  17:../../src/radio/rf231_soc/source/basic_rf.c **** *  GNU General Public License for more details.
+  18:../../src/radio/rf231_soc/source/basic_rf.c **** *
+  19:../../src/radio/rf231_soc/source/basic_rf.c **** *  You should have received a copy of the GNU General Public License
+  20:../../src/radio/rf231_soc/source/basic_rf.c **** *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  21:../../src/radio/rf231_soc/source/basic_rf.c **** *
+  22:../../src/radio/rf231_soc/source/basic_rf.c **** *  Contributing Authors (specific to this file):
+  23:../../src/radio/rf231_soc/source/basic_rf.c **** *  Maxim Buevich
+  24:../../src/radio/rf231_soc/source/basic_rf.c **** *  Anthony Rowe
+  25:../../src/radio/rf231_soc/source/basic_rf.c **** *******************************************************************************/
+  26:../../src/radio/rf231_soc/source/basic_rf.c **** 
+  27:../../src/radio/rf231_soc/source/basic_rf.c **** #include <include.h>
+  28:../../src/radio/rf231_soc/source/basic_rf.c **** #include <basic_rf.h>
+  29:../../src/radio/rf231_soc/source/basic_rf.c **** #include <ulib.h>
+  30:../../src/radio/rf231_soc/source/basic_rf.c **** #include <nrk.h>
+  31:../../src/radio/rf231_soc/source/basic_rf.c **** #include <nrk_events.h>
+  32:../../src/radio/rf231_soc/source/basic_rf.c **** #include <nrk_error.h>
+  33:../../src/radio/rf231_soc/source/basic_rf.c **** #include <nrk_timer.h>
+  34:../../src/radio/rf231_soc/source/basic_rf.c **** #include <nrk_cpu.h>
+  35:../../src/radio/rf231_soc/source/basic_rf.c **** #include <avr/wdt.h>
+  36:../../src/radio/rf231_soc/source/basic_rf.c **** 
+  37:../../src/radio/rf231_soc/source/basic_rf.c **** #define OSC_STARTUP_DELAY	1000
+  38:../../src/radio/rf231_soc/source/basic_rf.c **** //#define RADIO_CC2591
+  39:../../src/radio/rf231_soc/source/basic_rf.c **** //#define GLOSSY_TESTING
+  40:../../src/radio/rf231_soc/source/basic_rf.c **** 
+  41:../../src/radio/rf231_soc/source/basic_rf.c **** //#define RADIO_VERBOSE
+  42:../../src/radio/rf231_soc/source/basic_rf.c **** #ifdef RADIO_VERBOSE
+  43:../../src/radio/rf231_soc/source/basic_rf.c **** 	#define vprintf(...)		printf(__VA_ARGS__)
+  44:../../src/radio/rf231_soc/source/basic_rf.c **** #else
+  45:../../src/radio/rf231_soc/source/basic_rf.c **** 	#define vprintf(...) 	
+  46:../../src/radio/rf231_soc/source/basic_rf.c **** #endif
+  47:../../src/radio/rf231_soc/source/basic_rf.c **** 
+  48:../../src/radio/rf231_soc/source/basic_rf.c **** 
+  49:../../src/radio/rf231_soc/source/basic_rf.c **** typedef struct ieee_mac_fcf{
+  50:../../src/radio/rf231_soc/source/basic_rf.c **** 	uint8_t frame_type: 		3;
+  51:../../src/radio/rf231_soc/source/basic_rf.c **** 	uint8_t sec_en: 				1;
+  52:../../src/radio/rf231_soc/source/basic_rf.c **** 	uint8_t frame_pending: 	1;
+  53:../../src/radio/rf231_soc/source/basic_rf.c **** 	uint8_t ack_request: 		1;
+  54:../../src/radio/rf231_soc/source/basic_rf.c **** 	uint8_t intra_pan: 			1;
+  55:../../src/radio/rf231_soc/source/basic_rf.c **** 
+  56:../../src/radio/rf231_soc/source/basic_rf.c **** 	uint8_t res:						3;	
+  57:../../src/radio/rf231_soc/source/basic_rf.c **** 
+  58:../../src/radio/rf231_soc/source/basic_rf.c **** 	uint8_t dest_addr_mode:	2;
+  59:../../src/radio/rf231_soc/source/basic_rf.c **** 	uint8_t frame_version: 	2;
+  60:../../src/radio/rf231_soc/source/basic_rf.c **** 	uint8_t src_addr_mode:	2;
+  61:../../src/radio/rf231_soc/source/basic_rf.c **** } ieee_mac_fcf_t;
+  62:../../src/radio/rf231_soc/source/basic_rf.c **** 
+  63:../../src/radio/rf231_soc/source/basic_rf.c **** typedef struct ieee_mac_frame_header{	
+  64:../../src/radio/rf231_soc/source/basic_rf.c **** 	ieee_mac_fcf_t fcf;
+  65:../../src/radio/rf231_soc/source/basic_rf.c **** 	uint8_t seq_num;
+  66:../../src/radio/rf231_soc/source/basic_rf.c **** 
+  67:../../src/radio/rf231_soc/source/basic_rf.c **** 	uint16_t dest_pan_id;
+  68:../../src/radio/rf231_soc/source/basic_rf.c **** 	uint16_t dest_addr;
+  69:../../src/radio/rf231_soc/source/basic_rf.c **** 	//uint16_t src_pan_id;
+  70:../../src/radio/rf231_soc/source/basic_rf.c **** 	uint16_t src_addr;
+  71:../../src/radio/rf231_soc/source/basic_rf.c **** 	/*uint16_t sec_header; */
+  72:../../src/radio/rf231_soc/source/basic_rf.c **** } ieee_mac_frame_header_t;
+  73:../../src/radio/rf231_soc/source/basic_rf.c **** 
+  74:../../src/radio/rf231_soc/source/basic_rf.c **** 
+  75:../../src/radio/rf231_soc/source/basic_rf.c **** 
+  76:../../src/radio/rf231_soc/source/basic_rf.c **** static void rf_cmd(uint8_t cmd);
+  77:../../src/radio/rf231_soc/source/basic_rf.c **** void rf_glossy_interrupt();
+  78:../../src/radio/rf231_soc/source/basic_rf.c **** 
+  79:../../src/radio/rf231_soc/source/basic_rf.c **** #ifdef GLOSSLY_TESTING
+  80:../../src/radio/rf231_soc/source/basic_rf.c **** 	void clear_packet_flags();
+  81:../../src/radio/rf231_soc/source/basic_rf.c **** #endif
+  82:../../src/radio/rf231_soc/source/basic_rf.c **** 
+  83:../../src/radio/rf231_soc/source/basic_rf.c **** nrk_sem_t *radio_sem;
+  84:../../src/radio/rf231_soc/source/basic_rf.c **** //uint8_t auto_ack_enable;
+  85:../../src/radio/rf231_soc/source/basic_rf.c **** //uint8_t security_enable;
+  86:../../src/radio/rf231_soc/source/basic_rf.c **** //uint8_t last_pkt_encrypted;
+  87:../../src/radio/rf231_soc/source/basic_rf.c **** uint16_t mdmctrl0;
+  88:../../src/radio/rf231_soc/source/basic_rf.c **** uint8_t tx_ctr[6];
+  89:../../src/radio/rf231_soc/source/basic_rf.c **** uint8_t rx_ctr[4];
+  90:../../src/radio/rf231_soc/source/basic_rf.c **** 
+  91:../../src/radio/rf231_soc/source/basic_rf.c **** volatile RF_SETTINGS rfSettings;
+  92:../../src/radio/rf231_soc/source/basic_rf.c **** uint8_t rf_ready;
+  93:../../src/radio/rf231_soc/source/basic_rf.c **** uint8_t use_glossy;
+  94:../../src/radio/rf231_soc/source/basic_rf.c **** 
+  95:../../src/radio/rf231_soc/source/basic_rf.c **** nrk_time_t curr_t, target_t, dummy_t;
+  96:../../src/radio/rf231_soc/source/basic_rf.c **** 
+  97:../../src/radio/rf231_soc/source/basic_rf.c **** volatile void (*rx_start_func)(void) = 0;
+  98:../../src/radio/rf231_soc/source/basic_rf.c **** volatile void (*rx_end_func)(void) = 0;
+  99:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 100:../../src/radio/rf231_soc/source/basic_rf.c **** /* AES encryption and decryption key buffers */
+ 101:../../src/radio/rf231_soc/source/basic_rf.c **** uint8_t ekey[16];
+ 102:../../src/radio/rf231_soc/source/basic_rf.c **** uint8_t dkey[16];
+ 103:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 104:../../src/radio/rf231_soc/source/basic_rf.c **** /* wireless programming reset */
+ 105:../../src/radio/rf231_soc/source/basic_rf.c **** uint8_t wireless_prog = 0;
+ 106:../../src/radio/rf231_soc/source/basic_rf.c **** uint8_t reset_val[] = {0x43, 0x15, 0xa6, 0xd9, 0x3d, 0x31, 0x82, 0xf1, 0x8c, 0xa7, 0x4f, 0xc5, 0x99
+ 107:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 108:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 109:../../src/radio/rf231_soc/source/basic_rf.c **** void set_wireless_prog(uint8_t val)
+ 110:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 111:../../src/radio/rf231_soc/source/basic_rf.c ****    wireless_prog = val;
+ 112:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 113:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 114:../../src/radio/rf231_soc/source/basic_rf.c **** void rf_enable_glossy()
+ 115:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 116:../../src/radio/rf231_soc/source/basic_rf.c **** 	use_glossy = 1;
+ 117:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 118:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 119:../../src/radio/rf231_soc/source/basic_rf.c **** void rf_disable_glossy()
+ 120:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 121:../../src/radio/rf231_soc/source/basic_rf.c **** 	use_glossy = 0;
+ 122:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 123:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 124:../../src/radio/rf231_soc/source/basic_rf.c **** void rf_power_down()
+ 125:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 126:../../src/radio/rf231_soc/source/basic_rf.c **** 	uint8_t status;
+ 127:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 128:../../src/radio/rf231_soc/source/basic_rf.c **** 	while((TRX_STATUS & 0x1F) == STATE_TRANSITION_IN_PROGRESS)
+ 129:../../src/radio/rf231_soc/source/basic_rf.c **** 		continue;
+ 130:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 131:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* For some reason comparing to SLEEP doesn't work, but 0 does */
+ 132:../../src/radio/rf231_soc/source/basic_rf.c **** 	status = (TRX_STATUS & 0x1F);
+ 133:../../src/radio/rf231_soc/source/basic_rf.c **** 	if((status == 0) || (status == 0xF))
+ 134:../../src/radio/rf231_soc/source/basic_rf.c **** 		return;
+ 135:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* Disable TRX if it is enabled */
+ 136:../../src/radio/rf231_soc/source/basic_rf.c **** 	if((TRX_STATUS & 0x1F) != TRX_OFF){
+ 137:../../src/radio/rf231_soc/source/basic_rf.c **** 		rf_cmd(TRX_OFF);
+ 138:../../src/radio/rf231_soc/source/basic_rf.c **** 		do{
+ 139:../../src/radio/rf231_soc/source/basic_rf.c **** 			status = (TRX_STATUS & 0x1F);
+ 140:../../src/radio/rf231_soc/source/basic_rf.c **** 		}while(status != TRX_OFF);
+ 141:../../src/radio/rf231_soc/source/basic_rf.c **** 	}
+ 142:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 143:../../src/radio/rf231_soc/source/basic_rf.c **** 	TRXPR |= (1 << SLPTR);
+ 144:../../src/radio/rf231_soc/source/basic_rf.c **** 	do{
+ 145:../../src/radio/rf231_soc/source/basic_rf.c **** 		status = (TRX_STATUS & 0x1F);
+ 146:../../src/radio/rf231_soc/source/basic_rf.c **** 	}while((status != 0) && (status != 0xF));
+ 147:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 148:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 149:../../src/radio/rf231_soc/source/basic_rf.c **** void rf_power_up()
+ 150:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 151:../../src/radio/rf231_soc/source/basic_rf.c **** 	uint8_t status;
+ 152:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 153:../../src/radio/rf231_soc/source/basic_rf.c **** 	while((TRX_STATUS & 0x1F) == STATE_TRANSITION_IN_PROGRESS)
+ 154:../../src/radio/rf231_soc/source/basic_rf.c **** 		continue;
+ 155:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* For some reason comparing to SLEEP doesn't work, but 0 does */
+ 156:../../src/radio/rf231_soc/source/basic_rf.c **** 	status = (TRX_STATUS & 0x1F);
+ 157:../../src/radio/rf231_soc/source/basic_rf.c **** 	if((status != 0) && (status != 0xF))
+ 158:../../src/radio/rf231_soc/source/basic_rf.c **** 		return;
+ 159:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 160:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* Wake up */
+ 161:../../src/radio/rf231_soc/source/basic_rf.c **** 	TRXPR &= ~(1 << SLPTR);
+ 162:../../src/radio/rf231_soc/source/basic_rf.c **** 	while((TRX_STATUS & 0x1F) != TRX_OFF)
+ 163:../../src/radio/rf231_soc/source/basic_rf.c **** 		continue;
+ 164:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 165:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 166:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 167:../../src/radio/rf231_soc/source/basic_rf.c **** /* Safely change the radio state */
+ 168:../../src/radio/rf231_soc/source/basic_rf.c **** static void rf_cmd(uint8_t cmd)
+ 169:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 334               	.LM0:
+ 335               	.LFBB1:
+ 336               	/* prologue: function */
+ 337               	/* frame size = 0 */
+ 338               	/* stack size = 0 */
+ 339               	.L__stack_usage = 0
+ 340               	.L2:
+ 170:../../src/radio/rf231_soc/source/basic_rf.c **** 	while((TRX_STATUS & 0x1F) == STATE_TRANSITION_IN_PROGRESS)
+ 342               	.LM1:
+ 343 0000 9091 4101 		lds r25,321
+ 344 0004 9F71      		andi r25,lo8(31)
+ 345 0006 9F31      		cpi r25,lo8(31)
+ 346 0008 01F0      		breq .L2
+ 171:../../src/radio/rf231_soc/source/basic_rf.c **** 		continue;
+ 172:../../src/radio/rf231_soc/source/basic_rf.c **** 	TRX_STATE = cmd;
+ 348               	.LM2:
+ 349 000a 8093 4201 		sts 322,r24
+ 350 000e 0895      		ret
+ 352               	.Lscope1:
+ 354               		.stabd	78,0,0
+ 357               	.global	set_wireless_prog
+ 359               	set_wireless_prog:
+ 360               		.stabd	46,0,0
+ 110:../../src/radio/rf231_soc/source/basic_rf.c ****    wireless_prog = val;
+ 362               	.LM3:
+ 363               	.LFBB2:
+ 364               	/* prologue: function */
+ 365               	/* frame size = 0 */
+ 366               	/* stack size = 0 */
+ 367               	.L__stack_usage = 0
+ 111:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 369               	.LM4:
+ 370 0010 8093 0000 		sts wireless_prog,r24
+ 371 0014 0895      		ret
+ 373               	.Lscope2:
+ 375               		.stabd	78,0,0
+ 377               	.global	rf_enable_glossy
+ 379               	rf_enable_glossy:
+ 380               		.stabd	46,0,0
+ 115:../../src/radio/rf231_soc/source/basic_rf.c **** 	use_glossy = 1;
+ 382               	.LM5:
+ 383               	.LFBB3:
+ 384               	/* prologue: function */
+ 385               	/* frame size = 0 */
+ 386               	/* stack size = 0 */
+ 387               	.L__stack_usage = 0
+ 116:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 389               	.LM6:
+ 390 0016 81E0      		ldi r24,lo8(1)
+ 391 0018 8093 0000 		sts use_glossy,r24
+ 392 001c 0895      		ret
+ 394               	.Lscope3:
+ 396               		.stabd	78,0,0
+ 398               	.global	rf_disable_glossy
+ 400               	rf_disable_glossy:
+ 401               		.stabd	46,0,0
+ 120:../../src/radio/rf231_soc/source/basic_rf.c **** 	use_glossy = 0;
+ 403               	.LM7:
+ 404               	.LFBB4:
+ 405               	/* prologue: function */
+ 406               	/* frame size = 0 */
+ 407               	/* stack size = 0 */
+ 408               	.L__stack_usage = 0
+ 121:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 410               	.LM8:
+ 411 001e 1092 0000 		sts use_glossy,__zero_reg__
+ 412 0022 0895      		ret
+ 414               	.Lscope4:
+ 416               		.stabd	78,0,0
+ 418               	.global	rf_power_down
+ 420               	rf_power_down:
+ 421               		.stabd	46,0,0
+ 125:../../src/radio/rf231_soc/source/basic_rf.c **** 	uint8_t status;
+ 423               	.LM9:
+ 424               	.LFBB5:
+ 425               	/* prologue: function */
+ 426               	/* frame size = 0 */
+ 427               	/* stack size = 0 */
+ 428               	.L__stack_usage = 0
+ 429               	.L10:
+ 128:../../src/radio/rf231_soc/source/basic_rf.c **** 		continue;
+ 431               	.LM10:
+ 432 0024 8091 4101 		lds r24,321
+ 433 0028 8F71      		andi r24,lo8(31)
+ 434 002a 8F31      		cpi r24,lo8(31)
+ 435 002c 01F0      		breq .L10
+ 132:../../src/radio/rf231_soc/source/basic_rf.c **** 	if((status == 0) || (status == 0xF))
+ 437               	.LM11:
+ 438 002e 8091 4101 		lds r24,321
+ 439 0032 8F71      		andi r24,lo8(31)
+ 133:../../src/radio/rf231_soc/source/basic_rf.c **** 		return;
+ 441               	.LM12:
+ 442 0034 01F0      		breq .L9
+ 133:../../src/radio/rf231_soc/source/basic_rf.c **** 		return;
+ 444               	.LM13:
+ 445 0036 8F30      		cpi r24,lo8(15)
+ 446 0038 01F0      		breq .L9
+ 136:../../src/radio/rf231_soc/source/basic_rf.c **** 		rf_cmd(TRX_OFF);
+ 448               	.LM14:
+ 449 003a 8091 4101 		lds r24,321
+ 450 003e 8F71      		andi r24,lo8(31)
+ 451 0040 8830      		cpi r24,lo8(8)
+ 452 0042 01F4      		brne .L13
+ 453               	.L16:
+ 143:../../src/radio/rf231_soc/source/basic_rf.c **** 	do{
+ 455               	.LM15:
+ 456 0044 8091 3901 		lds r24,313
+ 457 0048 8260      		ori r24,lo8(2)
+ 458 004a 8093 3901 		sts 313,r24
+ 459 004e 00C0      		rjmp .L14
+ 460               	.L13:
+ 137:../../src/radio/rf231_soc/source/basic_rf.c **** 		do{
+ 462               	.LM16:
+ 463 0050 88E0      		ldi r24,lo8(8)
+ 464 0052 0E94 0000 		call rf_cmd
+ 465               	.L15:
+ 139:../../src/radio/rf231_soc/source/basic_rf.c **** 		}while(status != TRX_OFF);
+ 467               	.LM17:
+ 468 0056 8091 4101 		lds r24,321
+ 469 005a 8F71      		andi r24,lo8(31)
+ 140:../../src/radio/rf231_soc/source/basic_rf.c **** 	}
+ 471               	.LM18:
+ 472 005c 8830      		cpi r24,lo8(8)
+ 473 005e 01F4      		brne .L15
+ 474 0060 00C0      		rjmp .L16
+ 475               	.L27:
+ 146:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 477               	.LM19:
+ 478 0062 8F30      		cpi r24,lo8(15)
+ 479 0064 01F0      		breq .L9
+ 480               	.L14:
+ 145:../../src/radio/rf231_soc/source/basic_rf.c **** 	}while((status != 0) && (status != 0xF));
+ 482               	.LM20:
+ 483 0066 8091 4101 		lds r24,321
+ 484 006a 8F71      		andi r24,lo8(31)
+ 146:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 486               	.LM21:
+ 487 006c 01F4      		brne .L27
+ 488               	.L9:
+ 489 006e 0895      		ret
+ 491               	.Lscope5:
+ 493               		.stabd	78,0,0
+ 495               	.global	rf_power_up
+ 497               	rf_power_up:
+ 498               		.stabd	46,0,0
+ 150:../../src/radio/rf231_soc/source/basic_rf.c **** 	uint8_t status;
+ 500               	.LM22:
+ 501               	.LFBB6:
+ 502               	/* prologue: function */
+ 503               	/* frame size = 0 */
+ 504               	/* stack size = 0 */
+ 505               	.L__stack_usage = 0
+ 506               	.L29:
+ 153:../../src/radio/rf231_soc/source/basic_rf.c **** 		continue;
+ 508               	.LM23:
+ 509 0070 8091 4101 		lds r24,321
+ 510 0074 8F71      		andi r24,lo8(31)
+ 511 0076 8F31      		cpi r24,lo8(31)
+ 512 0078 01F0      		breq .L29
+ 156:../../src/radio/rf231_soc/source/basic_rf.c **** 	if((status != 0) && (status != 0xF))
+ 514               	.LM24:
+ 515 007a 8091 4101 		lds r24,321
+ 516 007e 8F71      		andi r24,lo8(31)
+ 157:../../src/radio/rf231_soc/source/basic_rf.c **** 		return;
+ 518               	.LM25:
+ 519 0080 01F0      		breq .L30
+ 157:../../src/radio/rf231_soc/source/basic_rf.c **** 		return;
+ 521               	.LM26:
+ 522 0082 8F30      		cpi r24,lo8(15)
+ 523 0084 01F4      		brne .L28
+ 524               	.L30:
+ 161:../../src/radio/rf231_soc/source/basic_rf.c **** 	while((TRX_STATUS & 0x1F) != TRX_OFF)
+ 526               	.LM27:
+ 527 0086 8091 3901 		lds r24,313
+ 528 008a 8D7F      		andi r24,lo8(-3)
+ 529 008c 8093 3901 		sts 313,r24
+ 530               	.L31:
+ 162:../../src/radio/rf231_soc/source/basic_rf.c **** 		continue;
+ 532               	.LM28:
+ 533 0090 8091 4101 		lds r24,321
+ 534 0094 8F71      		andi r24,lo8(31)
+ 535 0096 8830      		cpi r24,lo8(8)
+ 536 0098 01F4      		brne .L31
+ 537               	.L28:
+ 538 009a 0895      		ret
+ 543               	.Lscope6:
+ 545               		.stabd	78,0,0
+ 548               	.global	rf_tx_power
+ 550               	rf_tx_power:
+ 551               		.stabd	46,0,0
+ 173:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 174:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 175:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 176:../../src/radio/rf231_soc/source/basic_rf.c **** void rf_tx_power(uint8_t pwr)
+ 177:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 553               	.LM29:
+ 554               	.LFBB7:
+ 555               	/* prologue: function */
+ 556               	/* frame size = 0 */
+ 557               	/* stack size = 0 */
+ 558               	.L__stack_usage = 0
+ 178:../../src/radio/rf231_soc/source/basic_rf.c **** 	PHY_TX_PWR &= 0xF0;
+ 560               	.LM30:
+ 561 009c E5E4      		ldi r30,lo8(69)
+ 562 009e F1E0      		ldi r31,lo8(1)
+ 563 00a0 9081      		ld r25,Z
+ 564 00a2 907F      		andi r25,lo8(-16)
+ 565 00a4 9083      		st Z,r25
+ 179:../../src/radio/rf231_soc/source/basic_rf.c **** 	PHY_TX_PWR |= (pwr & 0xF);
+ 567               	.LM31:
+ 568 00a6 9081      		ld r25,Z
+ 569 00a8 8F70      		andi r24,lo8(15)
+ 570 00aa 982B      		or r25,r24
+ 571 00ac 9083      		st Z,r25
+ 572 00ae 0895      		ret
+ 574               	.Lscope7:
+ 576               		.stabd	78,0,0
+ 578               	.global	rf_addr_decode_enable
+ 580               	rf_addr_decode_enable:
+ 581               		.stabd	46,0,0
+ 180:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 181:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 182:../../src/radio/rf231_soc/source/basic_rf.c **** void rf_addr_decode_enable()
+ 183:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 583               	.LM32:
+ 584               	.LFBB8:
+ 585               	/* prologue: function */
+ 586               	/* frame size = 0 */
+ 587               	/* stack size = 0 */
+ 588               	.L__stack_usage = 0
+ 184:../../src/radio/rf231_soc/source/basic_rf.c **** 	XAH_CTRL_1 &= ~(1 << AACK_PROM_MODE);
+ 590               	.LM33:
+ 591 00b0 E7E5      		ldi r30,lo8(87)
+ 592 00b2 F1E0      		ldi r31,lo8(1)
+ 593 00b4 8081      		ld r24,Z
+ 594 00b6 8D7F      		andi r24,lo8(-3)
+ 595 00b8 8083      		st Z,r24
+ 596 00ba 0895      		ret
+ 598               	.Lscope8:
+ 600               		.stabd	78,0,0
+ 602               	.global	rf_addr_decode_disable
+ 604               	rf_addr_decode_disable:
+ 605               		.stabd	46,0,0
+ 185:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 186:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 187:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 188:../../src/radio/rf231_soc/source/basic_rf.c **** void rf_addr_decode_disable()
+ 189:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 607               	.LM34:
+ 608               	.LFBB9:
+ 609               	/* prologue: function */
+ 610               	/* frame size = 0 */
+ 611               	/* stack size = 0 */
+ 612               	.L__stack_usage = 0
+ 190:../../src/radio/rf231_soc/source/basic_rf.c **** 	XAH_CTRL_1 |= (1 << AACK_PROM_MODE);
+ 614               	.LM35:
+ 615 00bc E7E5      		ldi r30,lo8(87)
+ 616 00be F1E0      		ldi r31,lo8(1)
+ 617 00c0 8081      		ld r24,Z
+ 618 00c2 8260      		ori r24,lo8(2)
+ 619 00c4 8083      		st Z,r24
+ 620 00c6 0895      		ret
+ 622               	.Lscope9:
+ 624               		.stabd	78,0,0
+ 626               	.global	rf_auto_ack_enable
+ 628               	rf_auto_ack_enable:
+ 629               		.stabd	46,0,0
+ 191:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 192:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 193:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 194:../../src/radio/rf231_soc/source/basic_rf.c **** void rf_auto_ack_enable()
+ 195:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 631               	.LM36:
+ 632               	.LFBB10:
+ 633               	/* prologue: function */
+ 634               	/* frame size = 0 */
+ 635               	/* stack size = 0 */
+ 636               	.L__stack_usage = 0
+ 196:../../src/radio/rf231_soc/source/basic_rf.c **** 	CSMA_SEED_1 &= ~(1 << AACK_DIS_ACK);
+ 638               	.LM37:
+ 639 00c8 EEE6      		ldi r30,lo8(110)
+ 640 00ca F1E0      		ldi r31,lo8(1)
+ 641 00cc 8081      		ld r24,Z
+ 642 00ce 8F7E      		andi r24,lo8(-17)
+ 643 00d0 8083      		st Z,r24
+ 644 00d2 0895      		ret
+ 646               	.Lscope10:
+ 648               		.stabd	78,0,0
+ 650               	.global	rf_auto_ack_disable
+ 652               	rf_auto_ack_disable:
+ 653               		.stabd	46,0,0
+ 197:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 198:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 199:../../src/radio/rf231_soc/source/basic_rf.c **** void rf_auto_ack_disable()
+ 200:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 655               	.LM38:
+ 656               	.LFBB11:
+ 657               	/* prologue: function */
+ 658               	/* frame size = 0 */
+ 659               	/* stack size = 0 */
+ 660               	.L__stack_usage = 0
+ 201:../../src/radio/rf231_soc/source/basic_rf.c **** 	CSMA_SEED_1 |= (1 << AACK_DIS_ACK);
+ 662               	.LM39:
+ 663 00d4 EEE6      		ldi r30,lo8(110)
+ 664 00d6 F1E0      		ldi r31,lo8(1)
+ 665 00d8 8081      		ld r24,Z
+ 666 00da 8061      		ori r24,lo8(16)
+ 667 00dc 8083      		st Z,r24
+ 668 00de 0895      		ret
+ 670               	.Lscope11:
+ 672               		.stabd	78,0,0
+ 675               	.global	rf_addr_decode_set_my_mac
+ 677               	rf_addr_decode_set_my_mac:
+ 678               		.stabd	46,0,0
+ 202:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 203:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 204:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 205:../../src/radio/rf231_soc/source/basic_rf.c **** void rf_addr_decode_set_my_mac(uint16_t my_mac)
+ 206:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 680               	.LM40:
+ 681               	.LFBB12:
+ 682               	/* prologue: function */
+ 683               	/* frame size = 0 */
+ 684               	/* stack size = 0 */
+ 685               	.L__stack_usage = 0
+ 207:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* Set short MAC address */
+ 208:../../src/radio/rf231_soc/source/basic_rf.c **** 	SHORT_ADDR_0 = (my_mac & 0xFF); 
+ 687               	.LM41:
+ 688 00e0 8093 6001 		sts 352,r24
+ 209:../../src/radio/rf231_soc/source/basic_rf.c **** 	SHORT_ADDR_1 = (my_mac >> 8);
+ 690               	.LM42:
+ 691 00e4 9093 6101 		sts 353,r25
+ 210:../../src/radio/rf231_soc/source/basic_rf.c **** 	rfSettings.myAddr = my_mac;
+ 693               	.LM43:
+ 694 00e8 9093 0000 		sts rfSettings+6+1,r25
+ 695 00ec 8093 0000 		sts rfSettings+6,r24
+ 696 00f0 0895      		ret
+ 698               	.Lscope12:
+ 700               		.stabd	78,0,0
+ 704               	.global	rf_set_rx
+ 706               	rf_set_rx:
+ 707               		.stabd	46,0,0
+ 211:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 212:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 213:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 214:../../src/radio/rf231_soc/source/basic_rf.c **** void rf_set_rx(RF_RX_INFO *pRRI, uint8_t channel )
+ 215:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 709               	.LM44:
+ 710               	.LFBB13:
+ 711               	/* prologue: function */
+ 712               	/* frame size = 0 */
+ 713               	/* stack size = 0 */
+ 714               	.L__stack_usage = 0
+ 216:../../src/radio/rf231_soc/source/basic_rf.c **** 	rfSettings.pRxInfo = pRRI;
+ 716               	.LM45:
+ 717 00f2 9093 0000 		sts rfSettings+1,r25
+ 718 00f6 8093 0000 		sts rfSettings,r24
+ 217:../../src/radio/rf231_soc/source/basic_rf.c **** 	PHY_CC_CCA &= ~(0x1F);
+ 720               	.LM46:
+ 721 00fa E8E4      		ldi r30,lo8(72)
+ 722 00fc F1E0      		ldi r31,lo8(1)
+ 723 00fe 8081      		ld r24,Z
+ 724 0100 807E      		andi r24,lo8(-32)
+ 725 0102 8083      		st Z,r24
+ 218:../../src/radio/rf231_soc/source/basic_rf.c **** 	PHY_CC_CCA |= (channel << CHANNEL0);
+ 727               	.LM47:
+ 728 0104 8081      		ld r24,Z
+ 729 0106 682B      		or r22,r24
+ 730 0108 6083      		st Z,r22
+ 731 010a 0895      		ret
+ 733               	.Lscope13:
+ 735               		.stabd	78,0,0
+ 738               	.global	rx_start_callback
+ 740               	rx_start_callback:
+ 741               		.stabd	46,0,0
+ 219:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 220:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 221:../../src/radio/rf231_soc/source/basic_rf.c **** void rx_start_callback(void (*func)(void)){
+ 743               	.LM48:
+ 744               	.LFBB14:
+ 745               	/* prologue: function */
+ 746               	/* frame size = 0 */
+ 747               	/* stack size = 0 */
+ 748               	.L__stack_usage = 0
+ 222:../../src/radio/rf231_soc/source/basic_rf.c **** 	rx_start_func = func;
+ 750               	.LM49:
+ 751 010c 9093 0000 		sts rx_start_func+1,r25
+ 752 0110 8093 0000 		sts rx_start_func,r24
+ 753 0114 0895      		ret
+ 755               	.Lscope14:
+ 757               		.stabd	78,0,0
+ 760               	.global	rx_end_callback
+ 762               	rx_end_callback:
+ 763               		.stabd	46,0,0
+ 223:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 224:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 225:../../src/radio/rf231_soc/source/basic_rf.c **** void rx_end_callback(void (*func)(void)){
+ 765               	.LM50:
+ 766               	.LFBB15:
+ 767               	/* prologue: function */
+ 768               	/* frame size = 0 */
+ 769               	/* stack size = 0 */
+ 770               	.L__stack_usage = 0
+ 226:../../src/radio/rf231_soc/source/basic_rf.c **** 	rx_end_func = func;
+ 772               	.LM51:
+ 773 0116 9093 0000 		sts rx_end_func+1,r25
+ 774 011a 8093 0000 		sts rx_end_func,r24
+ 775 011e 0895      		ret
+ 777               	.Lscope15:
+ 779               		.stabd	78,0,0
+ 785               	.global	rf_init
+ 787               	rf_init:
+ 788               		.stabd	46,0,0
+ 227:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 228:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 229:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 230:../../src/radio/rf231_soc/source/basic_rf.c **** void rf_init(RF_RX_INFO *pRRI, uint8_t channel, uint16_t panId, uint16_t myAddr)
+ 231:../../src/radio/rf231_soc/source/basic_rf.c **** { 
+ 790               	.LM52:
+ 791               	.LFBB16:
+ 792 0120 0F93      		push r16
+ 793 0122 1F93      		push r17
+ 794 0124 CF93      		push r28
+ 795 0126 DF93      		push r29
+ 796               	/* prologue: function */
+ 797               	/* frame size = 0 */
+ 798               	/* stack size = 4 */
+ 799               	.L__stack_usage = 4
+ 800 0128 FC01      		movw r30,r24
+ 801 012a D901      		movw r26,r18
+ 232:../../src/radio/rf231_soc/source/basic_rf.c **** /*
+ 233:../../src/radio/rf231_soc/source/basic_rf.c **** 	 uint8_t n;
+ 234:../../src/radio/rf231_soc/source/basic_rf.c ****    int8_t v;
+ 235:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 236:../../src/radio/rf231_soc/source/basic_rf.c **** #ifdef RADIO_PRIORITY_CEILING
+ 237:../../src/radio/rf231_soc/source/basic_rf.c ****     radio_sem = nrk_sem_create(1,RADIO_PRIORITY_CEILING);
+ 238:../../src/radio/rf231_soc/source/basic_rf.c ****     if (radio_sem == NULL)
+ 239:../../src/radio/rf231_soc/source/basic_rf.c ****       nrk_kernel_error_add (NRK_SEMAPHORE_CREATE_ERROR, nrk_get_pid ());
+ 240:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 241:../../src/radio/rf231_soc/source/basic_rf.c ****   v = nrk_sem_pend (radio_sem);
+ 242:../../src/radio/rf231_soc/source/basic_rf.c ****   if (v == NRK_ERROR) {
+ 243:../../src/radio/rf231_soc/source/basic_rf.c ****     nrk_kprintf (PSTR ("CC2420 ERROR:  Access to semaphore failed\r\n"));
+ 244:../../src/radio/rf231_soc/source/basic_rf.c ****   }
+ 245:../../src/radio/rf231_soc/source/basic_rf.c **** #endif
+ 246:../../src/radio/rf231_soc/source/basic_rf.c **** 	
+ 247:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 248:../../src/radio/rf231_soc/source/basic_rf.c **** #ifdef RADIO_PRIORITY_CEILING
+ 249:../../src/radio/rf231_soc/source/basic_rf.c ****   v = nrk_sem_post (radio_sem);
+ 250:../../src/radio/rf231_soc/source/basic_rf.c ****   if (v == NRK_ERROR) {
+ 251:../../src/radio/rf231_soc/source/basic_rf.c ****     nrk_kprintf (PSTR ("CC2420 ERROR:  Release of semaphore failed\r\n"));
+ 252:../../src/radio/rf231_soc/source/basic_rf.c ****     _nrk_errno_set (2);
+ 253:../../src/radio/rf231_soc/source/basic_rf.c ****   }
+ 254:../../src/radio/rf231_soc/source/basic_rf.c **** #endif
+ 255:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 256:../../src/radio/rf231_soc/source/basic_rf.c **** */
+ 257:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 258:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 259:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* Turn on auto crc calculation */
+ 260:../../src/radio/rf231_soc/source/basic_rf.c **** 	TRX_CTRL_1 = (1 << TX_AUTO_CRC_ON);
+ 803               	.LM53:
+ 804 012c 80E2      		ldi r24,lo8(32)
+ 805 012e 8093 4401 		sts 324,r24
+ 261:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* Set PA buffer lead time to 6 us and TX power to 3.0 dBm (maximum) */
+ 262:../../src/radio/rf231_soc/source/basic_rf.c **** 	PHY_TX_PWR = (1 << PA_BUF_LT1) | (1 << PA_BUF_LT0) | (0 << TX_PWR0);
+ 807               	.LM54:
+ 808 0132 80EC      		ldi r24,lo8(-64)
+ 809 0134 8093 4501 		sts 325,r24
+ 263:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* CCA Mode and Channel selection */
+ 264:../../src/radio/rf231_soc/source/basic_rf.c **** 	PHY_CC_CCA = (0 << CCA_MODE1) | (1 << CCA_MODE0) | (channel << CHANNEL0);
+ 811               	.LM55:
+ 812 0138 6062      		ori r22,lo8(32)
+ 813 013a 6093 4801 		sts 328,r22
+ 265:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* Set CCA energy threshold */
+ 266:../../src/radio/rf231_soc/source/basic_rf.c **** 	CCA_THRES = 0xC5;
+ 815               	.LM56:
+ 816 013e 85EC      		ldi r24,lo8(-59)
+ 817 0140 8093 4901 		sts 329,r24
+ 267:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* Start of frame delimiter */
+ 268:../../src/radio/rf231_soc/source/basic_rf.c **** 	SFD_VALUE = 0xA7;
+ 819               	.LM57:
+ 820 0144 87EA      		ldi r24,lo8(-89)
+ 821 0146 8093 4B01 		sts 331,r24
+ 269:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* Dynamic buffer protection on and data rate is 250 kb/s */
+ 270:../../src/radio/rf231_soc/source/basic_rf.c **** 	TRX_CTRL_2 = (1 << RX_SAFE_MODE) | (0 << OQPSK_DATA_RATE1) | (0 << OQPSK_DATA_RATE0);
+ 823               	.LM58:
+ 824 014a 80E8      		ldi r24,lo8(-128)
+ 825 014c 8093 4C01 		sts 332,r24
+ 271:../../src/radio/rf231_soc/source/basic_rf.c **** 	
+ 272:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* Set short MAC address */
+ 273:../../src/radio/rf231_soc/source/basic_rf.c **** 	SHORT_ADDR_0 = (myAddr & 0xFF); SHORT_ADDR_1 = (myAddr >> 8);
+ 827               	.LM59:
+ 828 0150 2093 6001 		sts 352,r18
+ 829 0154 B093 6101 		sts 353,r27
+ 274:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* Set PAN ID */
+ 275:../../src/radio/rf231_soc/source/basic_rf.c **** 	PAN_ID_0 = (panId & 0xFF); PAN_ID_1 = (panId >> 8);
+ 831               	.LM60:
+ 832 0158 4093 6201 		sts 354,r20
+ 833 015c 5093 6301 		sts 355,r21
+ 276:../../src/radio/rf231_soc/source/basic_rf.c **** 	
+ 277:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* 2-bit random value generated by radio hardware */
+ 278:../../src/radio/rf231_soc/source/basic_rf.c **** 	#define RADIO_RAND ((PHY_RSSI >> RND_VALUE0) & 0x3)
+ 279:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* Set random csma seed */
+ 280:../../src/radio/rf231_soc/source/basic_rf.c **** 	CSMA_SEED_0 = (RADIO_RAND << 6) | (RADIO_RAND << 4) 
+ 835               	.LM61:
+ 836 0160 C6E4      		ldi r28,lo8(70)
+ 837 0162 D1E0      		ldi r29,lo8(1)
+ 838 0164 0881      		ld r16,Y
+ 839 0166 8881      		ld r24,Y
+ 281:../../src/radio/rf231_soc/source/basic_rf.c **** 			| (RADIO_RAND << 2) | (RADIO_RAND << 0);
+ 841               	.LM62:
+ 842 0168 9881      		ld r25,Y
+ 843 016a 2881      		ld r18,Y
+ 280:../../src/radio/rf231_soc/source/basic_rf.c **** 			| (RADIO_RAND << 2) | (RADIO_RAND << 0);
+ 845               	.LM63:
+ 846 016c 302F      		mov r19,r16
+ 847 016e 3295      		swap r19
+ 848 0170 3695      		lsr r19
+ 849 0172 3770      		andi r19,lo8(7)
+ 850 0174 60E4      		ldi r22,lo8(64)
+ 851 0176 369F      		mul r19,r22
+ 852 0178 8001      		movw r16,r0
+ 853 017a 1124      		clr __zero_reg__
+ 854 017c 2295      		swap r18
+ 855 017e 2695      		lsr r18
+ 856 0180 2370      		andi r18,lo8(3)
+ 857 0182 622F      		mov r22,r18
+ 858 0184 602B      		or r22,r16
+ 859 0186 8295      		swap r24
+ 860 0188 8695      		lsr r24
+ 861 018a 8370      		andi r24,lo8(3)
+ 862 018c 70E1      		ldi r23,lo8(16)
+ 863 018e 879F      		mul r24,r23
+ 864 0190 9001      		movw r18,r0
+ 865 0192 1124      		clr __zero_reg__
+ 866 0194 262B      		or r18,r22
+ 868               	.LM64:
+ 869 0196 9295      		swap r25
+ 870 0198 9695      		lsr r25
+ 871 019a 9370      		andi r25,lo8(3)
+ 872 019c 84E0      		ldi r24,lo8(4)
+ 873 019e 989F      		mul r25,r24
+ 874 01a0 B001      		movw r22,r0
+ 875 01a2 1124      		clr __zero_reg__
+ 280:../../src/radio/rf231_soc/source/basic_rf.c **** 			| (RADIO_RAND << 2) | (RADIO_RAND << 0);
+ 877               	.LM65:
+ 878 01a4 622B      		or r22,r18
+ 879 01a6 6093 6D01 		sts 365,r22
+ 282:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* Will ACK received frames with version numbers of 0 or 1 */
+ 283:../../src/radio/rf231_soc/source/basic_rf.c **** 	CSMA_SEED_1 = (0 << AACK_FVN_MODE1) | (1 << AACK_FVN_MODE0) 
+ 284:../../src/radio/rf231_soc/source/basic_rf.c **** 			| (RADIO_RAND << CSMA_SEED_11) | (RADIO_RAND << CSMA_SEED_10);
+ 881               	.LM66:
+ 882 01aa 8881      		ld r24,Y
+ 883 01ac 9881      		ld r25,Y
+ 283:../../src/radio/rf231_soc/source/basic_rf.c **** 			| (RADIO_RAND << CSMA_SEED_11) | (RADIO_RAND << CSMA_SEED_10);
+ 885               	.LM67:
+ 886 01ae 9295      		swap r25
+ 887 01b0 9695      		lsr r25
+ 888 01b2 9370      		andi r25,lo8(3)
+ 889 01b4 392F      		mov r19,r25
+ 890 01b6 3064      		ori r19,lo8(64)
+ 892               	.LM68:
+ 893 01b8 982F      		mov r25,r24
+ 894 01ba 9295      		swap r25
+ 895 01bc 9670      		andi r25,lo8(6)
+ 283:../../src/radio/rf231_soc/source/basic_rf.c **** 			| (RADIO_RAND << CSMA_SEED_11) | (RADIO_RAND << CSMA_SEED_10);
+ 897               	.LM69:
+ 898 01be 932B      		or r25,r19
+ 899 01c0 9093 6E01 		sts 366,r25
+ 285:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 286:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* don't re-transmit frames or perform cca multiple times, slotted op is off */
+ 287:../../src/radio/rf231_soc/source/basic_rf.c **** 	XAH_CTRL_0 = (0 << MAX_FRAME_RETRIES0) | (0 << MAX_CSMA_RETRIES0)
+ 901               	.LM70:
+ 902 01c4 1092 6C01 		sts 364,__zero_reg__
+ 288:../../src/radio/rf231_soc/source/basic_rf.c **** 			| (0 << SLOTTED_OPERATION);
+ 289:../../src/radio/rf231_soc/source/basic_rf.c ****    
+ 290:../../src/radio/rf231_soc/source/basic_rf.c ****    /* Interrupts disabled by default, basic_rf does not rely on them */
+ 291:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* IRQ_MASK = (1 << AWAKE_EN) | (1 << TX_END_EN) | (1 << AMI_EN) | (1 << CCA_ED_DONE_EN)
+ 292:../../src/radio/rf231_soc/source/basic_rf.c **** 			| (1 << RX_END_EN) | (1 << RX_START_EN) | (1 << PLL_UNLOCK_EN) | (1 << PLL_LOCK_EN); */
+ 293:../../src/radio/rf231_soc/source/basic_rf.c **** 	IRQ_MASK = (1 << RX_START_EN);
+ 904               	.LM71:
+ 905 01c8 84E0      		ldi r24,lo8(4)
+ 906 01ca 8093 4E01 		sts 334,r24
+ 294:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 295:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* Initialize settings struct */
+ 296:../../src/radio/rf231_soc/source/basic_rf.c **** 	rfSettings.pRxInfo = pRRI;
+ 908               	.LM72:
+ 909 01ce C0E0      		ldi r28,lo8(rfSettings)
+ 910 01d0 D0E0      		ldi r29,hi8(rfSettings)
+ 911 01d2 F983      		std Y+1,r31
+ 912 01d4 E883      		st Y,r30
+ 297:../../src/radio/rf231_soc/source/basic_rf.c **** 	rfSettings.txSeqNumber = 0;
+ 914               	.LM73:
+ 915 01d6 1A82      		std Y+2,__zero_reg__
+ 298:../../src/radio/rf231_soc/source/basic_rf.c **** 	rfSettings.ackReceived = 0;
+ 917               	.LM74:
+ 918 01d8 1B82      		std Y+3,__zero_reg__
+ 299:../../src/radio/rf231_soc/source/basic_rf.c **** 	rfSettings.panId = panId;
+ 920               	.LM75:
+ 921 01da 5D83      		std Y+5,r21
+ 922 01dc 4C83      		std Y+4,r20
+ 300:../../src/radio/rf231_soc/source/basic_rf.c **** 	rfSettings.myAddr = myAddr;
+ 924               	.LM76:
+ 925 01de BF83      		std Y+7,r27
+ 926 01e0 AE83      		std Y+6,r26
+ 301:../../src/radio/rf231_soc/source/basic_rf.c **** 	rfSettings.receiveOn = 0;
+ 928               	.LM77:
+ 929 01e2 1886      		std Y+8,__zero_reg__
+ 302:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 303:../../src/radio/rf231_soc/source/basic_rf.c **** 	rf_ready = 1;
+ 931               	.LM78:
+ 932 01e4 81E0      		ldi r24,lo8(1)
+ 933 01e6 8093 0000 		sts rf_ready,r24
+ 304:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 305:../../src/radio/rf231_soc/source/basic_rf.c **** 	use_glossy = 0;
+ 935               	.LM79:
+ 936 01ea 1092 0000 		sts use_glossy,__zero_reg__
+ 937               	/* epilogue start */
+ 306:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 307:../../src/radio/rf231_soc/source/basic_rf.c **** } // rf_init() 
+ 939               	.LM80:
+ 940 01ee DF91      		pop r29
+ 941 01f0 CF91      		pop r28
+ 942 01f2 1F91      		pop r17
+ 943 01f4 0F91      		pop r16
+ 944 01f6 0895      		ret
+ 946               	.Lscope16:
+ 948               		.stabd	78,0,0
+ 950               	.global	rf_rx_on
+ 952               	rf_rx_on:
+ 953               		.stabd	46,0,0
+ 308:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 309:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 310:../../src/radio/rf231_soc/source/basic_rf.c **** //-------------------------------------------------------------------------------------------------
+ 311:../../src/radio/rf231_soc/source/basic_rf.c **** //  void rf_rx_on(void)
+ 312:../../src/radio/rf231_soc/source/basic_rf.c **** //
+ 313:../../src/radio/rf231_soc/source/basic_rf.c **** //  DESCRIPTION:
+ 314:../../src/radio/rf231_soc/source/basic_rf.c **** //      Enables the CC2420 receiver and the FIFOP interrupt. When a packet is received through this
+ 315:../../src/radio/rf231_soc/source/basic_rf.c **** //      interrupt, it will call rf_rx_callback(...), which must be defined by the application
+ 316:../../src/radio/rf231_soc/source/basic_rf.c **** //-------------------------------------------------------------------------------------------------
+ 317:../../src/radio/rf231_soc/source/basic_rf.c **** void rf_rx_on(void) 
+ 318:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 955               	.LM81:
+ 956               	.LFBB17:
+ 957               	/* prologue: function */
+ 958               	/* frame size = 0 */
+ 959               	/* stack size = 0 */
+ 960               	.L__stack_usage = 0
+ 319:../../src/radio/rf231_soc/source/basic_rf.c **** /*
+ 320:../../src/radio/rf231_soc/source/basic_rf.c **** #ifdef RADIO_PRIORITY_CEILING
+ 321:../../src/radio/rf231_soc/source/basic_rf.c **** 	nrk_sem_pend (radio_sem);
+ 322:../../src/radio/rf231_soc/source/basic_rf.c **** #endif
+ 323:../../src/radio/rf231_soc/source/basic_rf.c **** 	rfSettings.receiveOn = TRUE;
+ 324:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 325:../../src/radio/rf231_soc/source/basic_rf.c **** #ifdef RADIO_PRIORITY_CEILING
+ 326:../../src/radio/rf231_soc/source/basic_rf.c **** 	nrk_sem_post(radio_sem);
+ 327:../../src/radio/rf231_soc/source/basic_rf.c **** #endif
+ 328:../../src/radio/rf231_soc/source/basic_rf.c **** */
+ 329:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 330:../../src/radio/rf231_soc/source/basic_rf.c **** #ifdef RADIO_CC2591
+ 331:../../src/radio/rf231_soc/source/basic_rf.c **** 	rf_cc2591_rx_on();
+ 332:../../src/radio/rf231_soc/source/basic_rf.c **** #endif
+ 333:../../src/radio/rf231_soc/source/basic_rf.c **** #ifdef GLOSSY_TESTING
+ 334:../../src/radio/rf231_soc/source/basic_rf.c **** 	clear_packet_flags();
+ 335:../../src/radio/rf231_soc/source/basic_rf.c **** #endif
+ 336:../../src/radio/rf231_soc/source/basic_rf.c **** 	rf_cmd(RX_AACK_ON);
+ 962               	.LM82:
+ 963 01f8 86E1      		ldi r24,lo8(22)
+ 964 01fa 0C94 0000 		jmp rf_cmd
+ 966               	.Lscope17:
+ 968               		.stabd	78,0,0
+ 970               	.global	rf_polling_rx_on
+ 972               	rf_polling_rx_on:
+ 973               		.stabd	46,0,0
+ 337:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 338:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 339:../../src/radio/rf231_soc/source/basic_rf.c **** void rf_polling_rx_on(void)
+ 340:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 975               	.LM83:
+ 976               	.LFBB18:
+ 977               	/* prologue: function */
+ 978               	/* frame size = 0 */
+ 979               	/* stack size = 0 */
+ 980               	.L__stack_usage = 0
+ 341:../../src/radio/rf231_soc/source/basic_rf.c **** /*#ifdef RADIO_PRIORITY_CEILING
+ 342:../../src/radio/rf231_soc/source/basic_rf.c **** 	nrk_sem_pend (radio_sem);
+ 343:../../src/radio/rf231_soc/source/basic_rf.c **** #endif
+ 344:../../src/radio/rf231_soc/source/basic_rf.c ****   rfSettings.receiveOn = TRUE;
+ 345:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 346:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 347:../../src/radio/rf231_soc/source/basic_rf.c **** #ifdef RADIO_PRIORITY_CEILING
+ 348:../../src/radio/rf231_soc/source/basic_rf.c **** 	nrk_sem_post(radio_sem);
+ 349:../../src/radio/rf231_soc/source/basic_rf.c **** #endif
+ 350:../../src/radio/rf231_soc/source/basic_rf.c **** */
+ 351:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 352:../../src/radio/rf231_soc/source/basic_rf.c **** #ifdef RADIO_CC2591
+ 353:../../src/radio/rf231_soc/source/basic_rf.c **** 	rf_cc2591_rx_on();
+ 354:../../src/radio/rf231_soc/source/basic_rf.c **** #endif
+ 355:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 356:../../src/radio/rf231_soc/source/basic_rf.c **** 	rf_cmd(RX_AACK_ON);
+ 982               	.LM84:
+ 983 01fe 86E1      		ldi r24,lo8(22)
+ 984 0200 0C94 0000 		jmp rf_cmd
+ 986               	.Lscope18:
+ 988               		.stabd	78,0,0
+ 990               	.global	rf_rx_off
+ 992               	rf_rx_off:
+ 993               		.stabd	46,0,0
+ 357:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 358:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 359:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 360:../../src/radio/rf231_soc/source/basic_rf.c **** //-------------------------------------------------------------------------------------------------
+ 361:../../src/radio/rf231_soc/source/basic_rf.c **** //  void rf_rx_off(void)
+ 362:../../src/radio/rf231_soc/source/basic_rf.c **** //
+ 363:../../src/radio/rf231_soc/source/basic_rf.c **** //  DESCRIPTION:
+ 364:../../src/radio/rf231_soc/source/basic_rf.c **** //      Disables the CC2420 receiver and the FIFOP interrupt.
+ 365:../../src/radio/rf231_soc/source/basic_rf.c **** //-------------------------------------------------------------------------------------------------
+ 366:../../src/radio/rf231_soc/source/basic_rf.c **** void rf_rx_off(void)
+ 367:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 995               	.LM85:
+ 996               	.LFBB19:
+ 997               	/* prologue: function */
+ 998               	/* frame size = 0 */
+ 999               	/* stack size = 0 */
+ 1000               	.L__stack_usage = 0
+ 368:../../src/radio/rf231_soc/source/basic_rf.c **** /*
+ 369:../../src/radio/rf231_soc/source/basic_rf.c **** #ifdef RADIO_PRIORITY_CEILING
+ 370:../../src/radio/rf231_soc/source/basic_rf.c ****   nrk_sem_pend (radio_sem);
+ 371:../../src/radio/rf231_soc/source/basic_rf.c **** #endif
+ 372:../../src/radio/rf231_soc/source/basic_rf.c **** 	// XXX
+ 373:../../src/radio/rf231_soc/source/basic_rf.c ****   //SET_VREG_INACTIVE();	
+ 374:../../src/radio/rf231_soc/source/basic_rf.c **** 	rfSettings.receiveOn = FALSE;
+ 375:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 376:../../src/radio/rf231_soc/source/basic_rf.c **** #ifdef RADIO_PRIORITY_CEILING
+ 377:../../src/radio/rf231_soc/source/basic_rf.c ****   nrk_sem_post(radio_sem);
+ 378:../../src/radio/rf231_soc/source/basic_rf.c **** #endif
+ 379:../../src/radio/rf231_soc/source/basic_rf.c ****   //	DISABLE_FIFOP_INT();
+ 380:../../src/radio/rf231_soc/source/basic_rf.c **** */
+ 381:../../src/radio/rf231_soc/source/basic_rf.c **** 	rf_cmd(TRX_OFF);
+ 1002               	.LM86:
+ 1003 0204 88E0      		ldi r24,lo8(8)
+ 1004 0206 0C94 0000 		jmp rf_cmd
+ 1006               	.Lscope19:
+ 1008               		.stabd	78,0,0
+ 1011               	.global	rf_tx_packet
+ 1013               	rf_tx_packet:
+ 1014               		.stabd	46,0,0
+ 382:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 383:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 384:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 385:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 386:../../src/radio/rf231_soc/source/basic_rf.c **** //-------------------------------------------------------------------------------------------------
+ 387:../../src/radio/rf231_soc/source/basic_rf.c **** //  BYTE rf_tx_packet(RF_TX_INFO *pRTI)
+ 388:../../src/radio/rf231_soc/source/basic_rf.c **** //
+ 389:../../src/radio/rf231_soc/source/basic_rf.c **** //  DESCRIPTION:
+ 390:../../src/radio/rf231_soc/source/basic_rf.c **** //		Transmits a packet using the IEEE 802.15.4 MAC data packet format with short addresses. CCA is
+ 391:../../src/radio/rf231_soc/source/basic_rf.c **** //		measured only once before packet transmission (not compliant with 802.15.4 CSMA-CA).
+ 392:../../src/radio/rf231_soc/source/basic_rf.c **** //		The function returns:
+ 393:../../src/radio/rf231_soc/source/basic_rf.c **** //			- When pRTI->ackRequest is FALSE: After the transmission has begun (SFD gone high)
+ 394:../../src/radio/rf231_soc/source/basic_rf.c **** //			- When pRTI->ackRequest is TRUE: After the acknowledgment has been received/declared missing.
+ 395:../../src/radio/rf231_soc/source/basic_rf.c **** //		The acknowledgment is received through the FIFOP interrupt.
+ 396:../../src/radio/rf231_soc/source/basic_rf.c **** //
+ 397:../../src/radio/rf231_soc/source/basic_rf.c **** //  ARGUMENTS:
+ 398:../../src/radio/rf231_soc/source/basic_rf.c **** //      RF_TX_INFO *pRTI
+ 399:../../src/radio/rf231_soc/source/basic_rf.c **** //          The transmission structure, which contains all relevant info about the packet.
+ 400:../../src/radio/rf231_soc/source/basic_rf.c **** //
+ 401:../../src/radio/rf231_soc/source/basic_rf.c **** //  RETURN VALUE:
+ 402:../../src/radio/rf231_soc/source/basic_rf.c **** //		uint8_t
+ 403:../../src/radio/rf231_soc/source/basic_rf.c **** //			Successful transmission (acknowledgment received)
+ 404:../../src/radio/rf231_soc/source/basic_rf.c **** //-------------------------------------------------------------------------------------------------
+ 405:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 406:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 407:../../src/radio/rf231_soc/source/basic_rf.c **** uint8_t rf_tx_packet(RF_TX_INFO *pRTI)
+ 408:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 1016               	.LM87:
+ 1017               	.LFBB20:
+ 1018 020a 0F93      		push r16
+ 1019 020c 1F93      		push r17
+ 1020 020e CF93      		push r28
+ 1021 0210 DF93      		push r29
+ 1022               	/* prologue: function */
+ 1023               	/* frame size = 0 */
+ 1024               	/* stack size = 4 */
+ 1025               	.L__stack_usage = 4
+ 1026 0212 FC01      		movw r30,r24
+ 409:../../src/radio/rf231_soc/source/basic_rf.c **** 	/*
+ 410:../../src/radio/rf231_soc/source/basic_rf.c **** 	#ifdef RADIO_PRIORITY_CEILING
+ 411:../../src/radio/rf231_soc/source/basic_rf.c **** 	nrk_sem_pend(radio_sem);
+ 412:../../src/radio/rf231_soc/source/basic_rf.c **** 	#endif
+ 413:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 414:../../src/radio/rf231_soc/source/basic_rf.c **** 	#ifdef RADIO_PRIORITY_CEILING
+ 415:../../src/radio/rf231_soc/source/basic_rf.c **** 	nrk_sem_post(radio_sem);
+ 416:../../src/radio/rf231_soc/source/basic_rf.c **** 	#endif
+ 417:../../src/radio/rf231_soc/source/basic_rf.c **** 	//return success;
+ 418:../../src/radio/rf231_soc/source/basic_rf.c **** 	*/
+ 419:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 420:../../src/radio/rf231_soc/source/basic_rf.c **** 	uint8_t trx_status, trx_error, *data_start, *frame_start = &TRXFBST;
+ 421:../../src/radio/rf231_soc/source/basic_rf.c **** 	uint16_t i;
+ 422:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 423:../../src/radio/rf231_soc/source/basic_rf.c **** 	if(!rf_ready) 
+ 1028               	.LM88:
+ 1029 0214 8091 0000 		lds r24,rf_ready
+ 1030 0218 8111      		cpse r24,__zero_reg__
+ 1031 021a 00C0      		rjmp .L56
+ 1032               	.L65:
+ 424:../../src/radio/rf231_soc/source/basic_rf.c **** 		return NRK_ERROR;
+ 1034               	.LM89:
+ 1035 021c 8FEF      		ldi r24,lo8(-1)
+ 1036 021e 00C0      		rjmp .L57
+ 1037               	.L56:
+ 425:../../src/radio/rf231_soc/source/basic_rf.c **** 	
+ 426:../../src/radio/rf231_soc/source/basic_rf.c **** 	ieee_mac_frame_header_t *machead = frame_start + 1;
+ 427:../../src/radio/rf231_soc/source/basic_rf.c **** 	ieee_mac_fcf_t fcf;
+ 428:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 429:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* TODO: Setting FCF bits is probably slow. Optimize later. */
+ 430:../../src/radio/rf231_soc/source/basic_rf.c **** 	fcf.frame_type = 1;
+ 431:../../src/radio/rf231_soc/source/basic_rf.c **** 	fcf.sec_en = 0;
+ 432:../../src/radio/rf231_soc/source/basic_rf.c **** 	fcf.frame_pending = 0;
+ 433:../../src/radio/rf231_soc/source/basic_rf.c **** 	fcf.ack_request = pRTI->ackRequest;
+ 1039               	.LM90:
+ 1040 0220 2681      		ldd r18,Z+6
+ 434:../../src/radio/rf231_soc/source/basic_rf.c **** 	fcf.intra_pan = 1;
+ 435:../../src/radio/rf231_soc/source/basic_rf.c **** 	fcf.res = 0;
+ 436:../../src/radio/rf231_soc/source/basic_rf.c **** 	fcf.dest_addr_mode = 2;
+ 437:../../src/radio/rf231_soc/source/basic_rf.c **** 	fcf.frame_version = 0;
+ 438:../../src/radio/rf231_soc/source/basic_rf.c **** 	fcf.src_addr_mode = 2;
+ 439:../../src/radio/rf231_soc/source/basic_rf.c **** 	
+ 440:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* Build the rest of the MAC header */
+ 441:../../src/radio/rf231_soc/source/basic_rf.c **** 	rfSettings.txSeqNumber++;
+ 1042               	.LM91:
+ 1043 0222 8091 0000 		lds r24,rfSettings+2
+ 1044 0226 8F5F      		subi r24,lo8(-(1))
+ 1045 0228 8093 0000 		sts rfSettings+2,r24
+ 442:../../src/radio/rf231_soc/source/basic_rf.c **** 	machead->fcf = fcf;
+ 1047               	.LM92:
+ 1048 022c 9091 8101 		lds r25,385
+ 1049 0230 907E      		andi r25,lo8(-32)
+ 1050 0232 9160      		ori r25,lo8(1)
+ 1051 0234 20FB      		bst r18,0
+ 1052 0236 95F9      		bld r25,5
+ 1053 0238 9F73      		andi r25,lo8(63)
+ 1054 023a 9064      		ori r25,lo8(64)
+ 1055 023c 9093 8101 		sts 385,r25
+ 1056 0240 88E8      		ldi r24,lo8(-120)
+ 1057 0242 8093 8201 		sts 386,r24
+ 443:../../src/radio/rf231_soc/source/basic_rf.c **** 	if (use_glossy) {
+ 1059               	.LM93:
+ 1060 0246 8091 0000 		lds r24,use_glossy
+ 1061 024a 8823      		tst r24
+ 1062 024c 01F0      		breq .L58
+ 444:../../src/radio/rf231_soc/source/basic_rf.c **** 		machead->seq_num = 0xFF;
+ 1064               	.LM94:
+ 1065 024e 8FEF      		ldi r24,lo8(-1)
+ 1066 0250 8093 8301 		sts 387,r24
+ 445:../../src/radio/rf231_soc/source/basic_rf.c **** 		machead->src_addr = 0xAAAA;
+ 1068               	.LM95:
+ 1069 0254 8AEA      		ldi r24,lo8(-86)
+ 1070 0256 9AEA      		ldi r25,lo8(-86)
+ 1071 0258 9093 8901 		sts 392+1,r25
+ 1072 025c 8093 8801 		sts 392,r24
+ 446:../../src/radio/rf231_soc/source/basic_rf.c **** 		machead->dest_addr = 0xFFFF;
+ 1074               	.LM96:
+ 1075 0260 8FEF      		ldi r24,lo8(-1)
+ 1076 0262 9FEF      		ldi r25,lo8(-1)
+ 1077 0264 00C0      		rjmp .L92
+ 1078               	.L58:
+ 447:../../src/radio/rf231_soc/source/basic_rf.c **** 		machead->dest_pan_id = (PAN_ID_1 << 8) | PAN_ID_0;
+ 448:../../src/radio/rf231_soc/source/basic_rf.c **** 	} else {
+ 449:../../src/radio/rf231_soc/source/basic_rf.c **** 		machead->seq_num = rfSettings.txSeqNumber;
+ 1080               	.LM97:
+ 1081 0266 8091 0000 		lds r24,rfSettings+2
+ 1082 026a 8093 8301 		sts 387,r24
+ 450:../../src/radio/rf231_soc/source/basic_rf.c **** 		machead->src_addr = (SHORT_ADDR_1 << 8) | SHORT_ADDR_0;
+ 1084               	.LM98:
+ 1085 026e 2091 6101 		lds r18,353
+ 1086 0272 8091 6001 		lds r24,352
+ 1087 0276 90E0      		ldi r25,0
+ 1088 0278 922B      		or r25,r18
+ 1089 027a 9093 8901 		sts 392+1,r25
+ 1090 027e 8093 8801 		sts 392,r24
+ 451:../../src/radio/rf231_soc/source/basic_rf.c **** 		machead->dest_addr = pRTI->destAddr;
+ 1092               	.LM99:
+ 1093 0282 8081      		ld r24,Z
+ 1094 0284 9181      		ldd r25,Z+1
+ 1095               	.L92:
+ 1096 0286 9093 8701 		sts 390+1,r25
+ 1097 028a 8093 8601 		sts 390,r24
+ 452:../../src/radio/rf231_soc/source/basic_rf.c **** 		machead->dest_pan_id = (PAN_ID_1 << 8) | PAN_ID_0;
+ 1099               	.LM100:
+ 1100 028e 2091 6301 		lds r18,355
+ 1101 0292 8091 6201 		lds r24,354
+ 1102 0296 90E0      		ldi r25,0
+ 1103 0298 922B      		or r25,r18
+ 1104 029a 9093 8501 		sts 388+1,r25
+ 1105 029e 8093 8401 		sts 388,r24
+ 1106 02a2 8F01      		movw r16,r30
+ 453:../../src/radio/rf231_soc/source/basic_rf.c **** 	}
+ 454:../../src/radio/rf231_soc/source/basic_rf.c **** 	//machead->src_pan_id = (PAN_ID_1 << 8) | PAN_ID_0;
+ 455:../../src/radio/rf231_soc/source/basic_rf.c **** 	
+ 456:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* Copy data payload into packet */
+ 457:../../src/radio/rf231_soc/source/basic_rf.c **** 	data_start = frame_start + sizeof(ieee_mac_frame_header_t) + 1;
+ 458:../../src/radio/rf231_soc/source/basic_rf.c **** 	memcpy(data_start, pRTI->pPayload, pRTI->length);
+ 1108               	.LM101:
+ 1109 02a4 4281      		ldd r20,Z+2
+ 1110 02a6 5527      		clr r21
+ 1111 02a8 47FD      		sbrc r20,7
+ 1112 02aa 5095      		com r21
+ 1113 02ac 6381      		ldd r22,Z+3
+ 1114 02ae 7481      		ldd r23,Z+4
+ 1115 02b0 8AE8      		ldi r24,lo8(-118)
+ 1116 02b2 91E0      		ldi r25,lo8(1)
+ 1117 02b4 0E94 0000 		call memcpy
+ 459:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* Set the size of the packet */
+ 460:../../src/radio/rf231_soc/source/basic_rf.c **** 	*frame_start = sizeof(ieee_mac_frame_header_t) + pRTI->length + 2;
+ 1119               	.LM102:
+ 1120 02b8 F801      		movw r30,r16
+ 1121 02ba 8281      		ldd r24,Z+2
+ 1122 02bc 855F      		subi r24,lo8(-(11))
+ 1123 02be 8093 8001 		sts 384,r24
+ 1124               	.L60:
+ 461:../../src/radio/rf231_soc/source/basic_rf.c **** 	
+ 462:../../src/radio/rf231_soc/source/basic_rf.c **** 	vprintf("packet length: %d bytes\r\n", *frame_start);
+ 463:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 464:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* Wait for radio to be in a ready state */
+ 465:../../src/radio/rf231_soc/source/basic_rf.c **** 	do{
+ 466:../../src/radio/rf231_soc/source/basic_rf.c **** 		trx_status = (TRX_STATUS & 0x1F);
+ 1126               	.LM103:
+ 1127 02c2 8091 4101 		lds r24,321
+ 1128 02c6 D82F      		mov r29,r24
+ 1129 02c8 DF71      		andi r29,lo8(31)
+ 467:../../src/radio/rf231_soc/source/basic_rf.c **** 	}while((trx_status == BUSY_TX) || (trx_status == BUSY_RX)
+ 1131               	.LM104:
+ 1132 02ca 9FEF      		ldi r25,lo8(-1)
+ 1133 02cc 9D0F      		add r25,r29
+ 468:../../src/radio/rf231_soc/source/basic_rf.c **** 			|| (trx_status == BUSY_RX_AACK) || (trx_status == BUSY_TX_ARET)
+ 469:../../src/radio/rf231_soc/source/basic_rf.c **** 			|| (trx_status == STATE_TRANSITION_IN_PROGRESS));
+ 1135               	.LM105:
+ 1136 02ce 9230      		cpi r25,lo8(2)
+ 1137 02d0 00F0      		brlo .L60
+ 468:../../src/radio/rf231_soc/source/basic_rf.c **** 			|| (trx_status == BUSY_RX_AACK) || (trx_status == BUSY_TX_ARET)
+ 1139               	.LM106:
+ 1140 02d2 D131      		cpi r29,lo8(17)
+ 1141 02d4 01F0      		breq .L60
+ 1142 02d6 D231      		cpi r29,lo8(18)
+ 1143 02d8 01F0      		breq .L60
+ 1145               	.LM107:
+ 1146 02da DF31      		cpi r29,lo8(31)
+ 1147 02dc 01F0      		breq .L60
+ 470:../../src/radio/rf231_soc/source/basic_rf.c **** 	
+ 471:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* Return error if radio not in a tx-ready state */
+ 472:../../src/radio/rf231_soc/source/basic_rf.c **** 	if((trx_status != TRX_OFF) && (trx_status != RX_ON) 
+ 1149               	.LM108:
+ 1150 02de 98EF      		ldi r25,lo8(-8)
+ 1151 02e0 9D0F      		add r25,r29
+ 1152 02e2 9230      		cpi r25,lo8(2)
+ 1153 02e4 00F0      		brlo .L64
+ 1155               	.LM109:
+ 1156 02e6 8F70      		andi r24,lo8(15)
+ 1157 02e8 8630      		cpi r24,lo8(6)
+ 1158 02ea 01F0      		breq .+2
+ 1159 02ec 00C0      		rjmp .L65
+ 1160               	.L64:
+ 473:../../src/radio/rf231_soc/source/basic_rf.c **** 			&& (trx_status != RX_AACK_ON) && (trx_status != PLL_ON)){
+ 474:../../src/radio/rf231_soc/source/basic_rf.c **** 		return NRK_ERROR;
+ 475:../../src/radio/rf231_soc/source/basic_rf.c **** 	}
+ 476:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 477:../../src/radio/rf231_soc/source/basic_rf.c **** 	rf_cmd(RX_AACK_ON);
+ 1162               	.LM110:
+ 1163 02ee 86E1      		ldi r24,lo8(22)
+ 1164 02f0 0E94 0000 		call rf_cmd
+ 478:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 479:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* Perform CCA if requested */
+ 480:../../src/radio/rf231_soc/source/basic_rf.c **** 	if(pRTI->cca){
+ 1166               	.LM111:
+ 1167 02f4 F801      		movw r30,r16
+ 1168 02f6 8581      		ldd r24,Z+5
+ 1169 02f8 8111      		cpse r24,__zero_reg__
+ 1170 02fa 00C0      		rjmp .L66
+ 1171               	.L70:
+ 481:../../src/radio/rf231_soc/source/basic_rf.c **** 		PHY_CC_CCA |= (1 << CCA_REQUEST);
+ 482:../../src/radio/rf231_soc/source/basic_rf.c **** 		while(!(TRX_STATUS & (1 << CCA_DONE)))
+ 483:../../src/radio/rf231_soc/source/basic_rf.c **** 			continue;
+ 484:../../src/radio/rf231_soc/source/basic_rf.c **** 		if(!(TRX_STATUS & (1 << CCA_STATUS)))
+ 485:../../src/radio/rf231_soc/source/basic_rf.c **** 			return NRK_ERROR;
+ 486:../../src/radio/rf231_soc/source/basic_rf.c **** 	}
+ 487:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 488:../../src/radio/rf231_soc/source/basic_rf.c **** 	rf_cmd(PLL_ON);
+ 1173               	.LM112:
+ 1174 02fc 89E0      		ldi r24,lo8(9)
+ 1175 02fe 0E94 0000 		call rf_cmd
+ 489:../../src/radio/rf231_soc/source/basic_rf.c **** 	if(pRTI->ackRequest)
+ 1177               	.LM113:
+ 1178 0302 F801      		movw r30,r16
+ 1179 0304 8681      		ldd r24,Z+6
+ 1180 0306 8823      		tst r24
+ 1181 0308 01F0      		breq .L68
+ 490:../../src/radio/rf231_soc/source/basic_rf.c **** 		rf_cmd(TX_ARET_ON);
+ 1183               	.LM114:
+ 1184 030a 89E1      		ldi r24,lo8(25)
+ 1185 030c 0E94 0000 		call rf_cmd
+ 1186 0310 00C0      		rjmp .L68
+ 1187               	.L66:
+ 481:../../src/radio/rf231_soc/source/basic_rf.c **** 		PHY_CC_CCA |= (1 << CCA_REQUEST);
+ 1189               	.LM115:
+ 1190 0312 8091 4801 		lds r24,328
+ 1191 0316 8068      		ori r24,lo8(-128)
+ 1192 0318 8093 4801 		sts 328,r24
+ 1193               	.L69:
+ 482:../../src/radio/rf231_soc/source/basic_rf.c **** 			continue;
+ 1195               	.LM116:
+ 1196 031c 8091 4101 		lds r24,321
+ 1197 0320 87FF      		sbrs r24,7
+ 1198 0322 00C0      		rjmp .L69
+ 484:../../src/radio/rf231_soc/source/basic_rf.c **** 			return NRK_ERROR;
+ 1200               	.LM117:
+ 1201 0324 8091 4101 		lds r24,321
+ 1202 0328 86FF      		sbrs r24,6
+ 1203 032a 00C0      		rjmp .L65
+ 1204 032c 00C0      		rjmp .L70
+ 1205               	.L68:
+ 491:../../src/radio/rf231_soc/source/basic_rf.c **** 	
+ 492:../../src/radio/rf231_soc/source/basic_rf.c **** #ifdef RADIO_CC2591
+ 493:../../src/radio/rf231_soc/source/basic_rf.c **** 		rf_cc2591_tx_on();
+ 494:../../src/radio/rf231_soc/source/basic_rf.c **** #endif
+ 495:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 496:../../src/radio/rf231_soc/source/basic_rf.c ****    // Send packet. 0x2 is equivalent to TX_START
+ 497:../../src/radio/rf231_soc/source/basic_rf.c ****    rf_cmd(0x2);
+ 1207               	.LM118:
+ 1208 032e 82E0      		ldi r24,lo8(2)
+ 1209 0330 0E94 0000 		call rf_cmd
+ 498:../../src/radio/rf231_soc/source/basic_rf.c ****    for(i=0; i<65000; i++){
+ 1211               	.LM119:
+ 1212 0334 80E0      		ldi r24,0
+ 1213 0336 90E0      		ldi r25,0
+ 1214               	.L72:
+ 499:../../src/radio/rf231_soc/source/basic_rf.c ****       if(IRQ_STATUS & (1 << TX_END)){
+ 1216               	.LM120:
+ 1217 0338 2091 4F01 		lds r18,335
+ 1218 033c 26FD      		sbrc r18,6
+ 1219 033e 00C0      		rjmp .L71
+ 498:../../src/radio/rf231_soc/source/basic_rf.c ****    for(i=0; i<65000; i++){
+ 1221               	.LM121:
+ 1222 0340 0196      		adiw r24,1
+ 1223 0342 883E      		cpi r24,-24
+ 1224 0344 FDEF      		ldi r31,-3
+ 1225 0346 9F07      		cpc r25,r31
+ 1226 0348 01F4      		brne .L72
+ 1227               	.L71:
+ 500:../../src/radio/rf231_soc/source/basic_rf.c ****          break;
+ 501:../../src/radio/rf231_soc/source/basic_rf.c ****       }
+ 502:../../src/radio/rf231_soc/source/basic_rf.c ****    }
+ 503:../../src/radio/rf231_soc/source/basic_rf.c ****    IRQ_STATUS = 1 << TX_END;
+ 1229               	.LM122:
+ 1230 034a 20E4      		ldi r18,lo8(64)
+ 1231 034c 2093 4F01 		sts 335,r18
+ 504:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 505:../../src/radio/rf231_soc/source/basic_rf.c **** 	trx_error = ((pRTI->ackRequest && 
+ 1233               	.LM123:
+ 1234 0350 F801      		movw r30,r16
+ 1235 0352 2681      		ldd r18,Z+6
+ 1236 0354 2223      		tst r18
+ 1237 0356 01F0      		breq .L73
+ 506:../../src/radio/rf231_soc/source/basic_rf.c **** 			(((TRX_STATE >> TRAC_STATUS0) & 0x7) != 0))
+ 1239               	.LM124:
+ 1240 0358 2091 4201 		lds r18,322
+ 1241 035c 2295      		swap r18
+ 1242 035e 2695      		lsr r18
+ 1243 0360 2770      		andi r18,lo8(7)
+ 505:../../src/radio/rf231_soc/source/basic_rf.c **** 			(((TRX_STATE >> TRAC_STATUS0) & 0x7) != 0))
+ 1245               	.LM125:
+ 1246 0362 01F4      		brne .L76
+ 1247               	.L73:
+ 507:../../src/radio/rf231_soc/source/basic_rf.c **** 			|| (i == 65000)) ? NRK_ERROR : NRK_OK;
+ 1249               	.LM126:
+ 1250 0364 883E      		cpi r24,-24
+ 1251 0366 9D4F      		sbci r25,-3
+ 1252 0368 01F0      		breq .L76
+ 505:../../src/radio/rf231_soc/source/basic_rf.c **** 			(((TRX_STATE >> TRAC_STATUS0) & 0x7) != 0))
+ 1254               	.LM127:
+ 1255 036a C1E0      		ldi r28,lo8(1)
+ 1256 036c 00C0      		rjmp .L74
+ 1257               	.L76:
+ 1258 036e CFEF      		ldi r28,lo8(-1)
+ 1259               	.L74:
+ 508:../../src/radio/rf231_soc/source/basic_rf.c **** 	rf_cmd(trx_status);
+ 1261               	.LM128:
+ 1262 0370 8D2F      		mov r24,r29
+ 1263 0372 0E94 0000 		call rf_cmd
+ 509:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 510:../../src/radio/rf231_soc/source/basic_rf.c **** #ifdef RADIO_CC2591
+ 511:../../src/radio/rf231_soc/source/basic_rf.c **** 	if (trx_error == NRK_ERROR) rf_cc2591_rx_on();
+ 512:../../src/radio/rf231_soc/source/basic_rf.c **** #endif
+ 513:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 514:../../src/radio/rf231_soc/source/basic_rf.c **** 	return trx_error;
+ 1265               	.LM129:
+ 1266 0376 8C2F      		mov r24,r28
+ 1267               	.L57:
+ 1268               	/* epilogue start */
+ 515:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 1270               	.LM130:
+ 1271 0378 DF91      		pop r29
+ 1272 037a CF91      		pop r28
+ 1273 037c 1F91      		pop r17
+ 1274 037e 0F91      		pop r16
+ 1275 0380 0895      		ret
+ 1281               	.Lscope20:
+ 1283               		.stabd	78,0,0
+ 1285               	.global	rf_cca_check
+ 1287               	rf_cca_check:
+ 1288               		.stabd	46,0,0
+ 516:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 517:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 518:../../src/radio/rf231_soc/source/basic_rf.c **** /* Returns 1 if the channel is clear
+ 519:../../src/radio/rf231_soc/source/basic_rf.c ****  * Returns 0 if the channel is being used
+ 520:../../src/radio/rf231_soc/source/basic_rf.c ****  */
+ 521:../../src/radio/rf231_soc/source/basic_rf.c **** int8_t rf_cca_check()
+ 522:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 1290               	.LM131:
+ 1291               	.LFBB21:
+ 1292 0382 CF93      		push r28
+ 1293 0384 DF93      		push r29
+ 1294               	/* prologue: function */
+ 1295               	/* frame size = 0 */
+ 1296               	/* stack size = 2 */
+ 1297               	.L__stack_usage = 2
+ 523:../../src/radio/rf231_soc/source/basic_rf.c **** 	uint8_t trx_status, cca_value;
+ 524:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 525:../../src/radio/rf231_soc/source/basic_rf.c **** 	if(!rf_ready)
+ 1299               	.LM132:
+ 1300 0386 8091 0000 		lds r24,rf_ready
+ 1301 038a 8823      		tst r24
+ 1302 038c 01F0      		breq .L102
+ 1303               	.L95:
+ 526:../../src/radio/rf231_soc/source/basic_rf.c **** 		return NRK_ERROR;
+ 527:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 528:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* Wait for radio to be in a ready state */
+ 529:../../src/radio/rf231_soc/source/basic_rf.c **** 	do{
+ 530:../../src/radio/rf231_soc/source/basic_rf.c **** 		trx_status = (TRX_STATUS & 0x1F);
+ 1305               	.LM133:
+ 1306 038e 8091 4101 		lds r24,321
+ 1307 0392 C82F      		mov r28,r24
+ 1308 0394 CF71      		andi r28,lo8(31)
+ 531:../../src/radio/rf231_soc/source/basic_rf.c **** 	}while((trx_status == BUSY_TX) || (trx_status == BUSY_RX)
+ 1310               	.LM134:
+ 1311 0396 9FEF      		ldi r25,lo8(-1)
+ 1312 0398 9C0F      		add r25,r28
+ 532:../../src/radio/rf231_soc/source/basic_rf.c **** 			|| (trx_status == BUSY_RX_AACK) || (trx_status == BUSY_TX_ARET)
+ 533:../../src/radio/rf231_soc/source/basic_rf.c **** 			|| (trx_status == STATE_TRANSITION_IN_PROGRESS)); 
+ 1314               	.LM135:
+ 1315 039a 9230      		cpi r25,lo8(2)
+ 1316 039c 00F0      		brlo .L95
+ 532:../../src/radio/rf231_soc/source/basic_rf.c **** 			|| (trx_status == BUSY_RX_AACK) || (trx_status == BUSY_TX_ARET)
+ 1318               	.LM136:
+ 1319 039e C131      		cpi r28,lo8(17)
+ 1320 03a0 01F0      		breq .L95
+ 1321 03a2 C231      		cpi r28,lo8(18)
+ 1322 03a4 01F0      		breq .L95
+ 1324               	.LM137:
+ 1325 03a6 CF31      		cpi r28,lo8(31)
+ 1326 03a8 01F0      		breq .L95
+ 534:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 535:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* Return error if radio not in a tx-ready state */
+ 536:../../src/radio/rf231_soc/source/basic_rf.c **** 	if((trx_status != TRX_OFF) && (trx_status != RX_ON) 
+ 1328               	.LM138:
+ 1329 03aa C830      		cpi r28,lo8(8)
+ 1330 03ac 01F0      		breq .L99
+ 1332               	.LM139:
+ 1333 03ae 8F70      		andi r24,lo8(15)
+ 1334 03b0 8630      		cpi r24,lo8(6)
+ 1335 03b2 01F4      		brne .L102
+ 1336               	.L99:
+ 537:../../src/radio/rf231_soc/source/basic_rf.c **** 			&& (trx_status != RX_AACK_ON))
+ 538:../../src/radio/rf231_soc/source/basic_rf.c **** 		return NRK_ERROR;
+ 539:../../src/radio/rf231_soc/source/basic_rf.c **** 	
+ 540:../../src/radio/rf231_soc/source/basic_rf.c **** 	rf_cmd(RX_AACK_ON);
+ 1338               	.LM140:
+ 1339 03b4 86E1      		ldi r24,lo8(22)
+ 1340 03b6 0E94 0000 		call rf_cmd
+ 541:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 542:../../src/radio/rf231_soc/source/basic_rf.c **** 	PHY_CC_CCA |= (1 << CCA_REQUEST);
+ 1342               	.LM141:
+ 1343 03ba 8091 4801 		lds r24,328
+ 1344 03be 8068      		ori r24,lo8(-128)
+ 1345 03c0 8093 4801 		sts 328,r24
+ 1346               	.L100:
+ 543:../../src/radio/rf231_soc/source/basic_rf.c **** 	while(!(TRX_STATUS & (1 << CCA_DONE)))
+ 1348               	.LM142:
+ 1349 03c4 8091 4101 		lds r24,321
+ 1350 03c8 87FF      		sbrs r24,7
+ 1351 03ca 00C0      		rjmp .L100
+ 544:../../src/radio/rf231_soc/source/basic_rf.c **** 		continue;
+ 545:../../src/radio/rf231_soc/source/basic_rf.c **** 	cca_value = (TRX_STATUS & (1 << CCA_STATUS)) ? 1 : 0;
+ 1353               	.LM143:
+ 1354 03cc D091 4101 		lds r29,321
+ 546:../../src/radio/rf231_soc/source/basic_rf.c **** 	rf_cmd(trx_status);
+ 1356               	.LM144:
+ 1357 03d0 8C2F      		mov r24,r28
+ 1358 03d2 0E94 0000 		call rf_cmd
+ 545:../../src/radio/rf231_soc/source/basic_rf.c **** 	rf_cmd(trx_status);
+ 1360               	.LM145:
+ 1361 03d6 D6FB      		bst r29,6
+ 1362 03d8 8827      		clr r24
+ 1363 03da 80F9      		bld r24,0
+ 547:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 548:../../src/radio/rf231_soc/source/basic_rf.c **** 	return cca_value;
+ 1365               	.LM146:
+ 1366 03dc 00C0      		rjmp .L94
+ 1367               	.L102:
+ 526:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 1369               	.LM147:
+ 1370 03de 8FEF      		ldi r24,lo8(-1)
+ 1371               	.L94:
+ 1372               	/* epilogue start */
+ 549:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 1374               	.LM148:
+ 1375 03e0 DF91      		pop r29
+ 1376 03e2 CF91      		pop r28
+ 1377 03e4 0895      		ret
+ 1379               	.Lscope21:
+ 1381               		.stabd	78,0,0
+ 1383               	.global	rf_rx_packet_nonblock
+ 1385               	rf_rx_packet_nonblock:
+ 1386               		.stabd	46,0,0
+ 550:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 551:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 552:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 553:../../src/radio/rf231_soc/source/basic_rf.c **** int8_t rf_rx_packet_nonblock()
+ 554:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 1388               	.LM149:
+ 1389               	.LFBB22:
+ 1390               	/* prologue: function */
+ 1391               	/* frame size = 0 */
+ 1392               	/* stack size = 0 */
+ 1393               	.L__stack_usage = 0
+ 555:../../src/radio/rf231_soc/source/basic_rf.c **** 	/*
+ 556:../../src/radio/rf231_soc/source/basic_rf.c **** 	#ifdef RADIO_PRIORITY_CEILING
+ 557:../../src/radio/rf231_soc/source/basic_rf.c **** 	nrk_sem_pend(radio_sem);
+ 558:../../src/radio/rf231_soc/source/basic_rf.c **** 	#endif
+ 559:../../src/radio/rf231_soc/source/basic_rf.c **** 	
+ 560:../../src/radio/rf231_soc/source/basic_rf.c **** 	#ifdef RADIO_PRIORITY_CEILING
+ 561:../../src/radio/rf231_soc/source/basic_rf.c **** 	nrk_sem_post(radio_sem);
+ 562:../../src/radio/rf231_soc/source/basic_rf.c **** 	#endif
+ 563:../../src/radio/rf231_soc/source/basic_rf.c **** 	*/
+ 564:../../src/radio/rf231_soc/source/basic_rf.c **** 	
+ 565:../../src/radio/rf231_soc/source/basic_rf.c **** 	uint8_t *frame_start = &TRXFBST;
+ 566:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 567:../../src/radio/rf231_soc/source/basic_rf.c **** 	if(!rf_ready)
+ 1395               	.LM150:
+ 1396 03e6 8091 0000 		lds r24,rf_ready
+ 1397 03ea 8823      		tst r24
+ 1398 03ec 01F4      		brne .+2
+ 1399 03ee 00C0      		rjmp .L123
+ 568:../../src/radio/rf231_soc/source/basic_rf.c **** 		return NRK_ERROR;
+ 569:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 570:../../src/radio/rf231_soc/source/basic_rf.c ****    if(!(IRQ_STATUS & (1 << RX_END))){
+ 1401               	.LM151:
+ 1402 03f0 8091 4F01 		lds r24,335
+ 1403 03f4 83FF      		sbrs r24,3
+ 1404 03f6 00C0      		rjmp .L122
+ 571:../../src/radio/rf231_soc/source/basic_rf.c ****       return 0;
+ 572:../../src/radio/rf231_soc/source/basic_rf.c ****    }
+ 573:../../src/radio/rf231_soc/source/basic_rf.c ****    if(!(PHY_RSSI & (1 << RX_CRC_VALID))){
+ 1406               	.LM152:
+ 1407 03f8 8091 4601 		lds r24,326
+ 1408 03fc 87FF      		sbrs r24,7
+ 1409 03fe 00C0      		rjmp .L122
+ 574:../../src/radio/rf231_soc/source/basic_rf.c ****       return 0;
+ 575:../../src/radio/rf231_soc/source/basic_rf.c ****    }
+ 576:../../src/radio/rf231_soc/source/basic_rf.c ****    if((TST_RX_LENGTH - 2) > rfSettings.pRxInfo->max_length)
+ 1411               	.LM153:
+ 1412 0400 8091 7B01 		lds r24,379
+ 1413 0404 E091 0000 		lds r30,rfSettings
+ 1414 0408 F091 0000 		lds r31,rfSettings+1
+ 1415 040c 90E0      		ldi r25,0
+ 1416 040e 0297      		sbiw r24,2
+ 1417 0410 2481      		ldd r18,Z+4
+ 1418 0412 3327      		clr r19
+ 1419 0414 27FD      		sbrc r18,7
+ 1420 0416 3095      		com r19
+ 1421 0418 2817      		cp r18,r24
+ 1422 041a 3907      		cpc r19,r25
+ 1423 041c 04F4      		brge .+2
+ 1424 041e 00C0      		rjmp .L123
+ 1425               	.LBB4:
+ 1426               	.LBB5:
+ 577:../../src/radio/rf231_soc/source/basic_rf.c **** 		return NRK_ERROR;
+ 578:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 579:../../src/radio/rf231_soc/source/basic_rf.c ****    IRQ_STATUS = (1 << RX_END);
+ 1428               	.LM154:
+ 1429 0420 88E0      		ldi r24,lo8(8)
+ 1430 0422 8093 4F01 		sts 335,r24
+ 580:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 581:../../src/radio/rf231_soc/source/basic_rf.c **** 	ieee_mac_frame_header_t *machead = frame_start;
+ 582:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 583:../../src/radio/rf231_soc/source/basic_rf.c **** 	rfSettings.pRxInfo->seqNumber = machead->seq_num;
+ 1432               	.LM155:
+ 1433 0426 E091 0000 		lds r30,rfSettings
+ 1434 042a F091 0000 		lds r31,rfSettings+1
+ 1435 042e 8091 8201 		lds r24,386
+ 1436 0432 8083      		st Z,r24
+ 584:../../src/radio/rf231_soc/source/basic_rf.c **** 	rfSettings.pRxInfo->srcAddr = machead->src_addr;
+ 1438               	.LM156:
+ 1439 0434 E091 0000 		lds r30,rfSettings
+ 1440 0438 F091 0000 		lds r31,rfSettings+1
+ 1441 043c 8091 8701 		lds r24,391
+ 1442 0440 9091 8801 		lds r25,391+1
+ 1443 0444 9283      		std Z+2,r25
+ 1444 0446 8183      		std Z+1,r24
+ 585:../../src/radio/rf231_soc/source/basic_rf.c **** 	rfSettings.pRxInfo->length = TST_RX_LENGTH - sizeof(ieee_mac_frame_header_t) - 2;
+ 1446               	.LM157:
+ 1447 0448 E091 0000 		lds r30,rfSettings
+ 1448 044c F091 0000 		lds r31,rfSettings+1
+ 1449 0450 8091 7B01 		lds r24,379
+ 1450 0454 8B50      		subi r24,lo8(-(-11))
+ 1451 0456 8383      		std Z+3,r24
+ 586:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 587:../../src/radio/rf231_soc/source/basic_rf.c **** 	if((rfSettings.pRxInfo->length > rfSettings.pRxInfo->max_length)
+ 1453               	.LM158:
+ 1454 0458 A091 0000 		lds r26,rfSettings
+ 1455 045c B091 0000 		lds r27,rfSettings+1
+ 1456 0460 E091 0000 		lds r30,rfSettings
+ 1457 0464 F091 0000 		lds r31,rfSettings+1
+ 1458 0468 1396      		adiw r26,3
+ 1459 046a 9C91      		ld r25,X
+ 1460 046c 8481      		ldd r24,Z+4
+ 1461 046e 8917      		cp r24,r25
+ 1462 0470 04F0      		brlt .L116
+ 588:../../src/radio/rf231_soc/source/basic_rf.c **** 			|| (rfSettings.pRxInfo->length < 0)){
+ 1464               	.LM159:
+ 1465 0472 E091 0000 		lds r30,rfSettings
+ 1466 0476 F091 0000 		lds r31,rfSettings+1
+ 1467 047a 8381      		ldd r24,Z+3
+ 1468 047c 87FF      		sbrs r24,7
+ 1469 047e 00C0      		rjmp .L117
+ 1470               	.L116:
+ 589:../../src/radio/rf231_soc/source/basic_rf.c **** 		TRX_CTRL_2 &= ~(1 << RX_SAFE_MODE);
+ 1472               	.LM160:
+ 1473 0480 8091 4C01 		lds r24,332
+ 1474 0484 8F77      		andi r24,lo8(127)
+ 1475 0486 8093 4C01 		sts 332,r24
+ 590:../../src/radio/rf231_soc/source/basic_rf.c **** 		TRX_CTRL_2 |= (1 << RX_SAFE_MODE);
+ 1477               	.LM161:
+ 1478 048a 8091 4C01 		lds r24,332
+ 1479 048e 8068      		ori r24,lo8(-128)
+ 1480 0490 8093 4C01 		sts 332,r24
+ 1481 0494 00C0      		rjmp .L123
+ 1482               	.L117:
+ 591:../../src/radio/rf231_soc/source/basic_rf.c **** 		return NRK_ERROR;
+ 592:../../src/radio/rf231_soc/source/basic_rf.c **** 	}
+ 593:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 594:../../src/radio/rf231_soc/source/basic_rf.c **** 	memcpy(rfSettings.pRxInfo->pPayload, frame_start 
+ 595:../../src/radio/rf231_soc/source/basic_rf.c **** 			+ sizeof(ieee_mac_frame_header_t), rfSettings.pRxInfo->length);
+ 1484               	.LM162:
+ 1485 0496 A091 0000 		lds r26,rfSettings
+ 1486 049a B091 0000 		lds r27,rfSettings+1
+ 594:../../src/radio/rf231_soc/source/basic_rf.c **** 			+ sizeof(ieee_mac_frame_header_t), rfSettings.pRxInfo->length);
+ 1488               	.LM163:
+ 1489 049e E091 0000 		lds r30,rfSettings
+ 1490 04a2 F091 0000 		lds r31,rfSettings+1
+ 1491 04a6 1396      		adiw r26,3
+ 1492 04a8 4C91      		ld r20,X
+ 1493 04aa 5527      		clr r21
+ 1494 04ac 47FD      		sbrc r20,7
+ 1495 04ae 5095      		com r21
+ 1496 04b0 69E8      		ldi r22,lo8(-119)
+ 1497 04b2 71E0      		ldi r23,lo8(1)
+ 1498 04b4 8581      		ldd r24,Z+5
+ 1499 04b6 9681      		ldd r25,Z+6
+ 1500 04b8 0E94 0000 		call memcpy
+ 596:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 597:../../src/radio/rf231_soc/source/basic_rf.c ****    /* if reset packet received, perform reset */
+ 598:../../src/radio/rf231_soc/source/basic_rf.c ****    if(wireless_prog && (rfSettings.pRxInfo->length == 16)){
+ 1502               	.LM164:
+ 1503 04bc 8091 0000 		lds r24,wireless_prog
+ 1504 04c0 8823      		tst r24
+ 1505 04c2 01F4      		brne .+2
+ 1506 04c4 00C0      		rjmp .L118
+ 1507 04c6 E091 0000 		lds r30,rfSettings
+ 1508 04ca F091 0000 		lds r31,rfSettings+1
+ 1509 04ce 8381      		ldd r24,Z+3
+ 1510 04d0 8031      		cpi r24,lo8(16)
+ 1511 04d2 01F4      		brne .L118
+ 599:../../src/radio/rf231_soc/source/basic_rf.c ****       if(strncmp(reset_val, rfSettings.pRxInfo->pPayload, 4) == 0){
+ 1513               	.LM165:
+ 1514 04d4 E091 0000 		lds r30,rfSettings
+ 1515 04d8 F091 0000 		lds r31,rfSettings+1
+ 1516 04dc 6581      		ldd r22,Z+5
+ 1517 04de 7681      		ldd r23,Z+6
+ 1518 04e0 44E0      		ldi r20,lo8(4)
+ 1519 04e2 50E0      		ldi r21,0
+ 1520 04e4 80E0      		ldi r24,lo8(reset_val)
+ 1521 04e6 90E0      		ldi r25,hi8(reset_val)
+ 1522 04e8 0E94 0000 		call strncmp
+ 1523 04ec 892B      		or r24,r25
+ 1524 04ee 01F4      		brne .L118
+ 600:../../src/radio/rf231_soc/source/basic_rf.c ****          if(strncmp(reset_val, rfSettings.pRxInfo->pPayload, 16) == 0){
+ 1526               	.LM166:
+ 1527 04f0 E091 0000 		lds r30,rfSettings
+ 1528 04f4 F091 0000 		lds r31,rfSettings+1
+ 1529 04f8 6581      		ldd r22,Z+5
+ 1530 04fa 7681      		ldd r23,Z+6
+ 1531 04fc 40E1      		ldi r20,lo8(16)
+ 1532 04fe 50E0      		ldi r21,0
+ 1533 0500 80E0      		ldi r24,lo8(reset_val)
+ 1534 0502 90E0      		ldi r25,hi8(reset_val)
+ 1535 0504 0E94 0000 		call strncmp
+ 1536 0508 892B      		or r24,r25
+ 1537 050a 01F4      		brne .L118
+ 601:../../src/radio/rf231_soc/source/basic_rf.c ****             wdt_enable(WDTO_500MS);
+ 1539               	.LM167:
+ 1540 050c 9DE0      		ldi r25,lo8(13)
+ 1541 050e 88E1      		ldi r24,lo8(24)
+ 1542               	/* #APP */
+ 1543               	 ;  601 "../../src/radio/rf231_soc/source/basic_rf.c" 1
+ 1544 0510 0FB6      		in __tmp_reg__,__SREG__
+ 1545 0512 F894      		cli
+ 1546 0514 A895      		wdr
+ 1547 0516 8093 6000 		sts 96,r24
+ 1548 051a 0FBE      		out __SREG__,__tmp_reg__
+ 1549 051c 9093 6000 		sts 96,r25
+ 1550               		
+ 1551               	 ;  0 "" 2
+ 602:../../src/radio/rf231_soc/source/basic_rf.c ****             nrk_led_set(0);
+ 1553               	.LM168:
+ 1554               	/* #NOAPP */
+ 1555 0520 80E0      		ldi r24,0
+ 1556 0522 90E0      		ldi r25,0
+ 1557 0524 0E94 0000 		call nrk_led_set
+ 603:../../src/radio/rf231_soc/source/basic_rf.c ****             nrk_led_set(1);
+ 1559               	.LM169:
+ 1560 0528 81E0      		ldi r24,lo8(1)
+ 1561 052a 90E0      		ldi r25,0
+ 1562 052c 0E94 0000 		call nrk_led_set
+ 604:../../src/radio/rf231_soc/source/basic_rf.c ****             nrk_led_set(2);
+ 1564               	.LM170:
+ 1565 0530 82E0      		ldi r24,lo8(2)
+ 1566 0532 90E0      		ldi r25,0
+ 1567 0534 0E94 0000 		call nrk_led_set
+ 605:../../src/radio/rf231_soc/source/basic_rf.c ****             nrk_led_set(3);
+ 1569               	.LM171:
+ 1570 0538 83E0      		ldi r24,lo8(3)
+ 1571 053a 90E0      		ldi r25,0
+ 1572 053c 0E94 0000 		call nrk_led_set
+ 1573               	.L119:
+ 1574 0540 00C0      		rjmp .L119
+ 1575               	.L118:
+ 606:../../src/radio/rf231_soc/source/basic_rf.c ****             while(1)
+ 607:../../src/radio/rf231_soc/source/basic_rf.c ****                continue;
+ 608:../../src/radio/rf231_soc/source/basic_rf.c ****          }
+ 609:../../src/radio/rf231_soc/source/basic_rf.c ****       }
+ 610:../../src/radio/rf231_soc/source/basic_rf.c ****    }
+ 611:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 612:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* I am assuming that ackRequest is supposed to
+ 613:../../src/radio/rf231_soc/source/basic_rf.c **** 	 * be set, not read, by rf_basic */
+ 614:../../src/radio/rf231_soc/source/basic_rf.c **** 	rfSettings.pRxInfo->ackRequest = machead->fcf.ack_request;
+ 1577               	.LM172:
+ 1578 0542 E091 0000 		lds r30,rfSettings
+ 1579 0546 F091 0000 		lds r31,rfSettings+1
+ 1580 054a 8091 8001 		lds r24,384
+ 1581 054e 85FB      		bst r24,5
+ 1582 0550 8827      		clr r24
+ 1583 0552 80F9      		bld r24,0
+ 1584 0554 8783      		std Z+7,r24
+ 615:../../src/radio/rf231_soc/source/basic_rf.c **** 	//rfSettings.pRxInfo->rssi = *(frame_start + TST_RX_LENGTH);
+ 616:../../src/radio/rf231_soc/source/basic_rf.c **** 	rfSettings.pRxInfo->rssi = PHY_ED_LEVEL;
+ 1586               	.LM173:
+ 1587 0556 E091 0000 		lds r30,rfSettings
+ 1588 055a F091 0000 		lds r31,rfSettings+1
+ 1589 055e 8091 4701 		lds r24,327
+ 1590 0562 8087      		std Z+8,r24
+ 617:../../src/radio/rf231_soc/source/basic_rf.c **** 	rfSettings.pRxInfo->actualRssi = PHY_RSSI >> 3;
+ 1592               	.LM174:
+ 1593 0564 E091 0000 		lds r30,rfSettings
+ 1594 0568 F091 0000 		lds r31,rfSettings+1
+ 1595 056c 8091 4601 		lds r24,326
+ 1596 0570 8695      		lsr r24
+ 1597 0572 8695      		lsr r24
+ 1598 0574 8695      		lsr r24
+ 1599 0576 8187      		std Z+9,r24
+ 618:../../src/radio/rf231_soc/source/basic_rf.c **** 	rfSettings.pRxInfo->energyDetectionLevel = PHY_ED_LEVEL;
+ 1601               	.LM175:
+ 1602 0578 E091 0000 		lds r30,rfSettings
+ 1603 057c F091 0000 		lds r31,rfSettings+1
+ 1604 0580 8091 4701 		lds r24,327
+ 1605 0584 8287      		std Z+10,r24
+ 619:../../src/radio/rf231_soc/source/basic_rf.c **** 	rfSettings.pRxInfo->linkQualityIndication = *(frame_start + TST_RX_LENGTH);
+ 1607               	.LM176:
+ 1608 0586 A091 0000 		lds r26,rfSettings
+ 1609 058a B091 0000 		lds r27,rfSettings+1
+ 1610 058e E091 7B01 		lds r30,379
+ 1611 0592 F0E0      		ldi r31,0
+ 1612 0594 E058      		subi r30,-128
+ 1613 0596 FE4F      		sbci r31,-2
+ 1614 0598 8081      		ld r24,Z
+ 1615 059a 1B96      		adiw r26,11
+ 1616 059c 8C93      		st X,r24
+ 620:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 621:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* Reset frame buffer protection */
+ 622:../../src/radio/rf231_soc/source/basic_rf.c **** 	TRX_CTRL_2 &= ~(1 << RX_SAFE_MODE);
+ 1618               	.LM177:
+ 1619 059e 8091 4C01 		lds r24,332
+ 1620 05a2 8F77      		andi r24,lo8(127)
+ 1621 05a4 8093 4C01 		sts 332,r24
+ 623:../../src/radio/rf231_soc/source/basic_rf.c **** 	TRX_CTRL_2 |= (1 << RX_SAFE_MODE);
+ 1623               	.LM178:
+ 1624 05a8 8091 4C01 		lds r24,332
+ 1625 05ac 8068      		ori r24,lo8(-128)
+ 1626 05ae 8093 4C01 		sts 332,r24
+ 624:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 625:../../src/radio/rf231_soc/source/basic_rf.c **** 	return NRK_OK;
+ 1628               	.LM179:
+ 1629 05b2 81E0      		ldi r24,lo8(1)
+ 1630 05b4 0895      		ret
+ 1631               	.L122:
+ 1632               	.LBE5:
+ 1633               	.LBE4:
+ 571:../../src/radio/rf231_soc/source/basic_rf.c ****    }
+ 1635               	.LM180:
+ 1636 05b6 80E0      		ldi r24,0
+ 1637 05b8 0895      		ret
+ 1638               	.L123:
+ 568:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 1640               	.LM181:
+ 1641 05ba 8FEF      		ldi r24,lo8(-1)
+ 626:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 1643               	.LM182:
+ 1644 05bc 0895      		ret
+ 1646               	.Lscope22:
+ 1648               		.stabd	78,0,0
+ 1650               	.global	__vector_64
+ 1652               	__vector_64:
+ 1653               		.stabd	46,0,0
+ 627:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 628:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 629:../../src/radio/rf231_soc/source/basic_rf.c **** SIGNAL(TRX24_RX_END_vect)
+ 630:../../src/radio/rf231_soc/source/basic_rf.c **** {	
+ 631:../../src/radio/rf231_soc/source/basic_rf.c **** 	uint8_t i, *byte_ptr = &TRXFBST;
+ 632:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 633:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* Verbose mode print block */
+ 634:../../src/radio/rf231_soc/source/basic_rf.c **** 	vprintf("RX_END IRQ!\r\n");	
+ 635:../../src/radio/rf231_soc/source/basic_rf.c **** 	for(i=0; i<TST_RX_LENGTH; i++){
+ 636:../../src/radio/rf231_soc/source/basic_rf.c **** 		vprintf("0x%02x ", byte_ptr[i]);
+ 637:../../src/radio/rf231_soc/source/basic_rf.c **** 		if(((i+1) % 16) == 0)
+ 638:../../src/radio/rf231_soc/source/basic_rf.c **** 			vprintf("\r\n");
+ 639:../../src/radio/rf231_soc/source/basic_rf.c **** 	}
+ 640:../../src/radio/rf231_soc/source/basic_rf.c **** 	vprintf("\r\n");
+ 641:../../src/radio/rf231_soc/source/basic_rf.c **** 	
+ 642:../../src/radio/rf231_soc/source/basic_rf.c ****    IRQ_STATUS = (1 << RX_END);
+ 643:../../src/radio/rf231_soc/source/basic_rf.c **** 	
+ 644:../../src/radio/rf231_soc/source/basic_rf.c **** 	if((PHY_RSSI >> RX_CRC_VALID) & 0x1) {
+ 645:../../src/radio/rf231_soc/source/basic_rf.c **** 		if (use_glossy) rf_glossy_interrupt();
+ 646:../../src/radio/rf231_soc/source/basic_rf.c **** 	}
+ 647:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 648:../../src/radio/rf231_soc/source/basic_rf.c **** 	if(rx_end_func)
+ 649:../../src/radio/rf231_soc/source/basic_rf.c **** 		rx_end_func();
+ 650:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 651:../../src/radio/rf231_soc/source/basic_rf.c **** 	return;
+ 652:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 653:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 654:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 655:../../src/radio/rf231_soc/source/basic_rf.c **** /* These interrupt handlers are useful for finding
+ 656:../../src/radio/rf231_soc/source/basic_rf.c ****  * out the exact order of events during a transmission */
+ 657:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 658:../../src/radio/rf231_soc/source/basic_rf.c **** SIGNAL(TRX24_AWAKE_vect)
+ 659:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 1655               	.LM183:
+ 1656               	.LFBB23:
+ 1657 05be 1F92      		push r1
+ 1658 05c0 0F92      		push r0
+ 1659 05c2 0FB6      		in r0,__SREG__
+ 1660 05c4 0F92      		push r0
+ 1661 05c6 1124      		clr __zero_reg__
+ 1662 05c8 8F93      		push r24
+ 1663               	/* prologue: Signal */
+ 1664               	/* frame size = 0 */
+ 1665               	/* stack size = 4 */
+ 1666               	.L__stack_usage = 4
+ 660:../../src/radio/rf231_soc/source/basic_rf.c **** 	vprintf("RADIO AWAKE IRQ!\r\n");
+ 661:../../src/radio/rf231_soc/source/basic_rf.c **** 	IRQ_STATUS = (1 << AWAKE);
+ 1668               	.LM184:
+ 1669 05ca 80E8      		ldi r24,lo8(-128)
+ 1670 05cc 8093 4F01 		sts 335,r24
+ 1671               	/* epilogue start */
+ 662:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 663:../../src/radio/rf231_soc/source/basic_rf.c **** 	return;
+ 664:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 1673               	.LM185:
+ 1674 05d0 8F91      		pop r24
+ 1675 05d2 0F90      		pop r0
+ 1676 05d4 0FBE      		out __SREG__,r0
+ 1677 05d6 0F90      		pop r0
+ 1678 05d8 1F90      		pop r1
+ 1679 05da 1895      		reti
+ 1681               	.Lscope23:
+ 1683               		.stabd	78,0,0
+ 1685               	.global	__vector_63
+ 1687               	__vector_63:
+ 1688               		.stabd	46,0,0
+ 665:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 666:../../src/radio/rf231_soc/source/basic_rf.c **** SIGNAL(TRX24_TX_END_vect)
+ 667:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 1690               	.LM186:
+ 1691               	.LFBB24:
+ 1692 05dc 1F92      		push r1
+ 1693 05de 0F92      		push r0
+ 1694 05e0 0FB6      		in r0,__SREG__
+ 1695 05e2 0F92      		push r0
+ 1696 05e4 1124      		clr __zero_reg__
+ 1697 05e6 8F93      		push r24
+ 1698               	/* prologue: Signal */
+ 1699               	/* frame size = 0 */
+ 1700               	/* stack size = 4 */
+ 1701               	.L__stack_usage = 4
+ 668:../../src/radio/rf231_soc/source/basic_rf.c **** 	vprintf("TX_END IRQ!\r\n");
+ 669:../../src/radio/rf231_soc/source/basic_rf.c **** 	IRQ_STATUS = (1 << TX_END);
+ 1703               	.LM187:
+ 1704 05e8 80E4      		ldi r24,lo8(64)
+ 1705 05ea 8093 4F01 		sts 335,r24
+ 1706               	/* epilogue start */
+ 670:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 671:../../src/radio/rf231_soc/source/basic_rf.c **** #ifdef RADIO_CC2591
+ 672:../../src/radio/rf231_soc/source/basic_rf.c **** 	rf_cc2591_rx_on();
+ 673:../../src/radio/rf231_soc/source/basic_rf.c **** #endif
+ 674:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 675:../../src/radio/rf231_soc/source/basic_rf.c **** 	return;
+ 676:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 1708               	.LM188:
+ 1709 05ee 8F91      		pop r24
+ 1710 05f0 0F90      		pop r0
+ 1711 05f2 0FBE      		out __SREG__,r0
+ 1712 05f4 0F90      		pop r0
+ 1713 05f6 1F90      		pop r1
+ 1714 05f8 1895      		reti
+ 1716               	.Lscope24:
+ 1718               		.stabd	78,0,0
+ 1720               	.global	__vector_62
+ 1722               	__vector_62:
+ 1723               		.stabd	46,0,0
+ 677:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 678:../../src/radio/rf231_soc/source/basic_rf.c **** SIGNAL(TRX24_XAH_AMI_vect)
+ 679:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 1725               	.LM189:
+ 1726               	.LFBB25:
+ 1727 05fa 1F92      		push r1
+ 1728 05fc 0F92      		push r0
+ 1729 05fe 0FB6      		in r0,__SREG__
+ 1730 0600 0F92      		push r0
+ 1731 0602 1124      		clr __zero_reg__
+ 1732 0604 8F93      		push r24
+ 1733               	/* prologue: Signal */
+ 1734               	/* frame size = 0 */
+ 1735               	/* stack size = 4 */
+ 1736               	.L__stack_usage = 4
+ 680:../../src/radio/rf231_soc/source/basic_rf.c **** 	vprintf("AMI IRQ!\r\n");
+ 681:../../src/radio/rf231_soc/source/basic_rf.c **** 	IRQ_STATUS = (1 << AMI);
+ 1738               	.LM190:
+ 1739 0606 80E2      		ldi r24,lo8(32)
+ 1740 0608 8093 4F01 		sts 335,r24
+ 1741               	/* epilogue start */
+ 682:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 683:../../src/radio/rf231_soc/source/basic_rf.c **** 	return;
+ 684:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 1743               	.LM191:
+ 1744 060c 8F91      		pop r24
+ 1745 060e 0F90      		pop r0
+ 1746 0610 0FBE      		out __SREG__,r0
+ 1747 0612 0F90      		pop r0
+ 1748 0614 1F90      		pop r1
+ 1749 0616 1895      		reti
+ 1751               	.Lscope25:
+ 1753               		.stabd	78,0,0
+ 1755               	.global	__vector_61
+ 1757               	__vector_61:
+ 1758               		.stabd	46,0,0
+ 685:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 686:../../src/radio/rf231_soc/source/basic_rf.c **** SIGNAL(TRX24_CCA_ED_DONE_vect)
+ 687:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 1760               	.LM192:
+ 1761               	.LFBB26:
+ 1762 0618 1F92      		push r1
+ 1763 061a 0F92      		push r0
+ 1764 061c 0FB6      		in r0,__SREG__
+ 1765 061e 0F92      		push r0
+ 1766 0620 1124      		clr __zero_reg__
+ 1767 0622 8F93      		push r24
+ 1768               	/* prologue: Signal */
+ 1769               	/* frame size = 0 */
+ 1770               	/* stack size = 4 */
+ 1771               	.L__stack_usage = 4
+ 688:../../src/radio/rf231_soc/source/basic_rf.c **** 	vprintf("CCA_ED_DONE IRQ!\r\n");
+ 689:../../src/radio/rf231_soc/source/basic_rf.c **** 	IRQ_STATUS = (1 << CCA_ED_DONE);
+ 1773               	.LM193:
+ 1774 0624 80E1      		ldi r24,lo8(16)
+ 1775 0626 8093 4F01 		sts 335,r24
+ 1776               	/* epilogue start */
+ 690:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 691:../../src/radio/rf231_soc/source/basic_rf.c **** 	return;
+ 692:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 1778               	.LM194:
+ 1779 062a 8F91      		pop r24
+ 1780 062c 0F90      		pop r0
+ 1781 062e 0FBE      		out __SREG__,r0
+ 1782 0630 0F90      		pop r0
+ 1783 0632 1F90      		pop r1
+ 1784 0634 1895      		reti
+ 1786               	.Lscope26:
+ 1788               		.stabd	78,0,0
+ 1790               	.global	__vector_59
+ 1792               	__vector_59:
+ 1793               		.stabd	46,0,0
+ 693:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 694:../../src/radio/rf231_soc/source/basic_rf.c **** SIGNAL(TRX24_RX_START_vect)
+ 695:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 1795               	.LM195:
+ 1796               	.LFBB27:
+ 1797 0636 1F92      		push r1
+ 1798 0638 0F92      		push r0
+ 1799 063a 0FB6      		in r0,__SREG__
+ 1800 063c 0F92      		push r0
+ 1801 063e 1124      		clr __zero_reg__
+ 1802 0640 0BB6      		in r0,__RAMPZ__
+ 1803 0642 0F92      		push r0
+ 1804 0644 2F93      		push r18
+ 1805 0646 3F93      		push r19
+ 1806 0648 4F93      		push r20
+ 1807 064a 5F93      		push r21
+ 1808 064c 6F93      		push r22
+ 1809 064e 7F93      		push r23
+ 1810 0650 8F93      		push r24
+ 1811 0652 9F93      		push r25
+ 1812 0654 AF93      		push r26
+ 1813 0656 BF93      		push r27
+ 1814 0658 EF93      		push r30
+ 1815 065a FF93      		push r31
+ 1816               	/* prologue: Signal */
+ 1817               	/* frame size = 0 */
+ 1818               	/* stack size = 16 */
+ 1819               	.L__stack_usage = 16
+ 696:../../src/radio/rf231_soc/source/basic_rf.c **** 	vprintf("RX_START IRQ!\r\n");
+ 697:../../src/radio/rf231_soc/source/basic_rf.c **** 	IRQ_STATUS = (1 << RX_START);
+ 1821               	.LM196:
+ 1822 065c 84E0      		ldi r24,lo8(4)
+ 1823 065e 8093 4F01 		sts 335,r24
+ 698:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 699:../../src/radio/rf231_soc/source/basic_rf.c **** 	if(rx_start_func)
+ 1825               	.LM197:
+ 1826 0662 E091 0000 		lds r30,rx_start_func
+ 1827 0666 F091 0000 		lds r31,rx_start_func+1
+ 1828 066a 3097      		sbiw r30,0
+ 1829 066c 01F0      		breq .L131
+ 700:../../src/radio/rf231_soc/source/basic_rf.c **** 		rx_start_func();
+ 1831               	.LM198:
+ 1832 066e 0995      		icall
+ 1833               	.L131:
+ 1834               	/* epilogue start */
+ 701:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 702:../../src/radio/rf231_soc/source/basic_rf.c **** 	return;
+ 703:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 1836               	.LM199:
+ 1837 0670 FF91      		pop r31
+ 1838 0672 EF91      		pop r30
+ 1839 0674 BF91      		pop r27
+ 1840 0676 AF91      		pop r26
+ 1841 0678 9F91      		pop r25
+ 1842 067a 8F91      		pop r24
+ 1843 067c 7F91      		pop r23
+ 1844 067e 6F91      		pop r22
+ 1845 0680 5F91      		pop r21
+ 1846 0682 4F91      		pop r20
+ 1847 0684 3F91      		pop r19
+ 1848 0686 2F91      		pop r18
+ 1849 0688 0F90      		pop r0
+ 1850 068a 0BBE      		out __RAMPZ__,r0
+ 1851 068c 0F90      		pop r0
+ 1852 068e 0FBE      		out __SREG__,r0
+ 1853 0690 0F90      		pop r0
+ 1854 0692 1F90      		pop r1
+ 1855 0694 1895      		reti
+ 1857               	.Lscope27:
+ 1859               		.stabd	78,0,0
+ 1861               	.global	__vector_58
+ 1863               	__vector_58:
+ 1864               		.stabd	46,0,0
+ 704:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 705:../../src/radio/rf231_soc/source/basic_rf.c **** SIGNAL(TRX24_PLL_UNLOCK_vect)
+ 706:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 1866               	.LM200:
+ 1867               	.LFBB28:
+ 1868 0696 1F92      		push r1
+ 1869 0698 0F92      		push r0
+ 1870 069a 0FB6      		in r0,__SREG__
+ 1871 069c 0F92      		push r0
+ 1872 069e 1124      		clr __zero_reg__
+ 1873 06a0 8F93      		push r24
+ 1874               	/* prologue: Signal */
+ 1875               	/* frame size = 0 */
+ 1876               	/* stack size = 4 */
+ 1877               	.L__stack_usage = 4
+ 707:../../src/radio/rf231_soc/source/basic_rf.c **** 	vprintf("PLL_UNLOCK IRQ!\r\n");
+ 708:../../src/radio/rf231_soc/source/basic_rf.c **** 	IRQ_STATUS = (1 << PLL_UNLOCK);
+ 1879               	.LM201:
+ 1880 06a2 82E0      		ldi r24,lo8(2)
+ 1881 06a4 8093 4F01 		sts 335,r24
+ 1882               	/* epilogue start */
+ 709:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 710:../../src/radio/rf231_soc/source/basic_rf.c **** 	return;
+ 711:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 1884               	.LM202:
+ 1885 06a8 8F91      		pop r24
+ 1886 06aa 0F90      		pop r0
+ 1887 06ac 0FBE      		out __SREG__,r0
+ 1888 06ae 0F90      		pop r0
+ 1889 06b0 1F90      		pop r1
+ 1890 06b2 1895      		reti
+ 1892               	.Lscope28:
+ 1894               		.stabd	78,0,0
+ 1896               	.global	__vector_57
+ 1898               	__vector_57:
+ 1899               		.stabd	46,0,0
+ 712:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 713:../../src/radio/rf231_soc/source/basic_rf.c **** SIGNAL(TRX24_PLL_LOCK_vect)
+ 714:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 1901               	.LM203:
+ 1902               	.LFBB29:
+ 1903 06b4 1F92      		push r1
+ 1904 06b6 0F92      		push r0
+ 1905 06b8 0FB6      		in r0,__SREG__
+ 1906 06ba 0F92      		push r0
+ 1907 06bc 1124      		clr __zero_reg__
+ 1908 06be 8F93      		push r24
+ 1909               	/* prologue: Signal */
+ 1910               	/* frame size = 0 */
+ 1911               	/* stack size = 4 */
+ 1912               	.L__stack_usage = 4
+ 715:../../src/radio/rf231_soc/source/basic_rf.c **** 	vprintf("PLL_LOCK IRQ!\r\n");
+ 716:../../src/radio/rf231_soc/source/basic_rf.c **** 	IRQ_STATUS = (1 << PLL_LOCK);
+ 1914               	.LM204:
+ 1915 06c0 81E0      		ldi r24,lo8(1)
+ 1916 06c2 8093 4F01 		sts 335,r24
+ 1917               	/* epilogue start */
+ 717:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 718:../../src/radio/rf231_soc/source/basic_rf.c **** 	return;
+ 719:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 1919               	.LM205:
+ 1920 06c6 8F91      		pop r24
+ 1921 06c8 0F90      		pop r0
+ 1922 06ca 0FBE      		out __SREG__,r0
+ 1923 06cc 0F90      		pop r0
+ 1924 06ce 1F90      		pop r1
+ 1925 06d0 1895      		reti
+ 1927               	.Lscope29:
+ 1929               		.stabd	78,0,0
+ 1932               	.global	rf_set_cca_thresh
+ 1934               	rf_set_cca_thresh:
+ 1935               		.stabd	46,0,0
+ 720:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 721:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 722:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 723:../../src/radio/rf231_soc/source/basic_rf.c **** void rf_set_cca_thresh(int8_t t)
+ 724:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 1937               	.LM206:
+ 1938               	.LFBB30:
+ 1939               	/* prologue: function */
+ 1940               	/* frame size = 0 */
+ 1941               	/* stack size = 0 */
+ 1942               	.L__stack_usage = 0
+ 725:../../src/radio/rf231_soc/source/basic_rf.c **** 	CCA_THRES &= 0xF0;
+ 1944               	.LM207:
+ 1945 06d2 E9E4      		ldi r30,lo8(73)
+ 1946 06d4 F1E0      		ldi r31,lo8(1)
+ 1947 06d6 9081      		ld r25,Z
+ 1948 06d8 907F      		andi r25,lo8(-16)
+ 1949 06da 9083      		st Z,r25
+ 726:../../src/radio/rf231_soc/source/basic_rf.c **** 	CCA_THRES |= (t & 0xF);
+ 1951               	.LM208:
+ 1952 06dc 9081      		ld r25,Z
+ 1953 06de 8F70      		andi r24,lo8(15)
+ 1954 06e0 982B      		or r25,r24
+ 1955 06e2 9083      		st Z,r25
+ 1956 06e4 0895      		ret
+ 1958               	.Lscope30:
+ 1960               		.stabd	78,0,0
+ 1962               	.global	rf_security_last_pkt_status
+ 1964               	rf_security_last_pkt_status:
+ 1965               		.stabd	46,0,0
+ 727:../../src/radio/rf231_soc/source/basic_rf.c **** 	return;
+ 728:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 729:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 730:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 731:../../src/radio/rf231_soc/source/basic_rf.c **** // Returns 1 if the last packet was encrypted, 0 otherwise
+ 732:../../src/radio/rf231_soc/source/basic_rf.c **** uint8_t rf_security_last_pkt_status()
+ 733:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 1967               	.LM209:
+ 1968               	.LFBB31:
+ 1969               	/* prologue: function */
+ 1970               	/* frame size = 0 */
+ 1971               	/* stack size = 0 */
+ 1972               	.L__stack_usage = 0
+ 734:../../src/radio/rf231_soc/source/basic_rf.c **** 	//return last_pkt_encrypted;
+ 735:../../src/radio/rf231_soc/source/basic_rf.c **** 	return NRK_ERROR;
+ 736:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 1974               	.LM210:
+ 1975 06e6 8FEF      		ldi r24,lo8(-1)
+ 1976 06e8 0895      		ret
+ 1978               	.Lscope31:
+ 1980               		.stabd	78,0,0
+ 1983               	.global	rf_security_set_ctr_counter
+ 1985               	rf_security_set_ctr_counter:
+ 1986               		.stabd	46,0,0
+ 737:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 738:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 739:../../src/radio/rf231_soc/source/basic_rf.c **** void rf_security_set_ctr_counter(uint8_t *counter)
+ 740:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 1988               	.LM211:
+ 1989               	.LFBB32:
+ 1990               	/* prologue: function */
+ 1991               	/* frame size = 0 */
+ 1992               	/* stack size = 0 */
+ 1993               	.L__stack_usage = 0
+ 1994 06ea 0895      		ret
+ 1996               	.Lscope32:
+ 1998               		.stabd	78,0,0
+ 2001               	.global	rf_security_set_key
+ 2003               	rf_security_set_key:
+ 2004               		.stabd	46,0,0
+ 741:../../src/radio/rf231_soc/source/basic_rf.c **** 	return;
+ 742:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 743:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 744:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 745:../../src/radio/rf231_soc/source/basic_rf.c **** void rf_security_set_key(uint8_t *key)
+ 746:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 2006               	.LM212:
+ 2007               	.LFBB33:
+ 2008               	/* prologue: function */
+ 2009               	/* frame size = 0 */
+ 2010               	/* stack size = 0 */
+ 2011               	.L__stack_usage = 0
+ 2012 06ec 0895      		ret
+ 2014               	.Lscope33:
+ 2016               		.stabd	78,0,0
+ 2018               	.global	rf_security_disable
+ 2020               	rf_security_disable:
+ 2021               		.stabd	46,0,0
+ 747:../../src/radio/rf231_soc/source/basic_rf.c **** 	return;
+ 748:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 749:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 750:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 751:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 752:../../src/radio/rf231_soc/source/basic_rf.c **** void rf_security_disable()
+ 753:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 2023               	.LM213:
+ 2024               	.LFBB34:
+ 2025               	/* prologue: function */
+ 2026               	/* frame size = 0 */
+ 2027               	/* stack size = 0 */
+ 2028               	.L__stack_usage = 0
+ 2029 06ee 0895      		ret
+ 2031               	.Lscope34:
+ 2033               		.stabd	78,0,0
+ 2038               	.global	rf_tx_tdma_packet
+ 2040               	rf_tx_tdma_packet:
+ 2041               		.stabd	46,0,0
+ 754:../../src/radio/rf231_soc/source/basic_rf.c **** 	return;
+ 755:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 756:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 757:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 758:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 759:../../src/radio/rf231_soc/source/basic_rf.c **** /**********************************************************
+ 760:../../src/radio/rf231_soc/source/basic_rf.c ****  ******************* NOT IMPLEMENTED **********************
+ 761:../../src/radio/rf231_soc/source/basic_rf.c ****  **********************************************************/
+ 762:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 763:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 764:../../src/radio/rf231_soc/source/basic_rf.c **** uint8_t rf_tx_tdma_packet(RF_TX_INFO *pRTI, uint16_t slot_start_time, uint16_t tx_guard_time) {
+ 2043               	.LM214:
+ 2044               	.LFBB35:
+ 2045               	/* prologue: function */
+ 2046               	/* frame size = 0 */
+ 2047               	/* stack size = 0 */
+ 2048               	.L__stack_usage = 0
+ 765:../../src/radio/rf231_soc/source/basic_rf.c **** //    return success;
+ 766:../../src/radio/rf231_soc/source/basic_rf.c **** 	return NRK_ERROR;
+ 767:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 2050               	.LM215:
+ 2051 06f0 8FEF      		ldi r24,lo8(-1)
+ 2052 06f2 0895      		ret
+ 2054               	.Lscope35:
+ 2056               		.stabd	78,0,0
+ 2058               	.global	rf_get_sem
+ 2060               	rf_get_sem:
+ 2061               		.stabd	46,0,0
+ 768:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 769:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 770:../../src/radio/rf231_soc/source/basic_rf.c **** nrk_sem_t* rf_get_sem()
+ 771:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 2063               	.LM216:
+ 2064               	.LFBB36:
+ 2065               	/* prologue: function */
+ 2066               	/* frame size = 0 */
+ 2067               	/* stack size = 0 */
+ 2068               	.L__stack_usage = 0
+ 772:../../src/radio/rf231_soc/source/basic_rf.c **** return radio_sem;
+ 773:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 2070               	.LM217:
+ 2071 06f4 8091 0000 		lds r24,radio_sem
+ 2072 06f8 9091 0000 		lds r25,radio_sem+1
+ 2073 06fc 0895      		ret
+ 2075               	.Lscope36:
+ 2077               		.stabd	78,0,0
+ 2079               	.global	rf_flush_rx_fifo
+ 2081               	rf_flush_rx_fifo:
+ 2082               		.stabd	46,0,0
+ 774:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 775:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 776:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 777:../../src/radio/rf231_soc/source/basic_rf.c **** inline void rf_flush_rx_fifo()
+ 778:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 2084               	.LM218:
+ 2085               	.LFBB37:
+ 2086               	/* prologue: function */
+ 2087               	/* frame size = 0 */
+ 2088               	/* stack size = 0 */
+ 2089               	.L__stack_usage = 0
+ 2090 06fe 0895      		ret
+ 2092               	.Lscope37:
+ 2094               		.stabd	78,0,0
+ 2096               	.global	rf_busy
+ 2098               	rf_busy:
+ 2099               		.stabd	46,0,0
+ 779:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 780:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 781:../../src/radio/rf231_soc/source/basic_rf.c **** uint8_t rf_busy()
+ 782:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 2101               	.LM219:
+ 2102               	.LFBB38:
+ 2103               	/* prologue: function */
+ 2104               	/* frame size = 0 */
+ 2105               	/* stack size = 0 */
+ 2106               	.L__stack_usage = 0
+ 783:../../src/radio/rf231_soc/source/basic_rf.c **** //return SFD_IS_1;
+ 784:../../src/radio/rf231_soc/source/basic_rf.c **** return 1;
+ 785:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 2108               	.LM220:
+ 2109 0700 81E0      		ldi r24,lo8(1)
+ 2110 0702 0895      		ret
+ 2112               	.Lscope38:
+ 2114               		.stabd	78,0,0
+ 2116               	.global	rf_rx_check_fifop
+ 2118               	rf_rx_check_fifop:
+ 2119               		.stabd	46,0,0
+ 786:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 787:../../src/radio/rf231_soc/source/basic_rf.c **** /* Implement */
+ 788:../../src/radio/rf231_soc/source/basic_rf.c **** uint8_t rf_rx_check_fifop()
+ 789:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 2121               	.LM221:
+ 2122               	.LFBB39:
+ 2123               	/* prologue: function */
+ 2124               	/* frame size = 0 */
+ 2125               	/* stack size = 0 */
+ 2126               	.L__stack_usage = 0
+ 790:../../src/radio/rf231_soc/source/basic_rf.c **** //return FIFOP_IS_1;
+ 791:../../src/radio/rf231_soc/source/basic_rf.c **** return 1;
+ 792:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 2128               	.LM222:
+ 2129 0704 81E0      		ldi r24,lo8(1)
+ 2130 0706 0895      		ret
+ 2132               	.Lscope39:
+ 2134               		.stabd	78,0,0
+ 2136               	.global	rf_rx_check_sfd
+ 2138               	rf_rx_check_sfd:
+ 2139               		.stabd	46,0,0
+ 793:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 794:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 795:../../src/radio/rf231_soc/source/basic_rf.c **** uint8_t rf_rx_check_sfd()
+ 796:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 2141               	.LM223:
+ 2142               	.LFBB40:
+ 2143               	/* prologue: function */
+ 2144               	/* frame size = 0 */
+ 2145               	/* stack size = 0 */
+ 2146               	.L__stack_usage = 0
+ 797:../../src/radio/rf231_soc/source/basic_rf.c **** //return SFD_IS_1;
+ 798:../../src/radio/rf231_soc/source/basic_rf.c **** return 1;
+ 799:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 2148               	.LM224:
+ 2149 0708 81E0      		ldi r24,lo8(1)
+ 2150 070a 0895      		ret
+ 2152               	.Lscope40:
+ 2154               		.stabd	78,0,0
+ 2156               	.global	rf_carrier_on
+ 2158               	rf_carrier_on:
+ 2159               		.stabd	46,0,0
+ 800:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 801:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 802:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 803:../../src/radio/rf231_soc/source/basic_rf.c **** /**********************************************************
+ 804:../../src/radio/rf231_soc/source/basic_rf.c ****  * start sending a carrier pulse
+ 805:../../src/radio/rf231_soc/source/basic_rf.c ****  * assumes wdrf_radio_test_mode() was called before doing this
+ 806:../../src/radio/rf231_soc/source/basic_rf.c ****  */
+ 807:../../src/radio/rf231_soc/source/basic_rf.c **** void rf_carrier_on()
+ 808:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 2161               	.LM225:
+ 2162               	.LFBB41:
+ 2163               	/* prologue: function */
+ 2164               	/* frame size = 0 */
+ 2165               	/* stack size = 0 */
+ 2166               	.L__stack_usage = 0
+ 2167 070c 0895      		ret
+ 2169               	.Lscope41:
+ 2171               		.stabd	78,0,0
+ 2173               	.global	rf_carrier_off
+ 2175               	rf_carrier_off:
+ 2176               		.stabd	46,0,0
+ 809:../../src/radio/rf231_soc/source/basic_rf.c **** /*
+ 810:../../src/radio/rf231_soc/source/basic_rf.c **** #ifdef RADIO_PRIORITY_CEILING
+ 811:../../src/radio/rf231_soc/source/basic_rf.c **** 	nrk_sem_pend(radio_sem);
+ 812:../../src/radio/rf231_soc/source/basic_rf.c **** #endif
+ 813:../../src/radio/rf231_soc/source/basic_rf.c ****      
+ 814:../../src/radio/rf231_soc/source/basic_rf.c **** #ifdef RADIO_PRIORITY_CEILING
+ 815:../../src/radio/rf231_soc/source/basic_rf.c **** 	nrk_sem_post(radio_sem);
+ 816:../../src/radio/rf231_soc/source/basic_rf.c **** #endif
+ 817:../../src/radio/rf231_soc/source/basic_rf.c **** */
+ 818:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 819:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 820:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 821:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 822:../../src/radio/rf231_soc/source/basic_rf.c **** /**********************************************************
+ 823:../../src/radio/rf231_soc/source/basic_rf.c ****  * stop sending a carrier pulse; set the radio to idle state
+ 824:../../src/radio/rf231_soc/source/basic_rf.c ****  */
+ 825:../../src/radio/rf231_soc/source/basic_rf.c **** void rf_carrier_off()
+ 826:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 2178               	.LM226:
+ 2179               	.LFBB42:
+ 2180               	/* prologue: function */
+ 2181               	/* frame size = 0 */
+ 2182               	/* stack size = 0 */
+ 2183               	.L__stack_usage = 0
+ 2184 070e 0895      		ret
+ 2186               	.Lscope42:
+ 2188               		.stabd	78,0,0
+ 2190               	.global	rf_test_mode
+ 2192               	rf_test_mode:
+ 2193               		.stabd	46,0,0
+ 827:../../src/radio/rf231_soc/source/basic_rf.c **** /*
+ 828:../../src/radio/rf231_soc/source/basic_rf.c **** #ifdef RADIO_PRIORITY_CEILING
+ 829:../../src/radio/rf231_soc/source/basic_rf.c **** 	nrk_sem_pend(radio_sem);
+ 830:../../src/radio/rf231_soc/source/basic_rf.c **** #endif
+ 831:../../src/radio/rf231_soc/source/basic_rf.c ****      
+ 832:../../src/radio/rf231_soc/source/basic_rf.c **** #ifdef RADIO_PRIORITY_CEILING
+ 833:../../src/radio/rf231_soc/source/basic_rf.c **** 	nrk_sem_post(radio_sem);
+ 834:../../src/radio/rf231_soc/source/basic_rf.c **** #endif
+ 835:../../src/radio/rf231_soc/source/basic_rf.c **** */
+ 836:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 837:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 838:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 839:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 840:../../src/radio/rf231_soc/source/basic_rf.c **** void rf_test_mode()
+ 841:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 2195               	.LM227:
+ 2196               	.LFBB43:
+ 2197               	/* prologue: function */
+ 2198               	/* frame size = 0 */
+ 2199               	/* stack size = 0 */
+ 2200               	.L__stack_usage = 0
+ 2201 0710 0895      		ret
+ 2203               	.Lscope43:
+ 2205               		.stabd	78,0,0
+ 2207               	.global	rf_data_mode
+ 2209               	rf_data_mode:
+ 2210               		.stabd	46,0,0
+ 842:../../src/radio/rf231_soc/source/basic_rf.c **** /*
+ 843:../../src/radio/rf231_soc/source/basic_rf.c **** #ifdef RADIO_PRIORITY_CEILING
+ 844:../../src/radio/rf231_soc/source/basic_rf.c **** 	nrk_sem_pend(radio_sem);
+ 845:../../src/radio/rf231_soc/source/basic_rf.c **** #endif
+ 846:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 847:../../src/radio/rf231_soc/source/basic_rf.c **** #ifdef RADIO_PRIORITY_CEILING
+ 848:../../src/radio/rf231_soc/source/basic_rf.c **** 	nrk_sem_post(radio_sem);
+ 849:../../src/radio/rf231_soc/source/basic_rf.c **** #endif
+ 850:../../src/radio/rf231_soc/source/basic_rf.c **** */
+ 851:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 852:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 853:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 854:../../src/radio/rf231_soc/source/basic_rf.c **** /**********************************************************
+ 855:../../src/radio/rf231_soc/source/basic_rf.c ****  * set the radio into "normal" mode (buffered TXFIFO) and go into (data) receive */
+ 856:../../src/radio/rf231_soc/source/basic_rf.c **** void rf_data_mode()
+ 857:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 2212               	.LM228:
+ 2213               	.LFBB44:
+ 2214               	/* prologue: function */
+ 2215               	/* frame size = 0 */
+ 2216               	/* stack size = 0 */
+ 2217               	.L__stack_usage = 0
+ 2218 0712 0895      		ret
+ 2220               	.Lscope44:
+ 2222               		.stabd	78,0,0
+ 2224               	.global	rf_rx_set_serial
+ 2226               	rf_rx_set_serial:
+ 2227               		.stabd	46,0,0
+ 858:../../src/radio/rf231_soc/source/basic_rf.c **** /*
+ 859:../../src/radio/rf231_soc/source/basic_rf.c **** #ifdef RADIO_PRIORITY_CEILING
+ 860:../../src/radio/rf231_soc/source/basic_rf.c **** 	nrk_sem_pend(radio_sem);
+ 861:../../src/radio/rf231_soc/source/basic_rf.c **** #endif
+ 862:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 863:../../src/radio/rf231_soc/source/basic_rf.c **** #ifdef RADIO_PRIORITY_CEILING
+ 864:../../src/radio/rf231_soc/source/basic_rf.c **** 	nrk_sem_post(radio_sem);
+ 865:../../src/radio/rf231_soc/source/basic_rf.c **** #endif
+ 866:../../src/radio/rf231_soc/source/basic_rf.c **** */
+ 867:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 868:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 869:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 870:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 871:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 872:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 873:../../src/radio/rf231_soc/source/basic_rf.c **** /**********************************************************
+ 874:../../src/radio/rf231_soc/source/basic_rf.c ****  * Set the radio into serial unbuffered RX mode
+ 875:../../src/radio/rf231_soc/source/basic_rf.c ****  * RX data is received through sampling the FIFO pin, timing is done using FIFOP 
+ 876:../../src/radio/rf231_soc/source/basic_rf.c ****  * Use rf_rx_on() to start rcv, then wait for SFD / FIFOP. Sample during each high edge of FIFOP
+ 877:../../src/radio/rf231_soc/source/basic_rf.c ****  * This can be undone by using rf_data_mode()
+ 878:../../src/radio/rf231_soc/source/basic_rf.c ****  */
+ 879:../../src/radio/rf231_soc/source/basic_rf.c **** void rf_rx_set_serial()
+ 880:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 2229               	.LM229:
+ 2230               	.LFBB45:
+ 2231               	/* prologue: function */
+ 2232               	/* frame size = 0 */
+ 2233               	/* stack size = 0 */
+ 2234               	.L__stack_usage = 0
+ 2235 0714 0895      		ret
+ 2237               	.Lscope45:
+ 2239               		.stabd	78,0,0
+ 2241               	.global	rf_tx_set_serial
+ 2243               	rf_tx_set_serial:
+ 2244               		.stabd	46,0,0
+ 881:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 882:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 883:../../src/radio/rf231_soc/source/basic_rf.c **** /**********************************************************
+ 884:../../src/radio/rf231_soc/source/basic_rf.c ****  * Put the radio in serial TX mode, where data is sampled from the FIFO
+ 885:../../src/radio/rf231_soc/source/basic_rf.c ****  * pin to send after SFD, and timing is done using FIFOP
+ 886:../../src/radio/rf231_soc/source/basic_rf.c ****  * use rf_carrier_on() to start, set FIFO to first bit, then wait for it
+ 887:../../src/radio/rf231_soc/source/basic_rf.c ****  * to go up and down, then set next bit etc.
+ 888:../../src/radio/rf231_soc/source/basic_rf.c ****  * NOTE: You must set the FIFO pin to output mode in order to do this!
+ 889:../../src/radio/rf231_soc/source/basic_rf.c ****  * This can be undone by calling rf_data_mode()
+ 890:../../src/radio/rf231_soc/source/basic_rf.c ****  */
+ 891:../../src/radio/rf231_soc/source/basic_rf.c **** void rf_tx_set_serial()
+ 892:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 2246               	.LM230:
+ 2247               	.LFBB46:
+ 2248               	/* prologue: function */
+ 2249               	/* frame size = 0 */
+ 2250               	/* stack size = 0 */
+ 2251               	.L__stack_usage = 0
+ 2252 0716 0895      		ret
+ 2254               	.Lscope46:
+ 2256               		.stabd	78,0,0
+ 2259               	.global	rf_set_preamble_length
+ 2261               	rf_set_preamble_length:
+ 2262               		.stabd	46,0,0
+ 893:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 894:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 895:../../src/radio/rf231_soc/source/basic_rf.c **** /**********************************************************
+ 896:../../src/radio/rf231_soc/source/basic_rf.c ****  * Specifies the number of symbols to be part of preamble
+ 897:../../src/radio/rf231_soc/source/basic_rf.c ****  * arg is equal to number of bytes - 1.
+ 898:../../src/radio/rf231_soc/source/basic_rf.c ****  * (3 bytes is 802.15.4 compliant, so length arg would be 2)
+ 899:../../src/radio/rf231_soc/source/basic_rf.c ****  * Length arg supports values 0 to 15. See the datasheet of course for more details
+ 900:../../src/radio/rf231_soc/source/basic_rf.c ****  */
+ 901:../../src/radio/rf231_soc/source/basic_rf.c **** void rf_set_preamble_length(uint8_t length)
+ 902:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 2264               	.LM231:
+ 2265               	.LFBB47:
+ 2266               	/* prologue: function */
+ 2267               	/* frame size = 0 */
+ 2268               	/* stack size = 0 */
+ 2269               	.L__stack_usage = 0
+ 2270 0718 0895      		ret
+ 2272               	.Lscope47:
+ 2274               		.stabd	78,0,0
+ 2277               	.global	rf_set_cca_mode
+ 2279               	rf_set_cca_mode:
+ 2280               		.stabd	46,0,0
+ 903:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 904:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 905:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 906:../../src/radio/rf231_soc/source/basic_rf.c **** void rf_set_cca_mode(uint8_t mode)
+ 907:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 2282               	.LM232:
+ 2283               	.LFBB48:
+ 2284               	/* prologue: function */
+ 2285               	/* frame size = 0 */
+ 2286               	/* stack size = 0 */
+ 2287               	.L__stack_usage = 0
+ 2288 071a 0895      		ret
+ 2290               	.Lscope48:
+ 2292               		.stabd	78,0,0
+ 2294               	.global	rf_cc2591_tx_on
+ 2296               	rf_cc2591_tx_on:
+ 2297               		.stabd	46,0,0
+ 908:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 909:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 910:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 911:../../src/radio/rf231_soc/source/basic_rf.c **** void rf_cc2591_tx_on()
+ 912:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 2299               	.LM233:
+ 2300               	.LFBB49:
+ 2301               	/* prologue: function */
+ 2302               	/* frame size = 0 */
+ 2303               	/* stack size = 0 */
+ 2304               	.L__stack_usage = 0
+ 913:../../src/radio/rf231_soc/source/basic_rf.c **** /*
+ 914:../../src/radio/rf231_soc/source/basic_rf.c **** 	DPDS1	|= 0x3; 
+ 915:../../src/radio/rf231_soc/source/basic_rf.c **** 	DDRG	|= 0x1;
+ 916:../../src/radio/rf231_soc/source/basic_rf.c **** 	PORTG	|= 0x1;
+ 917:../../src/radio/rf231_soc/source/basic_rf.c **** 	DDRE	|= 0xE0;
+ 918:../../src/radio/rf231_soc/source/basic_rf.c **** 	PORTE	|= 0xE0;
+ 919:../../src/radio/rf231_soc/source/basic_rf.c **** */
+ 920:../../src/radio/rf231_soc/source/basic_rf.c **** 	
+ 921:../../src/radio/rf231_soc/source/basic_rf.c **** 	DDRG	&= ~(0x1);  // Set RXTX as input
+ 2306               	.LM234:
+ 2307 071c 9898      		cbi 0x13,0
+ 922:../../src/radio/rf231_soc/source/basic_rf.c **** 	DDRE |= 0xE0;
+ 2309               	.LM235:
+ 2310 071e 8DB1      		in r24,0xd
+ 2311 0720 806E      		ori r24,lo8(-32)
+ 2312 0722 8DB9      		out 0xd,r24
+ 923:../../src/radio/rf231_soc/source/basic_rf.c **** 	// PAEN=1  EN=0  HGM=x RXTX=NC
+ 924:../../src/radio/rf231_soc/source/basic_rf.c **** 	// PAEN = PE.7
+ 925:../../src/radio/rf231_soc/source/basic_rf.c **** 	// EN = PE.6
+ 926:../../src/radio/rf231_soc/source/basic_rf.c **** 	// HGM= PE.5
+ 927:../../src/radio/rf231_soc/source/basic_rf.c **** 	PORTE |= 0xA0;
+ 2314               	.LM236:
+ 2315 0724 8EB1      		in r24,0xe
+ 2316 0726 806A      		ori r24,lo8(-96)
+ 2317 0728 8EB9      		out 0xe,r24
+ 2318 072a 0895      		ret
+ 2320               	.Lscope49:
+ 2322               		.stabd	78,0,0
+ 2324               	.global	rf_cc2591_rx_on
+ 2326               	rf_cc2591_rx_on:
+ 2327               		.stabd	46,0,0
+ 928:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 929:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 930:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 931:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 932:../../src/radio/rf231_soc/source/basic_rf.c **** void rf_cc2591_rx_on()
+ 933:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 2329               	.LM237:
+ 2330               	.LFBB50:
+ 2331               	/* prologue: function */
+ 2332               	/* frame size = 0 */
+ 2333               	/* stack size = 0 */
+ 2334               	.L__stack_usage = 0
+ 934:../../src/radio/rf231_soc/source/basic_rf.c **** /*
+ 935:../../src/radio/rf231_soc/source/basic_rf.c **** 	DPDS1	|= 0x3; 
+ 936:../../src/radio/rf231_soc/source/basic_rf.c **** 	DDRG	|= 0x1;
+ 937:../../src/radio/rf231_soc/source/basic_rf.c **** 	PORTG	&= ~(0x1);
+ 938:../../src/radio/rf231_soc/source/basic_rf.c **** 	DDRE	|= 0xE0;
+ 939:../../src/radio/rf231_soc/source/basic_rf.c **** 	PORTE	|= 0xE0;
+ 940:../../src/radio/rf231_soc/source/basic_rf.c **** */
+ 941:../../src/radio/rf231_soc/source/basic_rf.c **** 	DDRG	&= ~(0x1);  // Set RXTX as input
+ 2336               	.LM238:
+ 2337 072c 9898      		cbi 0x13,0
+ 942:../../src/radio/rf231_soc/source/basic_rf.c **** 	DDRE |= 0xE0;
+ 2339               	.LM239:
+ 2340 072e 8DB1      		in r24,0xd
+ 2341 0730 806E      		ori r24,lo8(-32)
+ 2342 0732 8DB9      		out 0xd,r24
+ 943:../../src/radio/rf231_soc/source/basic_rf.c **** 	// PAEN=0  EN=1  HGM=1 RXTX=NC
+ 944:../../src/radio/rf231_soc/source/basic_rf.c **** 	// PAEN = PE.7
+ 945:../../src/radio/rf231_soc/source/basic_rf.c **** 	// EN = PE.6
+ 946:../../src/radio/rf231_soc/source/basic_rf.c **** 	// HGM= PE.5
+ 947:../../src/radio/rf231_soc/source/basic_rf.c **** 	PORTE |= 0x60;
+ 2344               	.LM240:
+ 2345 0734 8EB1      		in r24,0xe
+ 2346 0736 8066      		ori r24,lo8(96)
+ 2347 0738 8EB9      		out 0xe,r24
+ 2348 073a 0895      		ret
+ 2350               	.Lscope50:
+ 2352               		.stabd	78,0,0
+ 2353               		.section	.rodata.str1.1,"aMS",@progbits,1
+ 2354               	.LC0:
+ 2355 0000 7266 5F72 		.string	"rf_rx_packet_nonblock failed]\r"
+ 2355      785F 7061 
+ 2355      636B 6574 
+ 2355      5F6E 6F6E 
+ 2355      626C 6F63 
+ 2356               	.LC1:
+ 2357 001f 5061 636B 		.string	"Packet is done bouncing around!\r\n"
+ 2357      6574 2069 
+ 2357      7320 646F 
+ 2357      6E65 2062 
+ 2357      6F75 6E63 
+ 2358               	.LC2:
+ 2359 0041 5345 513A 		.string	"SEQ:%4u\tTTL:%2d\tRSSI:%4d\tPayload: [%s]\r\n"
+ 2359      2534 7509 
+ 2359      5454 4C3A 
+ 2359      2532 6409 
+ 2359      5253 5349 
+ 2360               		.text
+ 2362               	.global	rf_glossy_interrupt
+ 2364               	rf_glossy_interrupt:
+ 2365               		.stabd	46,0,0
+ 948:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 949:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 950:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 951:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 952:../../src/radio/rf231_soc/source/basic_rf.c **** #ifdef GLOSSY_TESTING
+ 953:../../src/radio/rf231_soc/source/basic_rf.c **** uint8_t packet_flags[128];
+ 954:../../src/radio/rf231_soc/source/basic_rf.c **** uint8_t delay_flags[26];
+ 955:../../src/radio/rf231_soc/source/basic_rf.c **** uint16_t curr_count;
+ 956:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 957:../../src/radio/rf231_soc/source/basic_rf.c **** int calculate_checksum(uint8_t * buf) {
+ 958:../../src/radio/rf231_soc/source/basic_rf.c **** 	uint8_t i, checksum = 0;
+ 959:../../src/radio/rf231_soc/source/basic_rf.c **** 	for (i = 1; i < 99; i++) checksum ^= buf[i];
+ 960:../../src/radio/rf231_soc/source/basic_rf.c **** 	return checksum == buf[99];
+ 961:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 962:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 963:../../src/radio/rf231_soc/source/basic_rf.c **** uint16_t calculate_reception_rate()
+ 964:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 965:../../src/radio/rf231_soc/source/basic_rf.c **** 	uint8_t i, j;
+ 966:../../src/radio/rf231_soc/source/basic_rf.c **** 	uint16_t packets_received = 0;
+ 967:../../src/radio/rf231_soc/source/basic_rf.c **** 	for (i = 0; i < 128; i++) {
+ 968:../../src/radio/rf231_soc/source/basic_rf.c **** 		for (j = 0; j < 8; j++) {
+ 969:../../src/radio/rf231_soc/source/basic_rf.c **** 			packets_received += (packet_flags[i] >> j) & 1;
+ 970:../../src/radio/rf231_soc/source/basic_rf.c **** 		}
+ 971:../../src/radio/rf231_soc/source/basic_rf.c **** 	}
+ 972:../../src/radio/rf231_soc/source/basic_rf.c **** 	return packets_received;
+ 973:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 974:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 975:../../src/radio/rf231_soc/source/basic_rf.c **** void mark_delay(uint8_t delay)
+ 976:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 977:../../src/radio/rf231_soc/source/basic_rf.c **** 	delay_flags[delay/8] |= 1 << (delay % 8);
+ 978:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 979:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 980:../../src/radio/rf231_soc/source/basic_rf.c **** uint8_t check_delay(uint8_t delay)
+ 981:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 982:../../src/radio/rf231_soc/source/basic_rf.c **** 	return ((delay_flags[delay/8]) >> (delay % 8)) & 1;
+ 983:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 984:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 985:../../src/radio/rf231_soc/source/basic_rf.c **** void mark_recieved(uint16_t packet_id, uint8_t delay)
+ 986:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 987:../../src/radio/rf231_soc/source/basic_rf.c **** 	if (check_delay(delay)) return;
+ 988:../../src/radio/rf231_soc/source/basic_rf.c **** 	if (packet_id > 999) {
+ 989:../../src/radio/rf231_soc/source/basic_rf.c **** 		mark_delay(delay);
+ 990:../../src/radio/rf231_soc/source/basic_rf.c **** 		uint16_t reception_rate = calculate_reception_rate();
+ 991:../../src/radio/rf231_soc/source/basic_rf.c **** 		printf("\n\n%4d\t%4d\r\n\n\n", delay, reception_rate);
+ 992:../../src/radio/rf231_soc/source/basic_rf.c **** 		clear_packet_flags();
+ 993:../../src/radio/rf231_soc/source/basic_rf.c **** 	} else {
+ 994:../../src/radio/rf231_soc/source/basic_rf.c **** 		packet_flags[packet_id/8] |= 1 << (packet_id % 8);
+ 995:../../src/radio/rf231_soc/source/basic_rf.c **** 	}
+ 996:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 997:../../src/radio/rf231_soc/source/basic_rf.c **** void clear_packet_flags()
+ 998:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 999:../../src/radio/rf231_soc/source/basic_rf.c **** 	int i;
+1000:../../src/radio/rf231_soc/source/basic_rf.c **** 	for (i = 0; i < 128; i++) {
+1001:../../src/radio/rf231_soc/source/basic_rf.c **** 		packet_flags[i] = 0;
+1002:../../src/radio/rf231_soc/source/basic_rf.c **** 	}
+1003:../../src/radio/rf231_soc/source/basic_rf.c **** 	curr_count = 0;
+1004:../../src/radio/rf231_soc/source/basic_rf.c **** }
+1005:../../src/radio/rf231_soc/source/basic_rf.c **** #endif
+1006:../../src/radio/rf231_soc/source/basic_rf.c **** 
+1007:../../src/radio/rf231_soc/source/basic_rf.c **** void rf_glossy_interrupt()
+1008:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 2367               	.LM241:
+ 2368               	.LFBB51:
+ 2369 073c CF92      		push r12
+ 2370 073e DF92      		push r13
+ 2371 0740 EF92      		push r14
+ 2372 0742 FF92      		push r15
+ 2373 0744 0F93      		push r16
+ 2374 0746 1F93      		push r17
+ 2375 0748 CF93      		push r28
+ 2376 074a DF93      		push r29
+ 2377 074c CDB7      		in r28,__SP_L__
+ 2378 074e DEB7      		in r29,__SP_H__
+ 2379 0750 2797      		sbiw r28,7
+ 2380 0752 0FB6      		in __tmp_reg__,__SREG__
+ 2381 0754 F894      		cli
+ 2382 0756 DEBF      		out __SP_H__,r29
+ 2383 0758 0FBE      		out __SREG__,__tmp_reg__
+ 2384 075a CDBF      		out __SP_L__,r28
+ 2385               	/* prologue: function */
+ 2386               	/* frame size = 7 */
+ 2387               	/* stack size = 15 */
+ 2388               	.L__stack_usage = 15
+1009:../../src/radio/rf231_soc/source/basic_rf.c **** 	nrk_int_disable();
+ 2390               	.LM242:
+ 2391 075c 0E94 0000 		call nrk_int_disable
+1010:../../src/radio/rf231_soc/source/basic_rf.c **** 
+1011:../../src/radio/rf231_soc/source/basic_rf.c **** 	RF_RX_INFO rfRxInfo = *(rfSettings.pRxInfo);
+ 2393               	.LM243:
+ 2394 0760 E091 0000 		lds r30,rfSettings
+ 2395 0764 F091 0000 		lds r31,rfSettings+1
+ 2396 0768 C080      		ld r12,Z
+ 2397 076a D380      		ldd r13,Z+3
+ 2398 076c E580      		ldd r14,Z+5
+ 2399 076e F680      		ldd r15,Z+6
+ 2400 0770 0085      		ldd r16,Z+8
+1012:../../src/radio/rf231_soc/source/basic_rf.c **** 	RF_TX_INFO rfTxInfo;
+1013:../../src/radio/rf231_soc/source/basic_rf.c **** 
+1014:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* Grab packet */
+1015:../../src/radio/rf231_soc/source/basic_rf.c **** 	int err = rf_rx_packet_nonblock();
+ 2402               	.LM244:
+ 2403 0772 0E94 0000 		call rf_rx_packet_nonblock
+1016:../../src/radio/rf231_soc/source/basic_rf.c **** 	if (err < 1) {
+ 2405               	.LM245:
+ 2406 0776 1816      		cp __zero_reg__,r24
+ 2407 0778 04F0      		brlt .L160
+1017:../../src/radio/rf231_soc/source/basic_rf.c **** 		printf("rf_rx_packet_nonblock failed]\r\n");
+ 2409               	.LM246:
+ 2410 077a 80E0      		ldi r24,lo8(.LC0)
+ 2411 077c 90E0      		ldi r25,hi8(.LC0)
+ 2412 077e 00C0      		rjmp .L164
+ 2413               	.L160:
+1018:../../src/radio/rf231_soc/source/basic_rf.c **** 		nrk_int_enable();
+1019:../../src/radio/rf231_soc/source/basic_rf.c **** 		return;
+1020:../../src/radio/rf231_soc/source/basic_rf.c **** 	}
+1021:../../src/radio/rf231_soc/source/basic_rf.c **** 
+1022:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* TTL should be the first byte of the payload */
+1023:../../src/radio/rf231_soc/source/basic_rf.c **** 	uint8_t ttl = rfRxInfo.pPayload[0];
+ 2415               	.LM247:
+ 2416 0780 F701      		movw r30,r14
+ 2417 0782 1081      		ld r17,Z
+1024:../../src/radio/rf231_soc/source/basic_rf.c **** 	if (ttl == 0) {
+ 2419               	.LM248:
+ 2420 0784 1111      		cpse r17,__zero_reg__
+ 2421 0786 00C0      		rjmp .L162
+1025:../../src/radio/rf231_soc/source/basic_rf.c **** #ifndef GLOSSY_TESTING
+1026:../../src/radio/rf231_soc/source/basic_rf.c **** 		printf("Packet is done bouncing around!\r\n\n");
+ 2423               	.LM249:
+ 2424 0788 80E0      		ldi r24,lo8(.LC1)
+ 2425 078a 90E0      		ldi r25,hi8(.LC1)
+ 2426               	.L164:
+ 2427 078c 0E94 0000 		call puts
+1027:../../src/radio/rf231_soc/source/basic_rf.c **** #endif
+1028:../../src/radio/rf231_soc/source/basic_rf.c **** 		nrk_int_enable();
+ 2429               	.LM250:
+ 2430 0790 0E94 0000 		call nrk_int_enable
+1029:../../src/radio/rf231_soc/source/basic_rf.c **** 		return;
+ 2432               	.LM251:
+ 2433 0794 00C0      		rjmp .L159
+ 2434               	.L162:
+1030:../../src/radio/rf231_soc/source/basic_rf.c **** 	} else if (ttl == 5) {
+ 2436               	.LM252:
+ 2437 0796 1530      		cpi r17,lo8(5)
+ 2438 0798 01F4      		brne .L163
+1031:../../src/radio/rf231_soc/source/basic_rf.c **** #ifndef GLOSSY_TESTING
+1032:../../src/radio/rf231_soc/source/basic_rf.c **** 		printf("\n");
+ 2440               	.LM253:
+ 2441 079a 8AE0      		ldi r24,lo8(10)
+ 2442 079c 90E0      		ldi r25,0
+ 2443 079e 0E94 0000 		call putchar
+ 2444               	.L163:
+1033:../../src/radio/rf231_soc/source/basic_rf.c **** #endif
+1034:../../src/radio/rf231_soc/source/basic_rf.c **** 	}
+1035:../../src/radio/rf231_soc/source/basic_rf.c **** 
+1036:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* Print packet information */
+1037:../../src/radio/rf231_soc/source/basic_rf.c **** #ifndef GLOSSY_TESTING
+1038:../../src/radio/rf231_soc/source/basic_rf.c **** 	int8_t rssi = rfRxInfo.rssi;
+1039:../../src/radio/rf231_soc/source/basic_rf.c **** 	uint8_t snum = rfRxInfo.seqNumber;
+1040:../../src/radio/rf231_soc/source/basic_rf.c **** 	printf("SEQ:%4u\tTTL:%2d\tRSSI:%4d\tPayload: [%s]\r\n", 
+ 2446               	.LM254:
+ 2447 07a2 C701      		movw r24,r14
+ 2448 07a4 0196      		adiw r24,1
+ 2449 07a6 9F93      		push r25
+ 2450 07a8 8F93      		push r24
+ 2451 07aa 802F      		mov r24,r16
+ 2452 07ac 9927      		clr r25
+ 2453 07ae 87FD      		sbrc r24,7
+ 2454 07b0 9095      		com r25
+ 2455 07b2 9F93      		push r25
+ 2456 07b4 0F93      		push r16
+ 2457 07b6 1F92      		push __zero_reg__
+ 2458 07b8 1F93      		push r17
+ 2459 07ba 1F92      		push __zero_reg__
+ 2460 07bc CF92      		push r12
+ 2461 07be 80E0      		ldi r24,lo8(.LC2)
+ 2462 07c0 90E0      		ldi r25,hi8(.LC2)
+ 2463 07c2 9F93      		push r25
+ 2464 07c4 8F93      		push r24
+ 2465 07c6 0E94 0000 		call printf
+1041:../../src/radio/rf231_soc/source/basic_rf.c **** 					snum, ttl, rssi, rfRxInfo.pPayload + 1);
+1042:../../src/radio/rf231_soc/source/basic_rf.c **** #endif
+1043:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* Copy pointer to payload and length */
+1044:../../src/radio/rf231_soc/source/basic_rf.c **** 	rfTxInfo.pPayload = rfRxInfo.pPayload;
+ 2467               	.LM255:
+ 2468 07ca FD82      		std Y+5,r15
+ 2469 07cc EC82      		std Y+4,r14
+1045:../../src/radio/rf231_soc/source/basic_rf.c **** 	rfTxInfo.pPayload[0] = ttl - 1;
+ 2471               	.LM256:
+ 2472 07ce 1150      		subi r17,lo8(-(-1))
+ 2473 07d0 F701      		movw r30,r14
+ 2474 07d2 1083      		st Z,r17
+1046:../../src/radio/rf231_soc/source/basic_rf.c **** 	rfTxInfo.length = rfRxInfo.length;
+ 2476               	.LM257:
+ 2477 07d4 DB82      		std Y+3,r13
+1047:../../src/radio/rf231_soc/source/basic_rf.c **** 	rfTxInfo.cca = 0;
+ 2479               	.LM258:
+ 2480 07d6 1E82      		std Y+6,__zero_reg__
+1048:../../src/radio/rf231_soc/source/basic_rf.c **** 	rfTxInfo.ackRequest = 0;
+ 2482               	.LM259:
+ 2483 07d8 1F82      		std Y+7,__zero_reg__
+1049:../../src/radio/rf231_soc/source/basic_rf.c **** 	rfTxInfo.destAddr = 0xFFFF;
+ 2485               	.LM260:
+ 2486 07da 8FEF      		ldi r24,lo8(-1)
+ 2487 07dc 9FEF      		ldi r25,lo8(-1)
+ 2488 07de 9A83      		std Y+2,r25
+ 2489 07e0 8983      		std Y+1,r24
+1050:../../src/radio/rf231_soc/source/basic_rf.c **** 
+1051:../../src/radio/rf231_soc/source/basic_rf.c **** 	/* Code for testing glossy reception rate*/
+1052:../../src/radio/rf231_soc/source/basic_rf.c **** #ifdef GLOSSY_TESTING
+1053:../../src/radio/rf231_soc/source/basic_rf.c **** 	uint16_t send_num = (((uint16_t)rfRxInfo.pPayload[1]) << 8) + rfRxInfo.pPayload[2];
+1054:../../src/radio/rf231_soc/source/basic_rf.c **** 	uint8_t us_jam = rfRxInfo.pPayload[3];
+1055:../../src/radio/rf231_soc/source/basic_rf.c **** 	if (calculate_checksum(rfRxInfo.pPayload)) {
+1056:../../src/radio/rf231_soc/source/basic_rf.c **** 		mark_recieved(send_num, us_jam);
+1057:../../src/radio/rf231_soc/source/basic_rf.c **** 		if (send_num < 1000) {
+1058:../../src/radio/rf231_soc/source/basic_rf.c **** 			curr_count++;
+1059:../../src/radio/rf231_soc/source/basic_rf.c **** 			printf("SEND NUM   %04d   %04d\r", send_num, curr_count);
+1060:../../src/radio/rf231_soc/source/basic_rf.c **** 			fflush(stdout);
+1061:../../src/radio/rf231_soc/source/basic_rf.c **** 			//nrk_spin_wait_us(((uint16_t)us_jam) * 10);
+1062:../../src/radio/rf231_soc/source/basic_rf.c **** 		}
+1063:../../src/radio/rf231_soc/source/basic_rf.c **** 		nrk_int_enable();
+1064:../../src/radio/rf231_soc/source/basic_rf.c **** 		rf_tx_packet(&rfTxInfo);
+1065:../../src/radio/rf231_soc/source/basic_rf.c **** 	} else {
+1066:../../src/radio/rf231_soc/source/basic_rf.c **** 		nrk_int_enable();
+1067:../../src/radio/rf231_soc/source/basic_rf.c **** 	}
+1068:../../src/radio/rf231_soc/source/basic_rf.c **** #else
+1069:../../src/radio/rf231_soc/source/basic_rf.c **** 	nrk_int_enable();
+ 2491               	.LM261:
+ 2492 07e2 0E94 0000 		call nrk_int_enable
+1070:../../src/radio/rf231_soc/source/basic_rf.c **** 	rf_tx_packet(&rfTxInfo);
+ 2494               	.LM262:
+ 2495 07e6 CE01      		movw r24,r28
+ 2496 07e8 0196      		adiw r24,1
+ 2497 07ea 0E94 0000 		call rf_tx_packet
+1071:../../src/radio/rf231_soc/source/basic_rf.c **** #endif
+1072:../../src/radio/rf231_soc/source/basic_rf.c **** 	return;
+ 2499               	.LM263:
+ 2500 07ee 0FB6      		in __tmp_reg__,__SREG__
+ 2501 07f0 F894      		cli
+ 2502 07f2 DEBF      		out __SP_H__,r29
+ 2503 07f4 0FBE      		out __SREG__,__tmp_reg__
+ 2504 07f6 CDBF      		out __SP_L__,r28
+ 2505               	.L159:
+ 2506               	/* epilogue start */
+1073:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 2508               	.LM264:
+ 2509 07f8 2796      		adiw r28,7
+ 2510 07fa 0FB6      		in __tmp_reg__,__SREG__
+ 2511 07fc F894      		cli
+ 2512 07fe DEBF      		out __SP_H__,r29
+ 2513 0800 0FBE      		out __SREG__,__tmp_reg__
+ 2514 0802 CDBF      		out __SP_L__,r28
+ 2515 0804 DF91      		pop r29
+ 2516 0806 CF91      		pop r28
+ 2517 0808 1F91      		pop r17
+ 2518 080a 0F91      		pop r16
+ 2519 080c FF90      		pop r15
+ 2520 080e EF90      		pop r14
+ 2521 0810 DF90      		pop r13
+ 2522 0812 CF90      		pop r12
+ 2523 0814 0895      		ret
+ 2529               	.Lscope51:
+ 2531               		.stabd	78,0,0
+ 2533               	.global	__vector_60
+ 2535               	__vector_60:
+ 2536               		.stabd	46,0,0
+ 630:../../src/radio/rf231_soc/source/basic_rf.c **** 	uint8_t i, *byte_ptr = &TRXFBST;
+ 2538               	.LM265:
+ 2539               	.LFBB52:
+ 2540 0816 1F92      		push r1
+ 2541 0818 0F92      		push r0
+ 2542 081a 0FB6      		in r0,__SREG__
+ 2543 081c 0F92      		push r0
+ 2544 081e 1124      		clr __zero_reg__
+ 2545 0820 0BB6      		in r0,__RAMPZ__
+ 2546 0822 0F92      		push r0
+ 2547 0824 2F93      		push r18
+ 2548 0826 3F93      		push r19
+ 2549 0828 4F93      		push r20
+ 2550 082a 5F93      		push r21
+ 2551 082c 6F93      		push r22
+ 2552 082e 7F93      		push r23
+ 2553 0830 8F93      		push r24
+ 2554 0832 9F93      		push r25
+ 2555 0834 AF93      		push r26
+ 2556 0836 BF93      		push r27
+ 2557 0838 EF93      		push r30
+ 2558 083a FF93      		push r31
+ 2559               	/* prologue: Signal */
+ 2560               	/* frame size = 0 */
+ 2561               	/* stack size = 16 */
+ 2562               	.L__stack_usage = 16
+ 635:../../src/radio/rf231_soc/source/basic_rf.c **** 		vprintf("0x%02x ", byte_ptr[i]);
+ 2564               	.LM266:
+ 2565 083c 80E0      		ldi r24,0
+ 2566               	.L166:
+ 635:../../src/radio/rf231_soc/source/basic_rf.c **** 		vprintf("0x%02x ", byte_ptr[i]);
+ 2568               	.LM267:
+ 2569 083e 9091 7B01 		lds r25,379
+ 2570 0842 8917      		cp r24,r25
+ 2571 0844 00F4      		brsh .L179
+ 635:../../src/radio/rf231_soc/source/basic_rf.c **** 		vprintf("0x%02x ", byte_ptr[i]);
+ 2573               	.LM268:
+ 2574 0846 8F5F      		subi r24,lo8(-(1))
+ 2575 0848 00C0      		rjmp .L166
+ 2576               	.L179:
+ 642:../../src/radio/rf231_soc/source/basic_rf.c **** 	
+ 2578               	.LM269:
+ 2579 084a 88E0      		ldi r24,lo8(8)
+ 2580 084c 8093 4F01 		sts 335,r24
+ 644:../../src/radio/rf231_soc/source/basic_rf.c **** 		if (use_glossy) rf_glossy_interrupt();
+ 2582               	.LM270:
+ 2583 0850 8091 4601 		lds r24,326
+ 2584 0854 87FF      		sbrs r24,7
+ 2585 0856 00C0      		rjmp .L168
+ 645:../../src/radio/rf231_soc/source/basic_rf.c **** 	}
+ 2587               	.LM271:
+ 2588 0858 8091 0000 		lds r24,use_glossy
+ 2589 085c 8111      		cpse r24,__zero_reg__
+ 645:../../src/radio/rf231_soc/source/basic_rf.c **** 	}
+ 2591               	.LM272:
+ 2592 085e 0E94 0000 		call rf_glossy_interrupt
+ 2593               	.L168:
+ 648:../../src/radio/rf231_soc/source/basic_rf.c **** 		rx_end_func();
+ 2595               	.LM273:
+ 2596 0862 E091 0000 		lds r30,rx_end_func
+ 2597 0866 F091 0000 		lds r31,rx_end_func+1
+ 2598 086a 3097      		sbiw r30,0
+ 2599 086c 01F0      		breq .L165
+ 649:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 2601               	.LM274:
+ 2602 086e 0995      		icall
+ 2603               	.L165:
+ 2604               	/* epilogue start */
+ 652:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 2606               	.LM275:
+ 2607 0870 FF91      		pop r31
+ 2608 0872 EF91      		pop r30
+ 2609 0874 BF91      		pop r27
+ 2610 0876 AF91      		pop r26
+ 2611 0878 9F91      		pop r25
+ 2612 087a 8F91      		pop r24
+ 2613 087c 7F91      		pop r23
+ 2614 087e 6F91      		pop r22
+ 2615 0880 5F91      		pop r21
+ 2616 0882 4F91      		pop r20
+ 2617 0884 3F91      		pop r19
+ 2618 0886 2F91      		pop r18
+ 2619 0888 0F90      		pop r0
+ 2620 088a 0BBE      		out __RAMPZ__,r0
+ 2621 088c 0F90      		pop r0
+ 2622 088e 0FBE      		out __SREG__,r0
+ 2623 0890 0F90      		pop r0
+ 2624 0892 1F90      		pop r1
+ 2625 0894 1895      		reti
+ 2630               	.Lscope52:
+ 2632               		.stabd	78,0,0
+ 2635               	.global	aes_setkey
+ 2637               	aes_setkey:
+ 2638               		.stabd	46,0,0
+1074:../../src/radio/rf231_soc/source/basic_rf.c **** 
+1075:../../src/radio/rf231_soc/source/basic_rf.c **** 
+1076:../../src/radio/rf231_soc/source/basic_rf.c **** /* AES encryption and decryption */
+1077:../../src/radio/rf231_soc/source/basic_rf.c **** 
+1078:../../src/radio/rf231_soc/source/basic_rf.c **** void aes_setkey(uint8_t *key)
+1079:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 2640               	.LM276:
+ 2641               	.LFBB53:
+ 2642               	/* prologue: function */
+ 2643               	/* frame size = 0 */
+ 2644               	/* stack size = 0 */
+ 2645               	.L__stack_usage = 0
+ 2646 0896 A0E0      		ldi r26,lo8(ekey)
+ 2647 0898 B0E0      		ldi r27,hi8(ekey)
+ 2648 089a FC01      		movw r30,r24
+ 2649 089c 4096      		adiw r24,16
+ 2650               	.L181:
+1080:../../src/radio/rf231_soc/source/basic_rf.c ****    uint8_t i;
+1081:../../src/radio/rf231_soc/source/basic_rf.c **** 
+1082:../../src/radio/rf231_soc/source/basic_rf.c ****    for(i=0; i<16; i++){
+1083:../../src/radio/rf231_soc/source/basic_rf.c ****       ekey[i] = key[i];
+ 2652               	.LM277:
+ 2653 089e 2081      		ld r18,Z
+ 2654 08a0 2D93      		st X+,r18
+1084:../../src/radio/rf231_soc/source/basic_rf.c ****       AES_KEY = key[i];
+ 2656               	.LM278:
+ 2657 08a2 2191      		ld r18,Z+
+ 2658 08a4 2093 3F01 		sts 319,r18
+1082:../../src/radio/rf231_soc/source/basic_rf.c ****       ekey[i] = key[i];
+ 2660               	.LM279:
+ 2661 08a8 E817      		cp r30,r24
+ 2662 08aa F907      		cpc r31,r25
+ 2663 08ac 01F4      		brne .L181
+ 2664 08ae 80E1      		ldi r24,lo8(16)
+ 2665               	.L182:
+1085:../../src/radio/rf231_soc/source/basic_rf.c ****    }
+1086:../../src/radio/rf231_soc/source/basic_rf.c ****    for(i=0; i<16; i++){
+1087:../../src/radio/rf231_soc/source/basic_rf.c ****       AES_STATE = 0x00;
+ 2667               	.LM280:
+ 2668 08b0 1092 3E01 		sts 318,__zero_reg__
+ 2669 08b4 8150      		subi r24,lo8(-(-1))
+1086:../../src/radio/rf231_soc/source/basic_rf.c ****       AES_STATE = 0x00;
+ 2671               	.LM281:
+ 2672 08b6 01F4      		brne .L182
+1088:../../src/radio/rf231_soc/source/basic_rf.c ****    }
+1089:../../src/radio/rf231_soc/source/basic_rf.c ****    AES_CTRL = (1 << AES_REQUEST);
+ 2674               	.LM282:
+ 2675 08b8 80E8      		ldi r24,lo8(-128)
+ 2676 08ba 8093 3C01 		sts 316,r24
+ 2677               	.L183:
+1090:../../src/radio/rf231_soc/source/basic_rf.c **** 
+1091:../../src/radio/rf231_soc/source/basic_rf.c ****    while(!(AES_STATUS & (1 << AES_DONE))){
+ 2679               	.LM283:
+ 2680 08be 8091 3D01 		lds r24,317
+ 2681 08c2 80FF      		sbrs r24,0
+ 2682 08c4 00C0      		rjmp .L183
+ 2683 08c6 E0E0      		ldi r30,lo8(dkey)
+ 2684 08c8 F0E0      		ldi r31,hi8(dkey)
+ 2685 08ca 80E1      		ldi r24,lo8(16)
+ 2686 08cc 8E0F      		add r24,r30
+ 2687               	.L184:
+1092:../../src/radio/rf231_soc/source/basic_rf.c ****       continue;
+1093:../../src/radio/rf231_soc/source/basic_rf.c ****    }
+1094:../../src/radio/rf231_soc/source/basic_rf.c ****    for(i=0; i<16; i++){
+1095:../../src/radio/rf231_soc/source/basic_rf.c ****       dkey[i] = AES_KEY;
+ 2689               	.LM284:
+ 2690 08ce 9091 3F01 		lds r25,319
+ 2691 08d2 9193      		st Z+,r25
+1094:../../src/radio/rf231_soc/source/basic_rf.c ****       dkey[i] = AES_KEY;
+ 2693               	.LM285:
+ 2694 08d4 8E13      		cpse r24,r30
+ 2695 08d6 00C0      		rjmp .L184
+ 2696               	/* epilogue start */
+1096:../../src/radio/rf231_soc/source/basic_rf.c ****    }
+1097:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 2698               	.LM286:
+ 2699 08d8 0895      		ret
+ 2701               	.Lscope53:
+ 2703               		.stabd	78,0,0
+ 2707               	.global	aes_encrypt
+ 2709               	aes_encrypt:
+ 2710               		.stabd	46,0,0
+1098:../../src/radio/rf231_soc/source/basic_rf.c **** 
+1099:../../src/radio/rf231_soc/source/basic_rf.c **** 
+1100:../../src/radio/rf231_soc/source/basic_rf.c **** uint8_t aes_encrypt(uint8_t *data, uint8_t len)
+1101:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 2712               	.LM287:
+ 2713               	.LFBB54:
+ 2714 08da CF93      		push r28
+ 2715 08dc DF93      		push r29
+ 2716               	/* prologue: function */
+ 2717               	/* frame size = 0 */
+ 2718               	/* stack size = 2 */
+ 2719               	.L__stack_usage = 2
+ 2720 08de DC01      		movw r26,r24
+1102:../../src/radio/rf231_soc/source/basic_rf.c ****    uint8_t i, j;
+1103:../../src/radio/rf231_soc/source/basic_rf.c **** 
+1104:../../src/radio/rf231_soc/source/basic_rf.c ****    if(len==0 || len%16!=0)
+ 2722               	.LM288:
+ 2723 08e0 6623      		tst r22
+ 2724 08e2 01F4      		brne .+2
+ 2725 08e4 00C0      		rjmp .L201
+ 2727               	.LM289:
+ 2728 08e6 862F      		mov r24,r22
+ 2729 08e8 8F70      		andi r24,lo8(15)
+ 2730 08ea 01F0      		breq .+2
+ 2731 08ec 00C0      		rjmp .L201
+ 2733               	.LM290:
+ 2734 08ee E0E0      		ldi r30,lo8(ekey)
+ 2735 08f0 F0E0      		ldi r31,hi8(ekey)
+ 2736 08f2 90E1      		ldi r25,lo8(16)
+ 2737 08f4 9E0F      		add r25,r30
+ 2738               	.L192:
+1105:../../src/radio/rf231_soc/source/basic_rf.c ****       return 1;
+1106:../../src/radio/rf231_soc/source/basic_rf.c **** 
+1107:../../src/radio/rf231_soc/source/basic_rf.c ****    for(i=0; i<16; i++)
+1108:../../src/radio/rf231_soc/source/basic_rf.c ****       AES_KEY = ekey[i];
+ 2740               	.LM291:
+ 2741 08f6 2191      		ld r18,Z+
+ 2742 08f8 2093 3F01 		sts 319,r18
+1107:../../src/radio/rf231_soc/source/basic_rf.c ****       AES_KEY = ekey[i];
+ 2744               	.LM292:
+ 2745 08fc 9E13      		cpse r25,r30
+ 2746 08fe 00C0      		rjmp .L192
+ 2747 0900 90E0      		ldi r25,0
+1109:../../src/radio/rf231_soc/source/basic_rf.c **** 
+1110:../../src/radio/rf231_soc/source/basic_rf.c ****    for(i=0; 16*i<len; i++){ 
+ 2749               	.LM293:
+ 2750 0902 70E0      		ldi r23,0
+1111:../../src/radio/rf231_soc/source/basic_rf.c ****       if(i==0)
+1112:../../src/radio/rf231_soc/source/basic_rf.c ****          AES_CTRL = (0 << AES_MODE) | (0 << AES_DIR);
+1113:../../src/radio/rf231_soc/source/basic_rf.c ****       else
+1114:../../src/radio/rf231_soc/source/basic_rf.c ****          AES_CTRL = (1 << AES_MODE) | (0 << AES_DIR);
+ 2752               	.LM294:
+ 2753 0904 E0E2      		ldi r30,lo8(32)
+ 2754               	.L193:
+1110:../../src/radio/rf231_soc/source/basic_rf.c ****       if(i==0)
+ 2756               	.LM295:
+ 2757 0906 40E1      		ldi r20,lo8(16)
+ 2758 0908 949F      		mul r25,r20
+ 2759 090a 9001      		movw r18,r0
+ 2760 090c 1124      		clr __zero_reg__
+ 2761 090e 2617      		cp r18,r22
+ 2762 0910 3707      		cpc r19,r23
+ 2763 0912 04F4      		brge .L191
+1111:../../src/radio/rf231_soc/source/basic_rf.c ****       if(i==0)
+ 2765               	.LM296:
+ 2766 0914 9111      		cpse r25,__zero_reg__
+ 2767 0916 00C0      		rjmp .L194
+1112:../../src/radio/rf231_soc/source/basic_rf.c ****       else
+ 2769               	.LM297:
+ 2770 0918 1092 3C01 		sts 316,__zero_reg__
+ 2771 091c 00C0      		rjmp .L195
+ 2772               	.L194:
+ 2774               	.LM298:
+ 2775 091e E093 3C01 		sts 316,r30
+ 2776               	.L195:
+1104:../../src/radio/rf231_soc/source/basic_rf.c ****       return 1;
+ 2778               	.LM299:
+ 2779 0922 40E0      		ldi r20,0
+ 2780 0924 50E0      		ldi r21,0
+ 2781 0926 2A0F      		add r18,r26
+ 2782 0928 3B1F      		adc r19,r27
+ 2783               	.L196:
+ 2784 092a E901      		movw r28,r18
+ 2785 092c C40F      		add r28,r20
+ 2786 092e D51F      		adc r29,r21
+1115:../../src/radio/rf231_soc/source/basic_rf.c ****       
+1116:../../src/radio/rf231_soc/source/basic_rf.c ****       for(j=0; j<16; j++)
+1117:../../src/radio/rf231_soc/source/basic_rf.c ****          AES_STATE = data[16*i+j];
+ 2788               	.LM300:
+ 2789 0930 F881      		ld r31,Y
+ 2790 0932 F093 3E01 		sts 318,r31
+ 2791 0936 4F5F      		subi r20,-1
+ 2792 0938 5F4F      		sbci r21,-1
+1116:../../src/radio/rf231_soc/source/basic_rf.c ****          AES_STATE = data[16*i+j];
+ 2794               	.LM301:
+ 2795 093a 4031      		cpi r20,16
+ 2796 093c 5105      		cpc r21,__zero_reg__
+ 2797 093e 01F4      		brne .L196
+1118:../../src/radio/rf231_soc/source/basic_rf.c ****       AES_CTRL |= (1 << AES_REQUEST);
+ 2799               	.LM302:
+ 2800 0940 4091 3C01 		lds r20,316
+ 2801 0944 4068      		ori r20,lo8(-128)
+ 2802 0946 4093 3C01 		sts 316,r20
+ 2803               	.L197:
+1119:../../src/radio/rf231_soc/source/basic_rf.c ****       while(!(AES_STATUS & (1 << AES_DONE)))
+ 2805               	.LM303:
+ 2806 094a 4091 3D01 		lds r20,317
+ 2807 094e 40FF      		sbrs r20,0
+ 2808 0950 00C0      		rjmp .L197
+ 2809 0952 40E0      		ldi r20,0
+ 2810 0954 50E0      		ldi r21,0
+ 2811               	.L198:
+1120:../../src/radio/rf231_soc/source/basic_rf.c ****          continue;
+1121:../../src/radio/rf231_soc/source/basic_rf.c ****       for(j=0; j<16; j++)
+1122:../../src/radio/rf231_soc/source/basic_rf.c ****          data[16*i+j] = AES_STATE;
+ 2813               	.LM304:
+ 2814 0956 F091 3E01 		lds r31,318
+ 2815 095a E901      		movw r28,r18
+ 2816 095c C40F      		add r28,r20
+ 2817 095e D51F      		adc r29,r21
+ 2818 0960 F883      		st Y,r31
+ 2819 0962 4F5F      		subi r20,-1
+ 2820 0964 5F4F      		sbci r21,-1
+1121:../../src/radio/rf231_soc/source/basic_rf.c ****          data[16*i+j] = AES_STATE;
+ 2822               	.LM305:
+ 2823 0966 4031      		cpi r20,16
+ 2824 0968 5105      		cpc r21,__zero_reg__
+ 2825 096a 01F4      		brne .L198
+1110:../../src/radio/rf231_soc/source/basic_rf.c ****       if(i==0)
+ 2827               	.LM306:
+ 2828 096c 9F5F      		subi r25,lo8(-(1))
+ 2829 096e 00C0      		rjmp .L193
+ 2830               	.L201:
+1105:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 2832               	.LM307:
+ 2833 0970 81E0      		ldi r24,lo8(1)
+ 2834               	.L191:
+ 2835               	/* epilogue start */
+1123:../../src/radio/rf231_soc/source/basic_rf.c ****    }
+1124:../../src/radio/rf231_soc/source/basic_rf.c ****    return 0;
+1125:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 2837               	.LM308:
+ 2838 0972 DF91      		pop r29
+ 2839 0974 CF91      		pop r28
+ 2840 0976 0895      		ret
+ 2845               	.Lscope54:
+ 2847               		.stabd	78,0,0
+ 2851               	.global	aes_decrypt
+ 2853               	aes_decrypt:
+ 2854               		.stabd	46,0,0
+1126:../../src/radio/rf231_soc/source/basic_rf.c **** 
+1127:../../src/radio/rf231_soc/source/basic_rf.c **** uint8_t aes_decrypt(uint8_t *data, uint8_t len)
+1128:../../src/radio/rf231_soc/source/basic_rf.c **** {
+ 2856               	.LM309:
+ 2857               	.LFBB55:
+ 2858 0978 0F93      		push r16
+ 2859 097a 1F93      		push r17
+ 2860 097c CF93      		push r28
+ 2861 097e DF93      		push r29
+ 2862               	/* prologue: function */
+ 2863               	/* frame size = 0 */
+ 2864               	/* stack size = 4 */
+ 2865               	.L__stack_usage = 4
+ 2866 0980 DC01      		movw r26,r24
+1129:../../src/radio/rf231_soc/source/basic_rf.c ****    int8_t i;
+1130:../../src/radio/rf231_soc/source/basic_rf.c ****    uint8_t j;
+1131:../../src/radio/rf231_soc/source/basic_rf.c **** 
+1132:../../src/radio/rf231_soc/source/basic_rf.c ****    if(len==1 || len%16!=0)
+ 2868               	.LM310:
+ 2869 0982 6130      		cpi r22,lo8(1)
+ 2870 0984 01F4      		brne .+2
+ 2871 0986 00C0      		rjmp .L217
+ 2873               	.LM311:
+ 2874 0988 862F      		mov r24,r22
+ 2875 098a 8F70      		andi r24,lo8(15)
+ 2876 098c 01F0      		breq .+2
+ 2877 098e 00C0      		rjmp .L217
+ 2879               	.LM312:
+ 2880 0990 E0E0      		ldi r30,lo8(dkey)
+ 2881 0992 F0E0      		ldi r31,hi8(dkey)
+ 2882 0994 90E1      		ldi r25,lo8(16)
+ 2883 0996 9E0F      		add r25,r30
+ 2884               	.L209:
+1133:../../src/radio/rf231_soc/source/basic_rf.c ****       return 1;
+1134:../../src/radio/rf231_soc/source/basic_rf.c **** 
+1135:../../src/radio/rf231_soc/source/basic_rf.c ****    for(i=0; i<16; i++)
+1136:../../src/radio/rf231_soc/source/basic_rf.c ****       AES_KEY = dkey[i];
+ 2886               	.LM313:
+ 2887 0998 2191      		ld r18,Z+
+ 2888 099a 2093 3F01 		sts 319,r18
+1135:../../src/radio/rf231_soc/source/basic_rf.c ****       AES_KEY = dkey[i];
+ 2890               	.LM314:
+ 2891 099e 9E13      		cpse r25,r30
+ 2892 09a0 00C0      		rjmp .L209
+1137:../../src/radio/rf231_soc/source/basic_rf.c **** 
+1138:../../src/radio/rf231_soc/source/basic_rf.c ****    for(i=(len/16)-1; i>=0; i--){ 
+ 2894               	.LM315:
+ 2895 09a2 6295      		swap r22
+ 2896 09a4 6F70      		andi r22,lo8(15)
+ 2897 09a6 6150      		subi r22,lo8(-(-1))
+1139:../../src/radio/rf231_soc/source/basic_rf.c ****       AES_CTRL = (0 << AES_MODE) | (1 << AES_DIR);
+ 2899               	.LM316:
+ 2900 09a8 78E0      		ldi r23,lo8(8)
+ 2901               	.L210:
+1138:../../src/radio/rf231_soc/source/basic_rf.c ****       AES_CTRL = (0 << AES_MODE) | (1 << AES_DIR);
+ 2903               	.LM317:
+ 2904 09aa 6F3F      		cpi r22,lo8(-1)
+ 2905 09ac 01F4      		brne .+2
+ 2906 09ae 00C0      		rjmp .L208
+ 2908               	.LM318:
+ 2909 09b0 7093 3C01 		sts 316,r23
+1140:../../src/radio/rf231_soc/source/basic_rf.c ****       
+1141:../../src/radio/rf231_soc/source/basic_rf.c ****       for(j=0; j<16; j++)
+1142:../../src/radio/rf231_soc/source/basic_rf.c ****          AES_STATE = data[16*i+j];
+ 2911               	.LM319:
+ 2912 09b4 462F      		mov r20,r22
+ 2913 09b6 5527      		clr r21
+ 2914 09b8 47FD      		sbrc r20,7
+ 2915 09ba 5095      		com r21
+ 2916 09bc 20E0      		ldi r18,0
+ 2917 09be 30E0      		ldi r19,0
+ 2918 09c0 ED01      		movw r28,r26
+ 2919 09c2 90E1      		ldi r25,lo8(16)
+ 2920 09c4 6902      		muls r22,r25
+ 2921 09c6 C00D      		add r28,r0
+ 2922 09c8 D11D      		adc r29,r1
+ 2923 09ca 1124      		clr __zero_reg__
+ 2924               	.L211:
+ 2925 09cc FE01      		movw r30,r28
+ 2926 09ce E20F      		add r30,r18
+ 2927 09d0 F31F      		adc r31,r19
+ 2929               	.LM320:
+ 2930 09d2 9081      		ld r25,Z
+ 2931 09d4 9093 3E01 		sts 318,r25
+ 2932 09d8 2F5F      		subi r18,-1
+ 2933 09da 3F4F      		sbci r19,-1
+1141:../../src/radio/rf231_soc/source/basic_rf.c ****          AES_STATE = data[16*i+j];
+ 2935               	.LM321:
+ 2936 09dc 2031      		cpi r18,16
+ 2937 09de 3105      		cpc r19,__zero_reg__
+ 2938 09e0 01F4      		brne .L211
+1143:../../src/radio/rf231_soc/source/basic_rf.c ****       AES_CTRL |= (1 << AES_REQUEST);
+ 2940               	.LM322:
+ 2941 09e2 9091 3C01 		lds r25,316
+ 2942 09e6 9068      		ori r25,lo8(-128)
+ 2943 09e8 9093 3C01 		sts 316,r25
+ 2944               	.L212:
+1144:../../src/radio/rf231_soc/source/basic_rf.c ****       while(!(AES_STATUS & (1 << AES_DONE)))
+ 2946               	.LM323:
+ 2947 09ec 9091 3D01 		lds r25,317
+ 2948 09f0 90FF      		sbrs r25,0
+ 2949 09f2 00C0      		rjmp .L212
+1145:../../src/radio/rf231_soc/source/basic_rf.c ****          continue;
+1146:../../src/radio/rf231_soc/source/basic_rf.c ****       for(j=0; j<16; j++){
+1147:../../src/radio/rf231_soc/source/basic_rf.c ****          data[16*i+j] = AES_STATE;
+1148:../../src/radio/rf231_soc/source/basic_rf.c ****          if(i!=0)
+1149:../../src/radio/rf231_soc/source/basic_rf.c ****             data[16*i+j] ^= data[16*(i-1)+j];
+ 2951               	.LM324:
+ 2952 09f4 4150      		subi r20,1
+ 2953 09f6 5109      		sbc r21,__zero_reg__
+ 2954 09f8 94E0      		ldi r25,4
+ 2955               		1:
+ 2956 09fa 440F      		lsl r20
+ 2957 09fc 551F      		rol r21
+ 2958 09fe 9A95      		dec r25
+ 2959 0a00 01F4      		brne 1b
+ 2960 0a02 20E0      		ldi r18,0
+ 2961 0a04 30E0      		ldi r19,0
+ 2962               	.L214:
+1147:../../src/radio/rf231_soc/source/basic_rf.c ****          if(i!=0)
+ 2964               	.LM325:
+ 2965 0a06 9091 3E01 		lds r25,318
+ 2966 0a0a 8E01      		movw r16,r28
+ 2967 0a0c 020F      		add r16,r18
+ 2968 0a0e 131F      		adc r17,r19
+ 2969 0a10 F801      		movw r30,r16
+ 2970 0a12 9083      		st Z,r25
+1148:../../src/radio/rf231_soc/source/basic_rf.c ****             data[16*i+j] ^= data[16*(i-1)+j];
+ 2972               	.LM326:
+ 2973 0a14 6623      		tst r22
+ 2974 0a16 01F0      		breq .L213
+ 2975 0a18 F901      		movw r30,r18
+ 2976 0a1a E40F      		add r30,r20
+ 2977 0a1c F51F      		adc r31,r21
+ 2978 0a1e EA0F      		add r30,r26
+ 2979 0a20 FB1F      		adc r31,r27
+ 2981               	.LM327:
+ 2982 0a22 E081      		ld r30,Z
+ 2983 0a24 9E27      		eor r25,r30
+ 2984 0a26 F801      		movw r30,r16
+ 2985 0a28 9083      		st Z,r25
+ 2986               	.L213:
+ 2987 0a2a 2F5F      		subi r18,-1
+ 2988 0a2c 3F4F      		sbci r19,-1
+1146:../../src/radio/rf231_soc/source/basic_rf.c ****          data[16*i+j] = AES_STATE;
+ 2990               	.LM328:
+ 2991 0a2e 2031      		cpi r18,16
+ 2992 0a30 3105      		cpc r19,__zero_reg__
+ 2993 0a32 01F4      		brne .L214
+ 2994 0a34 6150      		subi r22,lo8(-(-1))
+ 2995 0a36 00C0      		rjmp .L210
+ 2996               	.L217:
+1133:../../src/radio/rf231_soc/source/basic_rf.c **** 
+ 2998               	.LM329:
+ 2999 0a38 81E0      		ldi r24,lo8(1)
+ 3000               	.L208:
+ 3001               	/* epilogue start */
+1150:../../src/radio/rf231_soc/source/basic_rf.c ****       }
+1151:../../src/radio/rf231_soc/source/basic_rf.c ****    }
+1152:../../src/radio/rf231_soc/source/basic_rf.c ****    return 0;
+1153:../../src/radio/rf231_soc/source/basic_rf.c **** }
+ 3003               	.LM330:
+ 3004 0a3a DF91      		pop r29
+ 3005 0a3c CF91      		pop r28
+ 3006 0a3e 1F91      		pop r17
+ 3007 0a40 0F91      		pop r16
+ 3008 0a42 0895      		ret
+ 3013               	.Lscope55:
+ 3015               		.stabd	78,0,0
+ 3016               	.global	reset_val
+ 3017               		.data
+ 3020               	reset_val:
+ 3021 0000 43        		.byte	67
+ 3022 0001 15        		.byte	21
+ 3023 0002 A6        		.byte	-90
+ 3024 0003 D9        		.byte	-39
+ 3025 0004 3D        		.byte	61
+ 3026 0005 31        		.byte	49
+ 3027 0006 82        		.byte	-126
+ 3028 0007 F1        		.byte	-15
+ 3029 0008 8C        		.byte	-116
+ 3030 0009 A7        		.byte	-89
+ 3031 000a 4F        		.byte	79
+ 3032 000b C5        		.byte	-59
+ 3033 000c 99        		.byte	-103
+ 3034 000d 97        		.byte	-105
+ 3035 000e 04        		.byte	4
+ 3036 000f AC        		.byte	-84
+ 3037               	.global	wireless_prog
+ 3038               		.section .bss
+ 3041               	wireless_prog:
+ 3042 0000 00        		.zero	1
+ 3043               		.comm	dkey,16,1
+ 3044               		.comm	ekey,16,1
+ 3045               	.global	rx_end_func
+ 3048               	rx_end_func:
+ 3049 0001 0000      		.zero	2
+ 3050               	.global	rx_start_func
+ 3053               	rx_start_func:
+ 3054 0003 0000      		.zero	2
+ 3055               		.comm	dummy_t,8,1
+ 3056               		.comm	target_t,8,1
+ 3057               		.comm	curr_t,8,1
+ 3058               		.comm	use_glossy,1,1
+ 3059               		.comm	rf_ready,1,1
+ 3060               		.comm	rfSettings,9,1
+ 3061               		.comm	rx_ctr,4,1
+ 3062               		.comm	tx_ctr,6,1
+ 3063               		.comm	mdmctrl0,2,1
+ 3064               		.comm	radio_sem,2,1
+ 3065               		.comm	app_timer0_prescale,1,1
+ 3066               		.comm	app_timer0_callback,2,1
+ 3067               		.comm	_nrk_time_trigger,1,1
+ 3068               		.comm	_nrk_prev_timer_val,1,1
+ 3069               		.comm	error_num,1,1
+ 3070               		.comm	error_task,1,1
+ 3071               		.comm	nrk_kernel_stk_ptr,2,1
+ 3072               		.comm	nrk_idle_task_stk,128,1
+ 3073               		.comm	_nrk_signal_list,4,1
+ 3099               		.text
+ 3101               	.Letext0:
+ 3102               		.ident	"GCC: (GNU) 4.9.1"
+ 3103               	.global __do_copy_data
+ 3104               	.global __do_clear_bss
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 basic_rf.c
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:5      *ABS*:000000000000003b __RAMPZ__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:6      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:7      *ABS*:0000000000000001 __zero_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:331    .text:0000000000000000 rf_cmd
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:359    .text:0000000000000010 set_wireless_prog
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:3041   .bss:0000000000000000 wireless_prog
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:379    .text:0000000000000016 rf_enable_glossy
+                            *COM*:0000000000000001 use_glossy
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:400    .text:000000000000001e rf_disable_glossy
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:420    .text:0000000000000024 rf_power_down
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:497    .text:0000000000000070 rf_power_up
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:550    .text:000000000000009c rf_tx_power
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:580    .text:00000000000000b0 rf_addr_decode_enable
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:604    .text:00000000000000bc rf_addr_decode_disable
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:628    .text:00000000000000c8 rf_auto_ack_enable
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:652    .text:00000000000000d4 rf_auto_ack_disable
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:677    .text:00000000000000e0 rf_addr_decode_set_my_mac
+                            *COM*:0000000000000009 rfSettings
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:706    .text:00000000000000f2 rf_set_rx
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:740    .text:000000000000010c rx_start_callback
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:3053   .bss:0000000000000003 rx_start_func
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:762    .text:0000000000000116 rx_end_callback
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:3048   .bss:0000000000000001 rx_end_func
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:787    .text:0000000000000120 rf_init
+                            *COM*:0000000000000001 rf_ready
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:952    .text:00000000000001f8 rf_rx_on
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:972    .text:00000000000001fe rf_polling_rx_on
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:992    .text:0000000000000204 rf_rx_off
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:1013   .text:000000000000020a rf_tx_packet
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:1287   .text:0000000000000382 rf_cca_check
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:1385   .text:00000000000003e6 rf_rx_packet_nonblock
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:3020   .data:0000000000000000 reset_val
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:1652   .text:00000000000005be __vector_64
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:1687   .text:00000000000005dc __vector_63
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:1722   .text:00000000000005fa __vector_62
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:1757   .text:0000000000000618 __vector_61
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:1792   .text:0000000000000636 __vector_59
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:1863   .text:0000000000000696 __vector_58
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:1898   .text:00000000000006b4 __vector_57
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:1934   .text:00000000000006d2 rf_set_cca_thresh
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:1964   .text:00000000000006e6 rf_security_last_pkt_status
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:1985   .text:00000000000006ea rf_security_set_ctr_counter
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:2003   .text:00000000000006ec rf_security_set_key
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:2020   .text:00000000000006ee rf_security_disable
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:2040   .text:00000000000006f0 rf_tx_tdma_packet
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:2060   .text:00000000000006f4 rf_get_sem
+                            *COM*:0000000000000002 radio_sem
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:2081   .text:00000000000006fe rf_flush_rx_fifo
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:2098   .text:0000000000000700 rf_busy
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:2118   .text:0000000000000704 rf_rx_check_fifop
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:2138   .text:0000000000000708 rf_rx_check_sfd
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:2158   .text:000000000000070c rf_carrier_on
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:2175   .text:000000000000070e rf_carrier_off
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:2192   .text:0000000000000710 rf_test_mode
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:2209   .text:0000000000000712 rf_data_mode
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:2226   .text:0000000000000714 rf_rx_set_serial
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:2243   .text:0000000000000716 rf_tx_set_serial
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:2261   .text:0000000000000718 rf_set_preamble_length
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:2279   .text:000000000000071a rf_set_cca_mode
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:2296   .text:000000000000071c rf_cc2591_tx_on
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:2326   .text:000000000000072c rf_cc2591_rx_on
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:2364   .text:000000000000073c rf_glossy_interrupt
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:2535   .text:0000000000000816 __vector_60
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:2637   .text:0000000000000896 aes_setkey
+                            *COM*:0000000000000010 ekey
+                            *COM*:0000000000000010 dkey
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:2709   .text:00000000000008da aes_encrypt
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccDLZmK.s:2853   .text:0000000000000978 aes_decrypt
+                            *COM*:0000000000000008 dummy_t
+                            *COM*:0000000000000008 target_t
+                            *COM*:0000000000000008 curr_t
+                            *COM*:0000000000000004 rx_ctr
+                            *COM*:0000000000000006 tx_ctr
+                            *COM*:0000000000000002 mdmctrl0
+                            *COM*:0000000000000001 app_timer0_prescale
+                            *COM*:0000000000000002 app_timer0_callback
+                            *COM*:0000000000000001 _nrk_time_trigger
+                            *COM*:0000000000000001 _nrk_prev_timer_val
+                            *COM*:0000000000000001 error_num
+                            *COM*:0000000000000001 error_task
+                            *COM*:0000000000000002 nrk_kernel_stk_ptr
+                            *COM*:0000000000000080 nrk_idle_task_stk
+                            *COM*:0000000000000004 _nrk_signal_list
+
+UNDEFINED SYMBOLS
+memcpy
+strncmp
+nrk_led_set
+nrk_int_disable
+puts
+nrk_int_enable
+putchar
+printf
+__do_copy_data
+__do_clear_bss

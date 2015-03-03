@@ -1,0 +1,3556 @@
+   1               		.file	"pcf_tdma.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__RAMPZ__ = 0x3b
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+  10               		.text
+  11               	.Ltext0:
+ 341               	.global	_tdma_rx_master
+ 343               	_tdma_rx_master:
+ 344               		.stabd	46,0,0
+   1:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** /******************************************************************************
+   2:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** *  Nano-RK, a real-time operating system for sensor networks.
+   3:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** *  Copyright (C) 2007, Real-Time and Multimedia Lab, Carnegie Mellon University
+   4:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** *  All rights reserved.
+   5:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** *
+   6:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** *  This is the Open Source Version of Nano-RK included as part of a Dual
+   7:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** *  Licensing Model. If you are unsure which license to use please refer to:
+   8:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** *  http://www.nanork.org/nano-RK/wiki/Licensing
+   9:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** *
+  10:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** *  This program is free software: you can redistribute it and/or modify
+  11:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** *  it under the terms of the GNU General Public License as published by
+  12:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** *  the Free Software Foundation, version 2.0 of the License.
+  13:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** *
+  14:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** *  This program is distributed in the hope that it will be useful,
+  15:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  16:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  17:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** *  GNU General Public License for more details.
+  18:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** *
+  19:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** *  You should have received a copy of the GNU General Public License
+  20:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  21:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** *
+  22:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** *  Contributing Authors (specific to this file):
+  23:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** *  Anthony Rowe
+  24:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** *******************************************************************************/
+  25:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #include <include.h>
+  26:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #include <ulib.h>
+  27:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #include <stdlib.h>
+  28:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #include <avr/sleep.h>
+  29:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #include <avr/wdt.h>
+  30:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #include <avr/eeprom.h>
+  31:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #include <stdio.h>
+  32:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #include <avr/interrupt.h>
+  33:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #include <nrk.h>
+  34:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #include <nrk_events.h>
+  35:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #include <nrk_timer.h>
+  36:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #include <nrk_error.h>
+  37:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #include <nrk_reserve.h>
+  38:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #include <pcf_tdma.h>
+  39:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #include <nrk_cfg.h>
+  40:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+  41:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** //#define GPIO_DEBUG
+  42:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #define TX_PKT_RETRY	1
+  43:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+  44:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+  45:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #ifndef PCF_TDMA_TIMEOUT 
+  46:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #define PCF_TDMA_TIMEOUT 7 
+  47:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #endif
+  48:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+  49:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #ifndef TDMA_STACKSIZE
+  50:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #define TDMA_STACKSIZE 256 
+  51:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #endif
+  52:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** static uint8_t tdma_wakeup_flag=0;
+  53:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** static nrk_task_type tdma_task;
+  54:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** static NRK_STK tdma_task_stack[TDMA_STACKSIZE];
+  55:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** static uint8_t tdma_tx_buf[TDMA_MAX_PKT_SIZE];
+  56:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** static uint8_t tdma_rx_buf[TDMA_MAX_PKT_SIZE];
+  57:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+  58:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** static uint16_t tdma_tx_sched[TDMA_MAX_TX_SLOTS];
+  59:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** static uint8_t tdma_tx_slots;
+  60:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** static uint8_t _tdma_aes_enabled=0;
+  61:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** static uint8_t tdma_my_mac;
+  62:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** static uint8_t tdma_mode;
+  63:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** static uint8_t tdma_ttl;
+  64:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** static uint8_t tx_data_ready;
+  65:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+  66:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** //#define DEBUG
+  67:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** static uint16_t tdma_slot_len_ms;
+  68:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** static uint16_t tdma_slots_per_cycle;
+  69:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** static uint16_t tdma_last_tx_slot;
+  70:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+  71:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** static uint8_t tdma_tx_data_ready;
+  72:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** static uint8_t tdma_rx_buf_empty;
+  73:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** static volatile uint8_t tdma_running;
+  74:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** static uint8_t tdma_chan;
+  75:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** static uint8_t tdma_is_enabled;
+  76:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** static uint16_t tdma_failure_cnt;
+  77:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+  78:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** static uint8_t ttl_delay;
+  79:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** static nrk_time_t _ttl_delay_total;
+  80:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** static nrk_time_t _ttl_delay_per_tx;
+  81:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+  82:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** static nrk_time_t _tdma_slot_time;
+  83:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** static nrk_time_t _tdma_next_wakeup;
+  84:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** static nrk_time_t tmp_time;
+  85:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+  86:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** static int8_t tx_reserve;
+  87:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** static uint16_t tdma_rx_failure_cnt;
+  88:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+  89:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** static uint8_t sync_status;
+  90:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** static int8_t (*tdma_error_callback)(uint16_t cons_err_cnt);
+  91:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+  92:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+  93:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** /**
+  94:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****  *  This is a callback if you require immediate response to a packet
+  95:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****  */
+  96:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** RF_RX_INFO *rf_rx_callback (RF_RX_INFO * pRRI)
+  97:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+  98:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   // Any code here gets called the instant a packet is received from the interrupt   
+  99:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   return pRRI;
+ 100:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 101:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 102:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** void tdma_aes_setkey(uint8_t *key)
+ 103:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 104:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** uint8_t i;
+ 105:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	aes_setkey(key);
+ 106:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 107:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 108:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 109:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** void tdma_aes_enable()
+ 110:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 111:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   _tdma_aes_enabled=1;
+ 112:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 113:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 114:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** void tdma_aes_disable()
+ 115:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 116:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   _tdma_aes_enabled=1;
+ 117:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 118:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 119:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** uint8_t tdma_sync_ok()
+ 120:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 121:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** return sync_status;
+ 122:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 123:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 124:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** int8_t tdma_set_error_callback(void (*fp)(void))
+ 125:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 126:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	if(fp==NULL ) return NRK_ERROR;
+ 127:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	tdma_error_callback=fp;
+ 128:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** return NRK_OK;
+ 129:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 130:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 131:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 132:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** int8_t tdma_tx_slot_add (uint16_t slot)
+ 133:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 134:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_tx_sched[0] = slot;
+ 135:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_tx_slots = 1;
+ 136:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   return NRK_OK;
+ 137:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 138:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 139:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** int8_t tdma_tx_reserve_set (nrk_time_t * period, uint16_t pkts)
+ 140:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 141:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 142:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #ifdef NRK_MAX_RESERVES
+ 143:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** // Create a reserve if it doesn't exist
+ 144:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   if (tx_reserve == -1)
+ 145:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     tx_reserve = nrk_reserve_create ();
+ 146:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   if (tx_reserve >= 0)
+ 147:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return nrk_reserve_set (tx_reserve, period, pkts, NULL);
+ 148:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   else
+ 149:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return NRK_ERROR;
+ 150:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #else
+ 151:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   return NRK_ERROR;
+ 152:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #endif
+ 153:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 154:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 155:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** uint16_t tdma_tx_reserve_get ()
+ 156:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 157:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #ifdef NRK_MAX_RESERVES
+ 158:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   if (tx_reserve >= 0)
+ 159:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return nrk_reserve_get (tx_reserve);
+ 160:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   else
+ 161:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return 0;
+ 162:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #else
+ 163:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   return 0;
+ 164:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #endif
+ 165:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 166:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 167:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** int8_t tdma_set_rf_power (uint8_t power)
+ 168:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 169:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   if (power > 31)
+ 170:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return NRK_ERROR;
+ 171:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   rf_tx_power (power);
+ 172:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   return NRK_OK;
+ 173:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 174:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 175:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** int8_t tdma_set_channel (uint8_t chan)
+ 176:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 177:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   if (chan > 26)
+ 178:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return NRK_ERROR;
+ 179:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_chan = chan;
+ 180:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** //rf_init (&tdma_rfRxInfo, chan, 0xFFFF, 0x00000);
+ 181:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   rf_init (&tdma_rfRxInfo, chan, 0x2420, 0x1214);
+ 182:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   return NRK_OK;
+ 183:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 184:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 185:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** int8_t tdma_set_slot_len_ms (uint16_t len)
+ 186:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 187:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_slot_len_ms = len;
+ 188:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   _tdma_slot_time.nano_secs = len * NANOS_PER_MS;
+ 189:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   _tdma_slot_time.secs = 0;
+ 190:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   return NRK_OK;
+ 191:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 192:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 193:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 194:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** int8_t tdma_set_slots_per_cycle (uint16_t slots_per_cycle)
+ 195:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 196:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 197:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_slots_per_cycle = slots_per_cycle;
+ 198:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 199:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 200:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** int8_t tdma_send (tdma_info * fd, uint8_t * buf, uint8_t len, uint8_t flags)
+ 201:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 202:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   uint32_t mask;
+ 203:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   uint8_t i;
+ 204:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 205:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   if (tx_data_ready == 1)
+ 206:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return NRK_ERROR;
+ 207:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   if (len == 0)
+ 208:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return NRK_ERROR;
+ 209:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   if (buf == NULL)
+ 210:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return NRK_ERROR;
+ 211:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   if (fd == NULL)
+ 212:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return NRK_ERROR;
+ 213:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 214:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** // If reserve exists check it
+ 215:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #ifdef NRK_MAX_RESERVES
+ 216:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   if (tx_reserve != -1) {
+ 217:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     if (nrk_reserve_consume (tx_reserve) == NRK_ERROR) {
+ 218:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       return NRK_ERROR;
+ 219:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     }
+ 220:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   }
+ 221:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #endif
+ 222:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   if (flags == TDMA_BLOCKING)
+ 223:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     nrk_signal_register (tdma_tx_pkt_done_signal);
+ 224:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 225:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tx_data_ready = 1;
+ 226:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 227:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rfTxInfo.pPayload = tdma_tx_buf;
+ 228:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** // Setup the header data
+ 229:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rfTxInfo.pPayload[TDMA_SLOT_HIGH] = (fd->slot >> 8) & 0xff;
+ 230:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rfTxInfo.pPayload[TDMA_SLOT_LOW] = (fd->slot & 0xff);
+ 231:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rfTxInfo.pPayload[TDMA_DST_HIGH] = (fd->dst >> 8) & 0xff;
+ 232:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rfTxInfo.pPayload[TDMA_DST_LOW] = (fd->dst & 0xff);
+ 233:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** //  tdma_rfTxInfo.pPayload[TDMA_SRC_HIGH] = (fd->src >> 8) & 0xff;
+ 234:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rfTxInfo.pPayload[TDMA_SRC_HIGH] = (tdma_my_mac & 0xff);
+ 235:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rfTxInfo.pPayload[TDMA_SRC_LOW] = (tdma_my_mac >> 8) & 0xff;
+ 236:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   fd->seq_num++;
+ 237:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rfTxInfo.pPayload[TDMA_SEQ_NUM_HIGH] = ((fd->seq_num>>8) & 0xff);
+ 238:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rfTxInfo.pPayload[TDMA_SEQ_NUM_LOW] = (fd->seq_num & 0xff);
+ 239:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rfTxInfo.pPayload[TDMA_CYCLE_SIZE_HIGH] = (fd->cycle_size >> 8) & 0xff;
+ 240:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rfTxInfo.pPayload[TDMA_CYCLE_SIZE_LOW] = (fd->cycle_size & 0xff);
+ 241:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rfTxInfo.pPayload[TDMA_TTL] = tdma_ttl<<4 | tdma_ttl;
+ 242:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 243:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** // Copy the user payload to the back of the header
+ 244:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   for (i = 0; i < len; i++)
+ 245:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     tdma_rfTxInfo.pPayload[i + TDMA_PCF_HEADER] = buf[i];
+ 246:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** // Set packet length with header
+ 247:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rfTxInfo.length = len + TDMA_PCF_HEADER;
+ 248:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #ifdef DEBUG
+ 249:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   nrk_kprintf (PSTR ("Waiting for tx done signal\r\n"));
+ 250:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #endif
+ 251:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 252:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   if (flags == TDMA_BLOCKING) {
+ 253:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     mask = nrk_event_wait (SIG (tdma_tx_pkt_done_signal));
+ 254:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     if (mask == 0)
+ 255:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       nrk_kprintf (PSTR ("TDMA TX: Error calling event wait\r\n"));
+ 256:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     if ((mask & SIG (tdma_tx_pkt_done_signal)) == 0)
+ 257:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       nrk_kprintf (PSTR ("TDMA TX: Woke up on wrong signal\r\n"));
+ 258:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return NRK_OK;
+ 259:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   }
+ 260:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 261:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   return NRK_OK;
+ 262:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 263:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 264:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** int8_t tdma_recv (tdma_info * fd, uint8_t * buf, uint8_t * len, uint8_t flags)
+ 265:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 266:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   nrk_sig_mask_t event;
+ 267:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   uint8_t i;
+ 268:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   if (flags == TDMA_BLOCKING) {
+ 269:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     if (tdma_rx_buf_empty == 1) {
+ 270:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       nrk_signal_register (tdma_rx_pkt_signal);
+ 271:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       event = nrk_event_wait (SIG (tdma_rx_pkt_signal));
+ 272:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     }
+ 273:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   }
+ 274:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   else if (tdma_rx_buf_empty == 1)
+ 275:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return NRK_ERROR;
+ 276:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 277:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   if (tdma_rfRxInfo.length < TDMA_PCF_HEADER)
+ 278:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return NRK_ERROR;
+ 279:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   // Set the length
+ 280:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   *len = (uint8_t) (tdma_rfRxInfo.length - TDMA_PCF_HEADER);
+ 281:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   // Copy the payload data
+ 282:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   for (i = 0; i < *len; i++)
+ 283:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     buf[i] = tdma_rfRxInfo.pPayload[i + TDMA_PCF_HEADER];
+ 284:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 285:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   // Fill the information struct
+ 286:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   fd->rssi = tdma_rfRxInfo.rssi;
+ 287:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   fd->actualRssi = tdma_rfRxInfo.actualRssi;
+ 288:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   fd->energyDetectionLevel = tdma_rfRxInfo.energyDetectionLevel;
+ 289:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   fd->linkQualityIndication = tdma_rfRxInfo.linkQualityIndication;
+ 290:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   fd->src =
+ 291:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     ((uint16_t) tdma_rfRxInfo.pPayload[TDMA_SRC_HIGH] << 8) | tdma_rfRxInfo.
+ 292:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     pPayload[TDMA_SRC_LOW];
+ 293:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   fd->dst =
+ 294:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     ((uint16_t) tdma_rfRxInfo.pPayload[TDMA_DST_HIGH] << 8) | tdma_rfRxInfo.
+ 295:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     pPayload[TDMA_DST_LOW];
+ 296:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   fd->slot =
+ 297:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     ((uint16_t) tdma_rfRxInfo.pPayload[TDMA_SLOT_HIGH] << 8) | tdma_rfRxInfo.
+ 298:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     pPayload[TDMA_SLOT_LOW];
+ 299:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   fd->seq_num =
+ 300:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     ((uint16_t) tdma_rfRxInfo.
+ 301:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****      pPayload[TDMA_SEQ_NUM_HIGH] << 8) | tdma_rfRxInfo.
+ 302:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     pPayload[TDMA_SEQ_NUM_LOW];
+ 303:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   fd->cycle_size =
+ 304:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     ((uint16_t) tdma_rfRxInfo.
+ 305:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****      pPayload[TDMA_CYCLE_SIZE_HIGH] << 8) | tdma_rfRxInfo.
+ 306:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     pPayload[TDMA_CYCLE_SIZE_LOW];
+ 307:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 308:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   fd->ttl= (uint8_t) tdma_rfRxInfo.pPayload[TDMA_TTL]; 
+ 309:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 310:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 311:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   // Check if it was a time out instead of packet RX signal
+ 312:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   if (flags == TDMA_BLOCKING)
+ 313:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     if ((event & SIG (tdma_rx_pkt_signal)) == 0)
+ 314:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       return NRK_ERROR;
+ 315:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 316:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   // Set the buffer as empty
+ 317:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rx_buf_empty = 1;
+ 318:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   return NRK_OK;
+ 319:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 320:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 321:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 322:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 323:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** int8_t tdma_rx_pkt_set_buffer (uint8_t * buf, uint8_t size)
+ 324:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 325:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   if (buf == NULL)
+ 326:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return NRK_ERROR;
+ 327:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rfRxInfo.pPayload = buf;
+ 328:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rfRxInfo.max_length = size;
+ 329:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rx_buf_empty = 1;
+ 330:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   return NRK_OK;
+ 331:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 332:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 333:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** void tdma_ttl_set(uint8_t ttl)
+ 334:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 335:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** tdma_ttl=ttl;
+ 336:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 337:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 338:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** int8_t tdma_init (uint8_t mode, uint8_t chan, uint16_t my_mac)
+ 339:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 340:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tx_reserve = -1;
+ 341:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rx_failure_cnt = 0;
+ 342:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_mode = mode;
+ 343:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_tx_slots = 0;
+ 344:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_ttl=TDMA_DEFAULT_TTL;
+ 345:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   sync_status=0;
+ 346:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 347:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 348:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   #ifdef GPIO_DEBUG
+ 349:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     nrk_gpio_direction(NRK_MOSI,NRK_PIN_OUTPUT);
+ 350:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     nrk_gpio_direction(NRK_MISO,NRK_PIN_OUTPUT);
+ 351:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   #endif
+ 352:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 353:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 354:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_slots_per_cycle = TDMA_DEFAULT_SLOTS_PER_CYCLE;
+ 355:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 356:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   _tdma_slot_time.nano_secs = TDMA_DEFAULT_SLOT_MS * NANOS_PER_MS;
+ 357:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   _tdma_slot_time.secs = 0;
+ 358:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 359:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rx_pkt_signal = nrk_signal_create ();
+ 360:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   if (tdma_rx_pkt_signal == NRK_ERROR) {
+ 361:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     nrk_kprintf (PSTR ("TDMA ERROR: creating rx signal failed\r\n"));
+ 362:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     nrk_kernel_error_add (NRK_SIGNAL_CREATE_ERROR, nrk_cur_task_TCB->task_ID);
+ 363:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return NRK_ERROR;
+ 364:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   }
+ 365:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_tx_pkt_done_signal = nrk_signal_create ();
+ 366:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   if (tdma_tx_pkt_done_signal == NRK_ERROR) {
+ 367:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     nrk_kprintf (PSTR ("TDMA ERROR: creating tx signal failed\r\n"));
+ 368:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     nrk_kernel_error_add (NRK_SIGNAL_CREATE_ERROR, nrk_cur_task_TCB->task_ID);
+ 369:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return NRK_ERROR;
+ 370:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   }
+ 371:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_enable_signal = nrk_signal_create ();
+ 372:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   if (tdma_enable_signal == NRK_ERROR) {
+ 373:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     nrk_kprintf (PSTR ("TDMA ERROR: creating enable signal failed\r\n"));
+ 374:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     nrk_kernel_error_add (NRK_SIGNAL_CREATE_ERROR, nrk_cur_task_TCB->task_ID);
+ 375:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return NRK_ERROR;
+ 376:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   }
+ 377:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 378:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 379:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   // Set the one main rx buffer
+ 380:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rx_pkt_set_buffer (tdma_rx_buf, TDMA_MAX_PKT_SIZE);
+ 381:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rx_buf_empty = 1;
+ 382:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tx_data_ready = 0;
+ 383:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 384:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 385:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   // Setup the radio 
+ 386:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   rf_init (&tdma_rfRxInfo, chan, 0xffff, my_mac);
+ 387:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_chan = chan;
+ 388:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_my_mac = my_mac;
+ 389:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 390:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   //FASTSPI_SETREG (CC2420_RSSI, 0xE580); // CCA THR=-25
+ 391:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   //FASTSPI_SETREG (CC2420_TXCTRL, 0x80FF);       // TX TURNAROUND = 128 us
+ 392:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   //FASTSPI_SETREG (CC2420_RXCTRL1, 0x0A56);
+ 393:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   // default cca thresh of -45
+ 394:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   rf_set_cca_thresh (-45);
+ 395:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 396:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   asm volatile ("":::"memory");
+ 397:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_running = 1;
+ 398:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_is_enabled = 1;
+ 399:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   return NRK_OK;
+ 400:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 401:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 402:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 403:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** nrk_sig_t tdma_get_rx_pkt_signal ()
+ 404:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 405:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   nrk_signal_register (tdma_rx_pkt_signal);
+ 406:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   return (tdma_rx_pkt_signal);
+ 407:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 408:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 409:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** nrk_sig_t tdma_get_tx_done_signal ()
+ 410:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 411:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   nrk_signal_register (tdma_tx_pkt_done_signal);
+ 412:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   return (tdma_tx_pkt_done_signal);
+ 413:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 414:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 415:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 416:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 417:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** uint8_t *tdma_rx_pkt_get (uint8_t * len, int8_t * rssi)
+ 418:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 419:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 420:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   if (tdma_rx_buf_empty == 1) {
+ 421:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     *len = 0;
+ 422:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     *rssi = 0;
+ 423:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return NULL;
+ 424:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   }
+ 425:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   *len = tdma_rfRxInfo.length;
+ 426:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   *rssi = tdma_rfRxInfo.rssi;
+ 427:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   return tdma_rfRxInfo.pPayload;
+ 428:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 429:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 430:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 431:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** int8_t tdma_rx_pkt_release(void)
+ 432:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 433:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     tdma_rx_buf_empty=1;
+ 434:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** return NRK_OK;
+ 435:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 436:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 437:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 438:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** void tdma_disable ()
+ 439:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 440:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_is_enabled = 0;
+ 441:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   rf_power_down ();
+ 442:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 443:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 444:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** void tdma_enable ()
+ 445:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 446:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_is_enabled = 1;
+ 447:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   rf_power_up ();
+ 448:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   nrk_event_signal (tdma_enable_signal);
+ 449:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 450:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 451:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 452:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** void tdma_nw_task ()
+ 453:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 454:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   int8_t v, i;
+ 455:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   uint16_t slot, tmp,tmp2,sync;
+ 456:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   nrk_sig_mask_t event;
+ 457:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 458:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   do {
+ 459:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     nrk_wait_until_next_period ();
+ 460:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   } while (!tdma_started ());
+ 461:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 462:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** //register the signal after bmac_init has been called
+ 463:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   v = nrk_signal_register (tdma_enable_signal);
+ 464:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   if (v == NRK_ERROR)
+ 465:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     nrk_kprintf (PSTR ("Failed to register signal\r\n"));
+ 466:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   slot = 0;
+ 467:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** //rf_set_rx (&tdma_rfRxInfo, tdma_chan);
+ 468:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 469:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 470:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 471:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   while (1) {
+ 472:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     if (tdma_mode == TDMA_HOST) {
+ 473:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	    sync_status=1; // HOST is always synced
+ 474:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       // This is the downstream transmit slot
+ 475:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       if (slot == 0) {
+ 476:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 477:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         //  for(i=0; i<100; i++ ) tdma_rfTxInfo.pPayload[i] = 0;  
+ 478:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         //rf_rx_off();
+ 479:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         // If there is no pending packet, lets make an empty one
+ 480:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         if (tx_data_ready == 0) {
+ 481:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           tdma_rfTxInfo.pPayload = tdma_tx_buf;
+ 482:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           // Setup the header data
+ 483:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           tdma_rfTxInfo.pPayload[TDMA_DST_LOW] = 0xff;  // dst
+ 484:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           tdma_rfTxInfo.pPayload[TDMA_DST_HIGH] = 0xff;
+ 485:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           tdma_rfTxInfo.pPayload[TDMA_SRC_LOW] = 0x00;  // src
+ 486:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           tdma_rfTxInfo.pPayload[TDMA_SRC_HIGH] = 0x00;
+ 487:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           tdma_rfTxInfo.pPayload[TDMA_SEQ_NUM_LOW] = 0x00;      // seq num
+ 488:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           tdma_rfTxInfo.pPayload[TDMA_SEQ_NUM_HIGH] = 0x00;
+ 489:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           tdma_rfTxInfo.length = TDMA_PCF_HEADER;
+ 490:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         }
+ 491:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         tdma_rfTxInfo.pPayload[TDMA_CYCLE_SIZE_LOW] = tdma_slots_per_cycle & 0xff;      // cycle si
+ 492:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         tdma_rfTxInfo.pPayload[TDMA_CYCLE_SIZE_HIGH] =
+ 493:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           tdma_slots_per_cycle >> 8;
+ 494:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         tdma_rfTxInfo.pPayload[TDMA_SLOT_LOW] = 0;      // slot
+ 495:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         tdma_rfTxInfo.pPayload[TDMA_SLOT_HIGH] = 0;
+ 496:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         tdma_rfTxInfo.pPayload[TDMA_TTL] = tdma_ttl<<4 | (tdma_ttl);
+ 497:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         tdma_rfTxInfo.pPayload[TDMA_SLOT_SIZE] = tdma_slot_len_ms;
+ 498:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         nrk_time_get (&_tdma_next_wakeup);
+ 499:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         tdma_rfTxInfo.destAddr = 0xffff;
+ 500:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         tdma_rfTxInfo.ackRequest = 0;
+ 501:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         tdma_rfTxInfo.cca = 0;
+ 502:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         _tdma_tx ();
+ 503:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         rf_rx_on ();
+ 504:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	if(tdma_wakeup_flag==1)
+ 505:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 		{
+ 506:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 		for(slot=0; slot<1000; slot++ )
+ 507:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 			{
+ 508:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 				if((slot%5)==0)nrk_led_toggle(BLUE_LED);
+ 509:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         			tdma_rfTxInfo.pPayload[TDMA_SLOT_LOW] = 0xff;      // slot
+ 510:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         			tdma_rfTxInfo.pPayload[TDMA_SLOT_HIGH] = 0xff;
+ 511:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           			tdma_rfTxInfo.pPayload[TDMA_SRC_LOW] = 0x0;  // src
+ 512:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           			tdma_rfTxInfo.pPayload[TDMA_SRC_HIGH] = 0x0;
+ 513:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           			tdma_rfTxInfo.length = TDMA_PCF_HEADER;
+ 514:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         			_tdma_tx ();
+ 515:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         			//rf_rx_on ();
+ 516:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 				nrk_wait_until_ticks(10);
+ 517:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 			}
+ 518:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 		nrk_led_clr(BLUE_LED);
+ 519:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 		slot=0;
+ 520:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 		tdma_wakeup_flag=0;
+ 521:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 		}
+ 522:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       }
+ 523:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       else {
+ 524:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         // Upstream data slot
+ 525:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         // This configures the packet receive interrupt to call the _tdma_rx_master function
+ 526:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         // The _tdma_rx_master function triggers a signal to the tdma_rx function.
+ 527:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         //rf_rx_on();
+ 528:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	rx_end_callback(&_tdma_rx_master);
+ 529:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         if (v == 1)
+ 530:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           tdma_last_tx_slot = slot;
+ 531:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       }
+ 532:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       slot++;
+ 533:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	// For the last slot, we wakeup a bit late to make sure all other nodes have woken up in time to
+ 534:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	// receive the beacon message.  
+ 535:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       if (slot > tdma_slots_per_cycle ){
+ 536:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         nrk_wait_until_ticks(TDMA_WAKEUP_GAURD_TIME_MS);
+ 537:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	slot = 0;
+ 538:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	}
+ 539:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       else {
+ 540:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       nrk_time_add (&_tdma_next_wakeup, _tdma_next_wakeup, _tdma_slot_time);
+ 541:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       nrk_time_compact_nanos (&_tdma_next_wakeup);
+ 542:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       nrk_wait_until (_tdma_next_wakeup);
+ 543:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	
+ 544:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       }
+ 545:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     }
+ 546:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     // TDMA slave node
+ 547:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     else {
+ 548:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       if (slot == 0) {
+ 549:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 550:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	//rf_rx_off ();
+ 551:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	//rf_power_down();
+ 552:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	      	
+ 553:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	sync=0;
+ 554:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	rf_power_up();
+ 555:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	rf_rx_on ();
+ 556:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         do {
+ 557:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           v = _tdma_rx ();
+ 558:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           nrk_time_get (&_tdma_next_wakeup);
+ 559:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           if (v == NRK_OK) {
+ 560:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 561:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	    // See if its part of a wakeup packet stream
+ 562:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****             tmp =
+ 563:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****               (tdma_rfRxInfo.pPayload[TDMA_SRC_HIGH] << 8) | tdma_rfRxInfo.
+ 564:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****               pPayload[TDMA_SRC_LOW];
+ 565:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	    // Check if its slot 0 packet
+ 566:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****             tmp2 =
+ 567:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****               (tdma_rfRxInfo.pPayload[TDMA_SLOT_HIGH] << 8) | tdma_rfRxInfo.
+ 568:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****               pPayload[TDMA_SLOT_LOW];
+ 569:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 570:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	    if(tmp==0x0 && tmp2==0xffff) sync=0;
+ 571:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 572:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****             if (tmp2 != 0) {
+ 573:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****               v = NRK_ERROR;
+ 574:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           	tdma_rx_buf_empty = 1;
+ 575:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	      // agr remove next 3 lines?
+ 576:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 		//rf_rx_off();
+ 577:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 		//rf_power_down();
+ 578:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	      	//nrk_wait_until_next_period();
+ 579:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	      	//rf_rx_on();
+ 580:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	    }
+ 581:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	    if(v!=NRK_ERROR)
+ 582:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	    {
+ 583:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	    // set TTL to TTL_MAX from gateway
+ 584:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	    tdma_ttl = tdma_rfRxInfo.pPayload[TDMA_TTL]>>4;
+ 585:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****             tdma_slots_per_cycle =
+ 586:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****               (tdma_rfRxInfo.
+ 587:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****                pPayload[TDMA_CYCLE_SIZE_HIGH] << 8) | tdma_rfRxInfo.
+ 588:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****               pPayload[TDMA_CYCLE_SIZE_LOW];
+ 589:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****             tdma_slot_len_ms = tdma_rfRxInfo.pPayload[TDMA_SLOT_SIZE];
+ 590:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****             _tdma_slot_time.nano_secs = tdma_slot_len_ms * NANOS_PER_MS;
+ 591:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****             _tdma_slot_time.secs = 0;
+ 592:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	    }
+ 593:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           }
+ 594:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	  // Make this time based so that it doesn't get shorter with non sync packets
+ 595:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	  if(sync>=100) { 
+ 596:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 		  		sync_status=0; /*nrk_led_set(RED_LED);*/ 
+ 597:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 				//sync=30000; 
+ 598:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 				if(tdma_error_callback!=NULL ) i=tdma_error_callback(sync-100);
+ 599:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 		if(i==NRK_OK) { tdma_rx_buf_empty=1; /*nrk_kprintf( PSTR("sync=0\r\n"));*/ sync=0; }
+ 600:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	  } 
+ 601:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	  if(sync<30000 ) sync++;
+ 602:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	tdma_rx_pkt_release();
+ 603:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         } while (v != NRK_OK);
+ 604:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       //if(sync==30000)  sync_status=1; /*nrk_led_clr(RED_LED);*/ 
+ 605:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       }
+ 606:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 607:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       // Compute TTL offset
+ 608:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       ttl_delay=(tdma_rfRxInfo.pPayload[TDMA_TTL]>>4)-(tdma_rfRxInfo.pPayload[TDMA_TTL]&0xf);
+ 609:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       if(ttl_delay>16) ttl_delay=0;
+ 610:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       _ttl_delay_total.secs=0;
+ 611:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       _ttl_delay_total.nano_secs=0;
+ 612:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       _ttl_delay_per_tx.secs=0;
+ 613:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       _ttl_delay_per_tx.nano_secs=0;
+ 614:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 615:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       _ttl_delay_per_tx.secs=0;
+ 616:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       _ttl_delay_per_tx.nano_secs=((uint32_t)tdma_rfRxInfo.length+(uint32_t)17)*32000;   // (payloa
+ 617:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 618:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       for (tmp = 0; tmp < ttl_delay; tmp++)
+ 619:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         nrk_time_add (&_ttl_delay_total, _ttl_delay_total, _ttl_delay_per_tx);
+ 620:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 621:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 622:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       sync_status=1;
+ 623:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	rf_rx_off ();
+ 624:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	rf_power_down();
+ 625:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 626:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       // Find next slot
+ 627:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       slot = tdma_tx_sched[0];
+ 628:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       if (slot > tdma_slots_per_cycle)
+ 629:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         slot = tdma_slots_per_cycle;
+ 630:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****  //         nrk_time_get (&tmp_time);
+ 631:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** //      printf( "tt=%lu %lu\r\n",tmp_time.secs,tmp_time.nano_secs/NANOS_PER_MS);
+ 632:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** //      printf( "nw=%lu %lu\r\n",_tdma_next_wakeup.secs,_tdma_next_wakeup.nano_secs/NANOS_PER_MS);
+ 633:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       for (tmp = 0; tmp < slot; tmp++)
+ 634:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         nrk_time_add (&_tdma_next_wakeup, _tdma_next_wakeup, _tdma_slot_time);
+ 635:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       // Subtract TTL delay time
+ 636:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       nrk_time_sub(&_tdma_next_wakeup, _tdma_next_wakeup, _ttl_delay_total);
+ 637:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 638:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       nrk_time_compact_nanos (&_tdma_next_wakeup);
+ 639:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 640:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   //    printf( "nw2=%lu %lu\r\n",_tdma_next_wakeup.secs,_tdma_next_wakeup.nano_secs/NANOS_PER_MS);
+ 641:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       nrk_wait_until (_tdma_next_wakeup);
+ 642:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 643:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       // Transmit on slot
+ 644:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       if (tx_data_ready == 1) {
+ 645:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         tdma_rfTxInfo.pPayload[TDMA_SLOT_LOW] = slot & 0xff;    // slot
+ 646:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         tdma_rfTxInfo.pPayload[TDMA_SLOT_HIGH] = slot >> 8;
+ 647:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         tdma_rfTxInfo.destAddr = 0xffff;
+ 648:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         tdma_rfTxInfo.ackRequest = 0;
+ 649:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         tdma_rfTxInfo.cca = 0;
+ 650:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	rf_power_up();
+ 651:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         _tdma_tx ();
+ 652:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       }
+ 653:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 654:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       // Sleep until end of cycle 
+ 655:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	rf_rx_off ();
+ 656:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	rf_power_down();
+ 657:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       for (tmp = 0; tmp < ((uint16_t)tdma_slots_per_cycle - (uint16_t)slot); tmp++)
+ 658:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         nrk_time_add (&_tdma_next_wakeup, _tdma_next_wakeup, _tdma_slot_time);
+ 659:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       nrk_time_compact_nanos (&_tdma_next_wakeup);
+ 660:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       nrk_wait_until (_tdma_next_wakeup);
+ 661:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       slot = 0;
+ 662:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       while(!tdma_is_enabled) nrk_wait_until_next_period();
+ 663:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 		
+ 664:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       slot=0;
+ 665:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     }
+ 666:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   }
+ 667:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 668:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 669:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 670:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** void tdma_wakeup()
+ 671:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 672:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** tdma_wakeup_flag=1;
+ 673:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 674:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 675:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 676:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** int8_t tdma_started ()
+ 677:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 678:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   return tdma_running;
+ 679:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 680:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 681:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 682:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** int8_t _tdma_rx_master ()
+ 683:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 346               	.LM0:
+ 347               	.LFBB1:
+ 348               	/* prologue: function */
+ 349               	/* frame size = 0 */
+ 350               	/* stack size = 0 */
+ 351               	.L__stack_usage = 0
+ 684:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   int8_t v, i;
+ 685:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   static uint8_t cnt=0;
+ 686:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   v = 0;
+ 687:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 688:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   if (tdma_rx_buf_empty != 1) {
+ 353               	.LM1:
+ 354 0000 8091 0000 		lds r24,tdma_rx_buf_empty
+ 355 0004 8130      		cpi r24,lo8(1)
+ 356 0006 01F0      		breq .L2
+ 689:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     rf_rx_off();
+ 358               	.LM2:
+ 359 0008 0E94 0000 		call rf_rx_off
+ 690:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     rf_rx_on();
+ 361               	.LM3:
+ 362 000c 0E94 0000 		call rf_rx_on
+ 691:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     cnt++;
+ 364               	.LM4:
+ 365 0010 8091 0000 		lds r24,cnt.3805
+ 366 0014 8F5F      		subi r24,lo8(-(1))
+ 367 0016 8093 0000 		sts cnt.3805,r24
+ 692:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     // catch annoying race condition, FIXME: why does this really happen?
+ 693:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     if(cnt>2){ tdma_rx_buf_empty=0;
+ 369               	.LM5:
+ 370 001a 8330      		cpi r24,lo8(3)
+ 371 001c 00F0      		brlo .L10
+ 373               	.LM6:
+ 374 001e 1092 0000 		sts tdma_rx_buf_empty,__zero_reg__
+ 694:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           nrk_event_signal (tdma_rx_pkt_signal);
+ 376               	.LM7:
+ 377 0022 8091 0000 		lds r24,tdma_rx_pkt_signal
+ 378 0026 0E94 0000 		call nrk_event_signal
+ 379               	.L10:
+ 695:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	}
+ 696:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return NRK_ERROR;
+ 381               	.LM8:
+ 382 002a 8FEF      		ldi r24,lo8(-1)
+ 383 002c 0895      		ret
+ 384               	.L2:
+ 385               	.LBB9:
+ 386               	.LBB10:
+ 697:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     }
+ 698:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** cnt=0;
+ 388               	.LM9:
+ 389 002e 1092 0000 		sts cnt.3805,__zero_reg__
+ 699:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   #ifdef GPIO_DEBUG
+ 700:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     nrk_gpio_set(NRK_MISO);
+ 701:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   #endif
+ 702:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** //  if (rf_rx_check_fifop () == 1) {
+ 703:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   //    v = rf_polling_rx_packet ();
+ 704:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   v = rf_rx_packet_nonblock ();
+ 391               	.LM10:
+ 392 0032 0E94 0000 		call rf_rx_packet_nonblock
+ 705:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       if (v == 1) {
+ 394               	.LM11:
+ 395 0036 8130      		cpi r24,lo8(1)
+ 396 0038 01F4      		brne .L4
+ 706:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         // Grab packet, do good stuff
+ 707:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         if (tdma_rfRxInfo.length > TDMA_PCF_HEADER) {
+ 398               	.LM12:
+ 399 003a 6091 0000 		lds r22,tdma_rfRxInfo+3
+ 400 003e 6D30      		cpi r22,lo8(13)
+ 401 0040 04F0      		brlt .L9
+ 708:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	if(_tdma_aes_enabled)
+ 403               	.LM13:
+ 404 0042 8091 0000 		lds r24,_tdma_aes_enabled
+ 405 0046 8111      		cpse r24,__zero_reg__
+ 406 0048 00C0      		rjmp .L5
+ 407               	.L7:
+ 709:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	{
+ 710:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           aes_decrypt(tdma_rfRxInfo.pPayload, tdma_rfRxInfo.length );
+ 711:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	  if(tdma_rfRxInfo.pPayload[tdma_rfRxInfo.length-1]!= 0xCA ||
+ 712:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	     tdma_rfRxInfo.pPayload[tdma_rfRxInfo.length-2]!= 0xFE ||
+ 713:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	     tdma_rfRxInfo.pPayload[tdma_rfRxInfo.length-3]!= 0xBE ||
+ 714:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	     tdma_rfRxInfo.pPayload[tdma_rfRxInfo.length-4]!= 0xEF ) 
+ 715:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 		{
+ 716:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   		#ifdef GPIO_DEBUG
+ 717:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****    		 	nrk_gpio_clr(NRK_MISO);
+ 718:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   		#endif
+ 719:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 			return NRK_ERROR; 
+ 720:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 		}
+ 721:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	 }
+ 722:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	  tdma_rx_buf_empty = 0;
+ 409               	.LM14:
+ 410 004a 1092 0000 		sts tdma_rx_buf_empty,__zero_reg__
+ 723:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           nrk_event_signal (tdma_rx_pkt_signal);
+ 412               	.LM15:
+ 413 004e 8091 0000 		lds r24,tdma_rx_pkt_signal
+ 414 0052 0E94 0000 		call nrk_event_signal
+ 415 0056 00C0      		rjmp .L9
+ 416               	.L5:
+ 710:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	  if(tdma_rfRxInfo.pPayload[tdma_rfRxInfo.length-1]!= 0xCA ||
+ 418               	.LM16:
+ 419 0058 8091 0000 		lds r24,tdma_rfRxInfo+5
+ 420 005c 9091 0000 		lds r25,tdma_rfRxInfo+5+1
+ 421 0060 0E94 0000 		call aes_decrypt
+ 711:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	     tdma_rfRxInfo.pPayload[tdma_rfRxInfo.length-2]!= 0xFE ||
+ 423               	.LM17:
+ 424 0064 8091 0000 		lds r24,tdma_rfRxInfo+5
+ 425 0068 9091 0000 		lds r25,tdma_rfRxInfo+5+1
+ 426 006c 2091 0000 		lds r18,tdma_rfRxInfo+3
+ 427 0070 820F      		add r24,r18
+ 428 0072 911D      		adc r25,__zero_reg__
+ 429 0074 27FD      		sbrc r18,7
+ 430 0076 9A95      		dec r25
+ 431 0078 FC01      		movw r30,r24
+ 432 007a 3197      		sbiw r30,1
+ 433 007c 2081      		ld r18,Z
+ 434 007e 2A3C      		cpi r18,lo8(-54)
+ 435 0080 01F4      		brne .L10
+ 712:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	     tdma_rfRxInfo.pPayload[tdma_rfRxInfo.length-3]!= 0xBE ||
+ 437               	.LM18:
+ 438 0082 3197      		sbiw r30,1
+ 711:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	     tdma_rfRxInfo.pPayload[tdma_rfRxInfo.length-2]!= 0xFE ||
+ 440               	.LM19:
+ 441 0084 2081      		ld r18,Z
+ 442 0086 2E3F      		cpi r18,lo8(-2)
+ 443 0088 01F4      		brne .L10
+ 713:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	     tdma_rfRxInfo.pPayload[tdma_rfRxInfo.length-4]!= 0xEF ) 
+ 445               	.LM20:
+ 446 008a 3197      		sbiw r30,1
+ 712:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	     tdma_rfRxInfo.pPayload[tdma_rfRxInfo.length-3]!= 0xBE ||
+ 448               	.LM21:
+ 449 008c 2081      		ld r18,Z
+ 450 008e 2E3B      		cpi r18,lo8(-66)
+ 451 0090 01F4      		brne .L10
+ 714:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 		{
+ 453               	.LM22:
+ 454 0092 3197      		sbiw r30,1
+ 713:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	     tdma_rfRxInfo.pPayload[tdma_rfRxInfo.length-4]!= 0xEF ) 
+ 456               	.LM23:
+ 457 0094 8081      		ld r24,Z
+ 458 0096 8F3E      		cpi r24,lo8(-17)
+ 459 0098 01F0      		breq .L7
+ 460 009a 00C0      		rjmp .L10
+ 461               	.L9:
+ 707:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	if(_tdma_aes_enabled)
+ 463               	.LM24:
+ 464 009c 81E0      		ldi r24,lo8(1)
+ 465               	.L4:
+ 466               	.LBE10:
+ 467               	.LBE9:
+ 724:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         }
+ 725:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       }
+ 726:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 727:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   #ifdef GPIO_DEBUG
+ 728:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     nrk_gpio_clr(NRK_MISO);
+ 729:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   #endif
+ 730:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 731:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   return v;
+ 732:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 469               	.LM25:
+ 470 009e 0895      		ret
+ 478               	.Lscope1:
+ 480               		.stabd	78,0,0
+ 483               	.global	rf_rx_callback
+ 485               	rf_rx_callback:
+ 486               		.stabd	46,0,0
+  97:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   // Any code here gets called the instant a packet is received from the interrupt   
+ 488               	.LM26:
+ 489               	.LFBB2:
+ 490               	/* prologue: function */
+ 491               	/* frame size = 0 */
+ 492               	/* stack size = 0 */
+ 493               	.L__stack_usage = 0
+ 100:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 495               	.LM27:
+ 496 00a0 0895      		ret
+ 498               	.Lscope2:
+ 500               		.stabd	78,0,0
+ 503               	.global	tdma_aes_setkey
+ 505               	tdma_aes_setkey:
+ 506               		.stabd	46,0,0
+ 103:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** uint8_t i;
+ 508               	.LM28:
+ 509               	.LFBB3:
+ 510               	/* prologue: function */
+ 511               	/* frame size = 0 */
+ 512               	/* stack size = 0 */
+ 513               	.L__stack_usage = 0
+ 105:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 515               	.LM29:
+ 516 00a2 0C94 0000 		jmp aes_setkey
+ 518               	.Lscope3:
+ 520               		.stabd	78,0,0
+ 522               	.global	tdma_aes_enable
+ 524               	tdma_aes_enable:
+ 525               		.stabd	46,0,0
+ 110:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   _tdma_aes_enabled=1;
+ 527               	.LM30:
+ 528               	.LFBB4:
+ 529               	/* prologue: function */
+ 530               	/* frame size = 0 */
+ 531               	/* stack size = 0 */
+ 532               	.L__stack_usage = 0
+ 111:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 534               	.LM31:
+ 535 00a6 81E0      		ldi r24,lo8(1)
+ 536 00a8 8093 0000 		sts _tdma_aes_enabled,r24
+ 537 00ac 0895      		ret
+ 539               	.Lscope4:
+ 541               		.stabd	78,0,0
+ 543               	.global	tdma_aes_disable
+ 545               	tdma_aes_disable:
+ 546               		.stabd	46,0,0
+ 115:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   _tdma_aes_enabled=1;
+ 548               	.LM32:
+ 549               	.LFBB5:
+ 550               	/* prologue: function */
+ 551               	/* frame size = 0 */
+ 552               	/* stack size = 0 */
+ 553               	.L__stack_usage = 0
+ 116:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 555               	.LM33:
+ 556 00ae 81E0      		ldi r24,lo8(1)
+ 557 00b0 8093 0000 		sts _tdma_aes_enabled,r24
+ 558 00b4 0895      		ret
+ 560               	.Lscope5:
+ 562               		.stabd	78,0,0
+ 564               	.global	tdma_sync_ok
+ 566               	tdma_sync_ok:
+ 567               		.stabd	46,0,0
+ 120:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** return sync_status;
+ 569               	.LM34:
+ 570               	.LFBB6:
+ 571               	/* prologue: function */
+ 572               	/* frame size = 0 */
+ 573               	/* stack size = 0 */
+ 574               	.L__stack_usage = 0
+ 122:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 576               	.LM35:
+ 577 00b6 8091 0000 		lds r24,sync_status
+ 578 00ba 0895      		ret
+ 580               	.Lscope6:
+ 582               		.stabd	78,0,0
+ 585               	.global	tdma_set_error_callback
+ 587               	tdma_set_error_callback:
+ 588               		.stabd	46,0,0
+ 125:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	if(fp==NULL ) return NRK_ERROR;
+ 590               	.LM36:
+ 591               	.LFBB7:
+ 592               	/* prologue: function */
+ 593               	/* frame size = 0 */
+ 594               	/* stack size = 0 */
+ 595               	.L__stack_usage = 0
+ 126:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	tdma_error_callback=fp;
+ 597               	.LM37:
+ 598 00bc 0097      		sbiw r24,0
+ 599 00be 01F0      		breq .L19
+ 127:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** return NRK_OK;
+ 601               	.LM38:
+ 602 00c0 9093 0000 		sts tdma_error_callback+1,r25
+ 603 00c4 8093 0000 		sts tdma_error_callback,r24
+ 128:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 605               	.LM39:
+ 606 00c8 81E0      		ldi r24,lo8(1)
+ 607 00ca 0895      		ret
+ 608               	.L19:
+ 126:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	tdma_error_callback=fp;
+ 610               	.LM40:
+ 611 00cc 8FEF      		ldi r24,lo8(-1)
+ 129:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 613               	.LM41:
+ 614 00ce 0895      		ret
+ 616               	.Lscope7:
+ 618               		.stabd	78,0,0
+ 621               	.global	tdma_tx_slot_add
+ 623               	tdma_tx_slot_add:
+ 624               		.stabd	46,0,0
+ 133:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_tx_sched[0] = slot;
+ 626               	.LM42:
+ 627               	.LFBB8:
+ 628               	/* prologue: function */
+ 629               	/* frame size = 0 */
+ 630               	/* stack size = 0 */
+ 631               	.L__stack_usage = 0
+ 134:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_tx_slots = 1;
+ 633               	.LM43:
+ 634 00d0 9093 0000 		sts tdma_tx_sched+1,r25
+ 635 00d4 8093 0000 		sts tdma_tx_sched,r24
+ 135:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   return NRK_OK;
+ 637               	.LM44:
+ 638 00d8 81E0      		ldi r24,lo8(1)
+ 639 00da 8093 0000 		sts tdma_tx_slots,r24
+ 137:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 641               	.LM45:
+ 642 00de 0895      		ret
+ 644               	.Lscope8:
+ 646               		.stabd	78,0,0
+ 650               	.global	tdma_tx_reserve_set
+ 652               	tdma_tx_reserve_set:
+ 653               		.stabd	46,0,0
+ 140:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 655               	.LM46:
+ 656               	.LFBB9:
+ 657               	/* prologue: function */
+ 658               	/* frame size = 0 */
+ 659               	/* stack size = 0 */
+ 660               	.L__stack_usage = 0
+ 153:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 662               	.LM47:
+ 663 00e0 8FEF      		ldi r24,lo8(-1)
+ 664 00e2 0895      		ret
+ 666               	.Lscope9:
+ 668               		.stabd	78,0,0
+ 670               	.global	tdma_tx_reserve_get
+ 672               	tdma_tx_reserve_get:
+ 673               		.stabd	46,0,0
+ 156:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #ifdef NRK_MAX_RESERVES
+ 675               	.LM48:
+ 676               	.LFBB10:
+ 677               	/* prologue: function */
+ 678               	/* frame size = 0 */
+ 679               	/* stack size = 0 */
+ 680               	.L__stack_usage = 0
+ 165:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 682               	.LM49:
+ 683 00e4 80E0      		ldi r24,0
+ 684 00e6 90E0      		ldi r25,0
+ 685 00e8 0895      		ret
+ 687               	.Lscope10:
+ 689               		.stabd	78,0,0
+ 692               	.global	tdma_set_rf_power
+ 694               	tdma_set_rf_power:
+ 695               		.stabd	46,0,0
+ 168:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   if (power > 31)
+ 697               	.LM50:
+ 698               	.LFBB11:
+ 699               	/* prologue: function */
+ 700               	/* frame size = 0 */
+ 701               	/* stack size = 0 */
+ 702               	.L__stack_usage = 0
+ 169:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return NRK_ERROR;
+ 704               	.LM51:
+ 705 00ea 8032      		cpi r24,lo8(32)
+ 706 00ec 00F4      		brsh .L25
+ 171:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   return NRK_OK;
+ 708               	.LM52:
+ 709 00ee 0E94 0000 		call rf_tx_power
+ 172:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 711               	.LM53:
+ 712 00f2 81E0      		ldi r24,lo8(1)
+ 713 00f4 0895      		ret
+ 714               	.L25:
+ 170:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   rf_tx_power (power);
+ 716               	.LM54:
+ 717 00f6 8FEF      		ldi r24,lo8(-1)
+ 173:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 719               	.LM55:
+ 720 00f8 0895      		ret
+ 722               	.Lscope11:
+ 724               		.stabd	78,0,0
+ 727               	.global	tdma_set_channel
+ 729               	tdma_set_channel:
+ 730               		.stabd	46,0,0
+ 176:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   if (chan > 26)
+ 732               	.LM56:
+ 733               	.LFBB12:
+ 734               	/* prologue: function */
+ 735               	/* frame size = 0 */
+ 736               	/* stack size = 0 */
+ 737               	.L__stack_usage = 0
+ 177:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return NRK_ERROR;
+ 739               	.LM57:
+ 740 00fa 8B31      		cpi r24,lo8(27)
+ 741 00fc 00F4      		brsh .L28
+ 742 00fe 682F      		mov r22,r24
+ 179:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** //rf_init (&tdma_rfRxInfo, chan, 0xFFFF, 0x00000);
+ 744               	.LM58:
+ 745 0100 8093 0000 		sts tdma_chan,r24
+ 181:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   return NRK_OK;
+ 747               	.LM59:
+ 748 0104 24E1      		ldi r18,lo8(20)
+ 749 0106 32E1      		ldi r19,lo8(18)
+ 750 0108 40E2      		ldi r20,lo8(32)
+ 751 010a 54E2      		ldi r21,lo8(36)
+ 752 010c 80E0      		ldi r24,lo8(tdma_rfRxInfo)
+ 753 010e 90E0      		ldi r25,hi8(tdma_rfRxInfo)
+ 754 0110 0E94 0000 		call rf_init
+ 182:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 756               	.LM60:
+ 757 0114 81E0      		ldi r24,lo8(1)
+ 758 0116 0895      		ret
+ 759               	.L28:
+ 178:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_chan = chan;
+ 761               	.LM61:
+ 762 0118 8FEF      		ldi r24,lo8(-1)
+ 183:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 764               	.LM62:
+ 765 011a 0895      		ret
+ 767               	.Lscope12:
+ 769               		.stabd	78,0,0
+ 772               	.global	tdma_set_slot_len_ms
+ 774               	tdma_set_slot_len_ms:
+ 775               		.stabd	46,0,0
+ 186:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_slot_len_ms = len;
+ 777               	.LM63:
+ 778               	.LFBB13:
+ 779               	/* prologue: function */
+ 780               	/* frame size = 0 */
+ 781               	/* stack size = 0 */
+ 782               	.L__stack_usage = 0
+ 187:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   _tdma_slot_time.nano_secs = len * NANOS_PER_MS;
+ 784               	.LM64:
+ 785 011c 9093 0000 		sts tdma_slot_len_ms+1,r25
+ 786 0120 8093 0000 		sts tdma_slot_len_ms,r24
+ 188:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   _tdma_slot_time.secs = 0;
+ 788               	.LM65:
+ 789 0124 E0E0      		ldi r30,lo8(_tdma_slot_time)
+ 790 0126 F0E0      		ldi r31,hi8(_tdma_slot_time)
+ 791 0128 DC01      		movw r26,r24
+ 792 012a 20E4      		ldi r18,lo8(64)
+ 793 012c 32E4      		ldi r19,lo8(66)
+ 794 012e 4FE0      		ldi r20,lo8(15)
+ 795 0130 50E0      		ldi r21,0
+ 796 0132 0E94 0000 		call __muluhisi3
+ 797 0136 6483      		std Z+4,r22
+ 798 0138 7583      		std Z+5,r23
+ 799 013a 8683      		std Z+6,r24
+ 800 013c 9783      		std Z+7,r25
+ 189:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   return NRK_OK;
+ 802               	.LM66:
+ 803 013e 1082      		st Z,__zero_reg__
+ 804 0140 1182      		std Z+1,__zero_reg__
+ 805 0142 1282      		std Z+2,__zero_reg__
+ 806 0144 1382      		std Z+3,__zero_reg__
+ 191:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 808               	.LM67:
+ 809 0146 81E0      		ldi r24,lo8(1)
+ 810 0148 0895      		ret
+ 812               	.Lscope13:
+ 814               		.stabd	78,0,0
+ 817               	.global	tdma_set_slots_per_cycle
+ 819               	tdma_set_slots_per_cycle:
+ 820               		.stabd	46,0,0
+ 195:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 822               	.LM68:
+ 823               	.LFBB14:
+ 824               	/* prologue: function */
+ 825               	/* frame size = 0 */
+ 826               	/* stack size = 0 */
+ 827               	.L__stack_usage = 0
+ 197:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 829               	.LM69:
+ 830 014a 9093 0000 		sts tdma_slots_per_cycle+1,r25
+ 831 014e 8093 0000 		sts tdma_slots_per_cycle,r24
+ 198:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 833               	.LM70:
+ 834 0152 0895      		ret
+ 836               	.Lscope14:
+ 838               		.stabd	78,0,0
+ 844               	.global	tdma_send
+ 846               	tdma_send:
+ 847               		.stabd	46,0,0
+ 201:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   uint32_t mask;
+ 849               	.LM71:
+ 850               	.LFBB15:
+ 851 0154 CF92      		push r12
+ 852 0156 DF92      		push r13
+ 853 0158 EF92      		push r14
+ 854 015a FF92      		push r15
+ 855 015c CF93      		push r28
+ 856 015e DF93      		push r29
+ 857 0160 00D0      		rcall .
+ 858 0162 CDB7      		in r28,__SP_L__
+ 859 0164 DEB7      		in r29,__SP_H__
+ 860               	/* prologue: function */
+ 861               	/* frame size = 2 */
+ 862               	/* stack size = 8 */
+ 863               	.L__stack_usage = 8
+ 864 0166 6C01      		movw r12,r24
+ 865 0168 7B01      		movw r14,r22
+ 205:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return NRK_ERROR;
+ 867               	.LM72:
+ 868 016a 8091 0000 		lds r24,tx_data_ready
+ 869 016e 8130      		cpi r24,lo8(1)
+ 870 0170 01F4      		brne .+2
+ 871 0172 00C0      		rjmp .L42
+ 207:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return NRK_ERROR;
+ 873               	.LM73:
+ 874 0174 4423      		tst r20
+ 875 0176 01F4      		brne .+2
+ 876 0178 00C0      		rjmp .L42
+ 209:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return NRK_ERROR;
+ 878               	.LM74:
+ 879 017a 6115      		cp r22,__zero_reg__
+ 880 017c 7105      		cpc r23,__zero_reg__
+ 881 017e 01F4      		brne .+2
+ 882 0180 00C0      		rjmp .L42
+ 211:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return NRK_ERROR;
+ 884               	.LM75:
+ 885 0182 C114      		cp r12,__zero_reg__
+ 886 0184 D104      		cpc r13,__zero_reg__
+ 887 0186 01F4      		brne .+2
+ 888 0188 00C0      		rjmp .L42
+ 222:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     nrk_signal_register (tdma_tx_pkt_done_signal);
+ 890               	.LM76:
+ 891 018a 2111      		cpse r18,__zero_reg__
+ 892 018c 00C0      		rjmp .L33
+ 223:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 894               	.LM77:
+ 895 018e 8091 0000 		lds r24,tdma_tx_pkt_done_signal
+ 896 0192 2A83      		std Y+2,r18
+ 897 0194 4983      		std Y+1,r20
+ 898 0196 0E94 0000 		call nrk_signal_register
+ 899 019a 4981      		ldd r20,Y+1
+ 900 019c 2A81      		ldd r18,Y+2
+ 901               	.L33:
+ 225:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 903               	.LM78:
+ 904 019e 81E0      		ldi r24,lo8(1)
+ 905 01a0 8093 0000 		sts tx_data_ready,r24
+ 227:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** // Setup the header data
+ 907               	.LM79:
+ 908 01a4 80E0      		ldi r24,lo8(tdma_tx_buf)
+ 909 01a6 90E0      		ldi r25,hi8(tdma_tx_buf)
+ 910 01a8 9093 0000 		sts tdma_rfTxInfo+3+1,r25
+ 911 01ac 8093 0000 		sts tdma_rfTxInfo+3,r24
+ 229:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rfTxInfo.pPayload[TDMA_SLOT_LOW] = (fd->slot & 0xff);
+ 913               	.LM80:
+ 914 01b0 F601      		movw r30,r12
+ 915 01b2 8181      		ldd r24,Z+1
+ 916 01b4 8093 0000 		sts tdma_tx_buf+1,r24
+ 230:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rfTxInfo.pPayload[TDMA_DST_HIGH] = (fd->dst >> 8) & 0xff;
+ 918               	.LM81:
+ 919 01b8 8081      		ld r24,Z
+ 920 01ba 8093 0000 		sts tdma_tx_buf,r24
+ 231:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rfTxInfo.pPayload[TDMA_DST_LOW] = (fd->dst & 0xff);
+ 922               	.LM82:
+ 923 01be 8581      		ldd r24,Z+5
+ 924 01c0 9681      		ldd r25,Z+6
+ 925 01c2 9093 0000 		sts tdma_tx_buf+3,r25
+ 232:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** //  tdma_rfTxInfo.pPayload[TDMA_SRC_HIGH] = (fd->src >> 8) & 0xff;
+ 927               	.LM83:
+ 928 01c6 8093 0000 		sts tdma_tx_buf+2,r24
+ 234:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rfTxInfo.pPayload[TDMA_SRC_LOW] = (tdma_my_mac >> 8) & 0xff;
+ 930               	.LM84:
+ 931 01ca 8091 0000 		lds r24,tdma_my_mac
+ 932 01ce 8093 0000 		sts tdma_tx_buf+5,r24
+ 235:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   fd->seq_num++;
+ 934               	.LM85:
+ 935 01d2 1092 0000 		sts tdma_tx_buf+4,__zero_reg__
+ 236:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rfTxInfo.pPayload[TDMA_SEQ_NUM_HIGH] = ((fd->seq_num>>8) & 0xff);
+ 937               	.LM86:
+ 938 01d6 8185      		ldd r24,Z+9
+ 939 01d8 9285      		ldd r25,Z+10
+ 940 01da 0196      		adiw r24,1
+ 941 01dc 9287      		std Z+10,r25
+ 942 01de 8187      		std Z+9,r24
+ 237:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rfTxInfo.pPayload[TDMA_SEQ_NUM_LOW] = (fd->seq_num & 0xff);
+ 944               	.LM87:
+ 945 01e0 9093 0000 		sts tdma_tx_buf+7,r25
+ 238:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rfTxInfo.pPayload[TDMA_CYCLE_SIZE_HIGH] = (fd->cycle_size >> 8) & 0xff;
+ 947               	.LM88:
+ 948 01e4 8093 0000 		sts tdma_tx_buf+6,r24
+ 239:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rfTxInfo.pPayload[TDMA_CYCLE_SIZE_LOW] = (fd->cycle_size & 0xff);
+ 950               	.LM89:
+ 951 01e8 8381      		ldd r24,Z+3
+ 952 01ea 8093 0000 		sts tdma_tx_buf+9,r24
+ 240:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rfTxInfo.pPayload[TDMA_TTL] = tdma_ttl<<4 | tdma_ttl;
+ 954               	.LM90:
+ 955 01ee 8281      		ldd r24,Z+2
+ 956 01f0 8093 0000 		sts tdma_tx_buf+8,r24
+ 241:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 958               	.LM91:
+ 959 01f4 3091 0000 		lds r19,tdma_ttl
+ 960 01f8 F0E1      		ldi r31,lo8(16)
+ 961 01fa 3F9F      		mul r19,r31
+ 962 01fc C001      		movw r24,r0
+ 963 01fe 1124      		clr __zero_reg__
+ 964 0200 832B      		or r24,r19
+ 965 0202 8093 0000 		sts tdma_tx_buf+10,r24
+ 966 0206 5E2D      		mov r21,r14
+ 244:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     tdma_rfTxInfo.pPayload[i + TDMA_PCF_HEADER] = buf[i];
+ 968               	.LM92:
+ 969 0208 F701      		movw r30,r14
+ 970 020a 8CE0      		ldi r24,lo8(12)
+ 971 020c 90E0      		ldi r25,0
+ 972               	.L34:
+ 973 020e 3E2F      		mov r19,r30
+ 974 0210 351B      		sub r19,r21
+ 244:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     tdma_rfTxInfo.pPayload[i + TDMA_PCF_HEADER] = buf[i];
+ 976               	.LM93:
+ 977 0212 3417      		cp r19,r20
+ 978 0214 00F4      		brsh .L44
+ 245:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** // Set packet length with header
+ 980               	.LM94:
+ 981 0216 3191      		ld r19,Z+
+ 982 0218 A091 0000 		lds r26,tdma_rfTxInfo+3
+ 983 021c B091 0000 		lds r27,tdma_rfTxInfo+3+1
+ 984 0220 A80F      		add r26,r24
+ 985 0222 B91F      		adc r27,r25
+ 986 0224 3C93      		st X,r19
+ 987 0226 0196      		adiw r24,1
+ 988 0228 00C0      		rjmp .L34
+ 989               	.L44:
+ 247:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** #ifdef DEBUG
+ 991               	.LM95:
+ 992 022a 445F      		subi r20,lo8(-(12))
+ 993 022c 4093 0000 		sts tdma_rfTxInfo+2,r20
+ 252:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     mask = nrk_event_wait (SIG (tdma_tx_pkt_done_signal));
+ 995               	.LM96:
+ 996 0230 2111      		cpse r18,__zero_reg__
+ 997 0232 00C0      		rjmp .L43
+ 253:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     if (mask == 0)
+ 999               	.LM97:
+ 1000 0234 81E0      		ldi r24,lo8(1)
+ 1001 0236 90E0      		ldi r25,0
+ 1002 0238 A0E0      		ldi r26,0
+ 1003 023a B0E0      		ldi r27,0
+ 1004 023c BC01      		movw r22,r24
+ 1005 023e CD01      		movw r24,r26
+ 1006 0240 0090 0000 		lds r0,tdma_tx_pkt_done_signal
+ 1007 0244 00C0      		rjmp 2f
+ 1008               		1:
+ 1009 0246 660F      		lsl r22
+ 1010 0248 771F      		rol r23
+ 1011 024a 881F      		rol r24
+ 1012 024c 991F      		rol r25
+ 1013               		2:
+ 1014 024e 0A94      		dec r0
+ 1015 0250 02F4      		brpl 1b
+ 1016 0252 0E94 0000 		call nrk_event_wait
+ 1017 0256 6B01      		movw r12,r22
+ 1018 0258 7C01      		movw r14,r24
+ 254:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       nrk_kprintf (PSTR ("TDMA TX: Error calling event wait\r\n"));
+ 1020               	.LM98:
+ 1021 025a 6115      		cp r22,__zero_reg__
+ 1022 025c 7105      		cpc r23,__zero_reg__
+ 1023 025e 8105      		cpc r24,__zero_reg__
+ 1024 0260 9105      		cpc r25,__zero_reg__
+ 1025 0262 01F4      		brne .L37
+ 255:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     if ((mask & SIG (tdma_tx_pkt_done_signal)) == 0)
+ 1027               	.LM99:
+ 1028 0264 80E0      		ldi r24,lo8(__c.3716)
+ 1029 0266 90E0      		ldi r25,hi8(__c.3716)
+ 1030 0268 0E94 0000 		call nrk_kprintf
+ 1031               	.L37:
+ 256:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       nrk_kprintf (PSTR ("TDMA TX: Woke up on wrong signal\r\n"));
+ 1033               	.LM100:
+ 1034 026c 0090 0000 		lds r0,tdma_tx_pkt_done_signal
+ 1035 0270 00C0      		rjmp 2f
+ 1036               		1:
+ 1037 0272 F694      		lsr r15
+ 1038 0274 E794      		ror r14
+ 1039 0276 D794      		ror r13
+ 1040 0278 C794      		ror r12
+ 1041               		2:
+ 1042 027a 0A94      		dec r0
+ 1043 027c 02F4      		brpl 1b
+ 1044 027e C0FC      		sbrc r12,0
+ 1045 0280 00C0      		rjmp .L43
+ 257:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return NRK_OK;
+ 1047               	.LM101:
+ 1048 0282 80E0      		ldi r24,lo8(__c.3718)
+ 1049 0284 90E0      		ldi r25,hi8(__c.3718)
+ 1050 0286 0E94 0000 		call nrk_kprintf
+ 1051               	.L43:
+ 258:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   }
+ 1053               	.LM102:
+ 1054 028a 81E0      		ldi r24,lo8(1)
+ 1055 028c 00C0      		rjmp .L32
+ 1056               	.L42:
+ 206:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   if (len == 0)
+ 1058               	.LM103:
+ 1059 028e 8FEF      		ldi r24,lo8(-1)
+ 1060               	.L32:
+ 1061               	/* epilogue start */
+ 262:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 1063               	.LM104:
+ 1064 0290 0F90      		pop __tmp_reg__
+ 1065 0292 0F90      		pop __tmp_reg__
+ 1066 0294 DF91      		pop r29
+ 1067 0296 CF91      		pop r28
+ 1068 0298 FF90      		pop r15
+ 1069 029a EF90      		pop r14
+ 1070 029c DF90      		pop r13
+ 1071 029e CF90      		pop r12
+ 1072 02a0 0895      		ret
+ 1077               	.Lscope15:
+ 1079               		.stabd	78,0,0
+ 1085               	.global	tdma_recv
+ 1087               	tdma_recv:
+ 1088               		.stabd	46,0,0
+ 265:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   nrk_sig_mask_t event;
+ 1090               	.LM105:
+ 1091               	.LFBB16:
+ 1092 02a2 8F92      		push r8
+ 1093 02a4 9F92      		push r9
+ 1094 02a6 AF92      		push r10
+ 1095 02a8 BF92      		push r11
+ 1096 02aa CF92      		push r12
+ 1097 02ac DF92      		push r13
+ 1098 02ae EF92      		push r14
+ 1099 02b0 FF92      		push r15
+ 1100 02b2 0F93      		push r16
+ 1101 02b4 1F93      		push r17
+ 1102 02b6 CF93      		push r28
+ 1103 02b8 DF93      		push r29
+ 1104 02ba 1F92      		push __zero_reg__
+ 1105 02bc CDB7      		in r28,__SP_L__
+ 1106 02be DEB7      		in r29,__SP_H__
+ 1107               	/* prologue: function */
+ 1108               	/* frame size = 1 */
+ 1109               	/* stack size = 13 */
+ 1110               	.L__stack_usage = 13
+ 1111 02c0 4C01      		movw r8,r24
+ 1112 02c2 8B01      		movw r16,r22
+ 1113 02c4 5A01      		movw r10,r20
+ 1114 02c6 8091 0000 		lds r24,tdma_rx_buf_empty
+ 268:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     if (tdma_rx_buf_empty == 1) {
+ 1116               	.LM106:
+ 1117 02ca 2111      		cpse r18,__zero_reg__
+ 1118 02cc 00C0      		rjmp .L46
+ 269:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       nrk_signal_register (tdma_rx_pkt_signal);
+ 1120               	.LM107:
+ 1121 02ce 8130      		cpi r24,lo8(1)
+ 1122 02d0 01F4      		brne .L47
+ 270:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       event = nrk_event_wait (SIG (tdma_rx_pkt_signal));
+ 1124               	.LM108:
+ 1125 02d2 8091 0000 		lds r24,tdma_rx_pkt_signal
+ 1126 02d6 2983      		std Y+1,r18
+ 1127 02d8 0E94 0000 		call nrk_signal_register
+ 271:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     }
+ 1129               	.LM109:
+ 1130 02dc 81E0      		ldi r24,lo8(1)
+ 1131 02de 90E0      		ldi r25,0
+ 1132 02e0 A0E0      		ldi r26,0
+ 1133 02e2 B0E0      		ldi r27,0
+ 1134 02e4 BC01      		movw r22,r24
+ 1135 02e6 CD01      		movw r24,r26
+ 1136 02e8 0090 0000 		lds r0,tdma_rx_pkt_signal
+ 1137 02ec 00C0      		rjmp 2f
+ 1138               		1:
+ 1139 02ee 660F      		lsl r22
+ 1140 02f0 771F      		rol r23
+ 1141 02f2 881F      		rol r24
+ 1142 02f4 991F      		rol r25
+ 1143               		2:
+ 1144 02f6 0A94      		dec r0
+ 1145 02f8 02F4      		brpl 1b
+ 1146 02fa 0E94 0000 		call nrk_event_wait
+ 1147 02fe 6B01      		movw r12,r22
+ 1148 0300 7C01      		movw r14,r24
+ 1149 0302 2981      		ldd r18,Y+1
+ 1150 0304 00C0      		rjmp .L47
+ 1151               	.L46:
+ 274:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return NRK_ERROR;
+ 1153               	.LM110:
+ 1154 0306 8130      		cpi r24,lo8(1)
+ 1155 0308 01F4      		brne .L47
+ 1156               	.L49:
+ 275:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 1158               	.LM111:
+ 1159 030a 8FEF      		ldi r24,lo8(-1)
+ 1160 030c 00C0      		rjmp .L48
+ 1161               	.L47:
+ 277:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return NRK_ERROR;
+ 1163               	.LM112:
+ 1164 030e 8091 0000 		lds r24,tdma_rfRxInfo+3
+ 1165 0312 8C30      		cpi r24,lo8(12)
+ 1166 0314 04F0      		brlt .L49
+ 280:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   // Copy the payload data
+ 1168               	.LM113:
+ 1169 0316 8C50      		subi r24,lo8(-(-12))
+ 1170 0318 D501      		movw r26,r10
+ 1171 031a 8C93      		st X,r24
+ 282:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     buf[i] = tdma_rfRxInfo.pPayload[i + TDMA_PCF_HEADER];
+ 1173               	.LM114:
+ 1174 031c 80E0      		ldi r24,0
+ 1175               	.L50:
+ 282:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     buf[i] = tdma_rfRxInfo.pPayload[i + TDMA_PCF_HEADER];
+ 1177               	.LM115:
+ 1178 031e F501      		movw r30,r10
+ 1179 0320 9081      		ld r25,Z
+ 1180 0322 8917      		cp r24,r25
+ 1181 0324 00F4      		brsh .L56
+ 283:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 1183               	.LM116:
+ 1184 0326 482F      		mov r20,r24
+ 1185 0328 50E0      		ldi r21,0
+ 1186 032a E091 0000 		lds r30,tdma_rfRxInfo+5
+ 1187 032e F091 0000 		lds r31,tdma_rfRxInfo+5+1
+ 1188 0332 E40F      		add r30,r20
+ 1189 0334 F51F      		adc r31,r21
+ 1190 0336 9485      		ldd r25,Z+12
+ 1191 0338 F801      		movw r30,r16
+ 1192 033a E40F      		add r30,r20
+ 1193 033c F51F      		adc r31,r21
+ 1194 033e 9083      		st Z,r25
+ 282:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     buf[i] = tdma_rfRxInfo.pPayload[i + TDMA_PCF_HEADER];
+ 1196               	.LM117:
+ 1197 0340 8F5F      		subi r24,lo8(-(1))
+ 1198 0342 00C0      		rjmp .L50
+ 1199               	.L56:
+ 286:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   fd->actualRssi = tdma_rfRxInfo.actualRssi;
+ 1201               	.LM118:
+ 1202 0344 8091 0000 		lds r24,tdma_rfRxInfo+8
+ 1203 0348 9927      		clr r25
+ 1204 034a 87FD      		sbrc r24,7
+ 1205 034c 9095      		com r25
+ 1206 034e D401      		movw r26,r8
+ 1207 0350 1E96      		adiw r26,13+1
+ 1208 0352 9C93      		st X,r25
+ 1209 0354 8E93      		st -X,r24
+ 1210 0356 1D97      		sbiw r26,13
+ 287:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   fd->energyDetectionLevel = tdma_rfRxInfo.energyDetectionLevel;
+ 1212               	.LM119:
+ 1213 0358 8091 0000 		lds r24,tdma_rfRxInfo+9
+ 1214 035c 1F96      		adiw r26,15
+ 1215 035e 8C93      		st X,r24
+ 1216 0360 1F97      		sbiw r26,15
+ 288:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   fd->linkQualityIndication = tdma_rfRxInfo.linkQualityIndication;
+ 1218               	.LM120:
+ 1219 0362 8091 0000 		lds r24,tdma_rfRxInfo+10
+ 1220 0366 5096      		adiw r26,16
+ 1221 0368 8C93      		st X,r24
+ 1222 036a 5097      		sbiw r26,16
+ 289:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   fd->src =
+ 1224               	.LM121:
+ 1225 036c 8091 0000 		lds r24,tdma_rfRxInfo+11
+ 1226 0370 5196      		adiw r26,17
+ 1227 0372 8C93      		st X,r24
+ 1228 0374 5197      		sbiw r26,17
+ 291:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     pPayload[TDMA_SRC_LOW];
+ 1230               	.LM122:
+ 1231 0376 E091 0000 		lds r30,tdma_rfRxInfo+5
+ 1232 037a F091 0000 		lds r31,tdma_rfRxInfo+5+1
+ 1233 037e 8581      		ldd r24,Z+5
+ 1234 0380 90E0      		ldi r25,0
+ 1235 0382 982F      		mov r25,r24
+ 1236 0384 8827      		clr r24
+ 1237 0386 3481      		ldd r19,Z+4
+ 1238 0388 832B      		or r24,r19
+ 290:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     ((uint16_t) tdma_rfRxInfo.pPayload[TDMA_SRC_HIGH] << 8) | tdma_rfRxInfo.
+ 1240               	.LM123:
+ 1241 038a 1896      		adiw r26,7+1
+ 1242 038c 9C93      		st X,r25
+ 1243 038e 8E93      		st -X,r24
+ 1244 0390 1797      		sbiw r26,7
+ 294:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     pPayload[TDMA_DST_LOW];
+ 1246               	.LM124:
+ 1247 0392 8381      		ldd r24,Z+3
+ 1248 0394 90E0      		ldi r25,0
+ 1249 0396 982F      		mov r25,r24
+ 1250 0398 8827      		clr r24
+ 1251 039a 3281      		ldd r19,Z+2
+ 1252 039c 832B      		or r24,r19
+ 293:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     ((uint16_t) tdma_rfRxInfo.pPayload[TDMA_DST_HIGH] << 8) | tdma_rfRxInfo.
+ 1254               	.LM125:
+ 1255 039e 1696      		adiw r26,5+1
+ 1256 03a0 9C93      		st X,r25
+ 1257 03a2 8E93      		st -X,r24
+ 1258 03a4 1597      		sbiw r26,5
+ 297:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     pPayload[TDMA_SLOT_LOW];
+ 1260               	.LM126:
+ 1261 03a6 8181      		ldd r24,Z+1
+ 1262 03a8 90E0      		ldi r25,0
+ 1263 03aa 982F      		mov r25,r24
+ 1264 03ac 8827      		clr r24
+ 1265 03ae 3081      		ld r19,Z
+ 1266 03b0 832B      		or r24,r19
+ 296:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     ((uint16_t) tdma_rfRxInfo.pPayload[TDMA_SLOT_HIGH] << 8) | tdma_rfRxInfo.
+ 1268               	.LM127:
+ 1269 03b2 1196      		adiw r26,1
+ 1270 03b4 9C93      		st X,r25
+ 1271 03b6 8E93      		st -X,r24
+ 300:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****      pPayload[TDMA_SEQ_NUM_HIGH] << 8) | tdma_rfRxInfo.
+ 1273               	.LM128:
+ 1274 03b8 8781      		ldd r24,Z+7
+ 1275 03ba 90E0      		ldi r25,0
+ 301:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     pPayload[TDMA_SEQ_NUM_LOW];
+ 1277               	.LM129:
+ 1278 03bc 982F      		mov r25,r24
+ 1279 03be 8827      		clr r24
+ 1280 03c0 3681      		ldd r19,Z+6
+ 1281 03c2 832B      		or r24,r19
+ 299:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     ((uint16_t) tdma_rfRxInfo.
+ 1283               	.LM130:
+ 1284 03c4 1A96      		adiw r26,9+1
+ 1285 03c6 9C93      		st X,r25
+ 1286 03c8 8E93      		st -X,r24
+ 1287 03ca 1997      		sbiw r26,9
+ 304:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****      pPayload[TDMA_CYCLE_SIZE_HIGH] << 8) | tdma_rfRxInfo.
+ 1289               	.LM131:
+ 1290 03cc 8185      		ldd r24,Z+9
+ 1291 03ce 90E0      		ldi r25,0
+ 305:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     pPayload[TDMA_CYCLE_SIZE_LOW];
+ 1293               	.LM132:
+ 1294 03d0 982F      		mov r25,r24
+ 1295 03d2 8827      		clr r24
+ 1296 03d4 3085      		ldd r19,Z+8
+ 1297 03d6 832B      		or r24,r19
+ 303:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     ((uint16_t) tdma_rfRxInfo.
+ 1299               	.LM133:
+ 1300 03d8 1396      		adiw r26,2+1
+ 1301 03da 9C93      		st X,r25
+ 1302 03dc 8E93      		st -X,r24
+ 1303 03de 1297      		sbiw r26,2
+ 308:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 1305               	.LM134:
+ 1306 03e0 8285      		ldd r24,Z+10
+ 1307 03e2 1C96      		adiw r26,12
+ 1308 03e4 8C93      		st X,r24
+ 312:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     if ((event & SIG (tdma_rx_pkt_signal)) == 0)
+ 1310               	.LM135:
+ 1311 03e6 2111      		cpse r18,__zero_reg__
+ 1312 03e8 00C0      		rjmp .L52
+ 313:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       return NRK_ERROR;
+ 1314               	.LM136:
+ 1315 03ea 0090 0000 		lds r0,tdma_rx_pkt_signal
+ 1316 03ee 00C0      		rjmp 2f
+ 1317               		1:
+ 1318 03f0 F694      		lsr r15
+ 1319 03f2 E794      		ror r14
+ 1320 03f4 D794      		ror r13
+ 1321 03f6 C794      		ror r12
+ 1322               		2:
+ 1323 03f8 0A94      		dec r0
+ 1324 03fa 02F4      		brpl 1b
+ 1325 03fc C0FE      		sbrs r12,0
+ 1326 03fe 00C0      		rjmp .L49
+ 1327               	.L52:
+ 317:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   return NRK_OK;
+ 1329               	.LM137:
+ 1330 0400 81E0      		ldi r24,lo8(1)
+ 1331 0402 8093 0000 		sts tdma_rx_buf_empty,r24
+ 1332               	.L48:
+ 1333               	/* epilogue start */
+ 320:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 1335               	.LM138:
+ 1336 0406 0F90      		pop __tmp_reg__
+ 1337 0408 DF91      		pop r29
+ 1338 040a CF91      		pop r28
+ 1339 040c 1F91      		pop r17
+ 1340 040e 0F91      		pop r16
+ 1341 0410 FF90      		pop r15
+ 1342 0412 EF90      		pop r14
+ 1343 0414 DF90      		pop r13
+ 1344 0416 CF90      		pop r12
+ 1345 0418 BF90      		pop r11
+ 1346 041a AF90      		pop r10
+ 1347 041c 9F90      		pop r9
+ 1348 041e 8F90      		pop r8
+ 1349 0420 0895      		ret
+ 1355               	.Lscope16:
+ 1357               		.stabd	78,0,0
+ 1361               	.global	tdma_rx_pkt_set_buffer
+ 1363               	tdma_rx_pkt_set_buffer:
+ 1364               		.stabd	46,0,0
+ 324:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   if (buf == NULL)
+ 1366               	.LM139:
+ 1367               	.LFBB17:
+ 1368               	/* prologue: function */
+ 1369               	/* frame size = 0 */
+ 1370               	/* stack size = 0 */
+ 1371               	.L__stack_usage = 0
+ 325:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return NRK_ERROR;
+ 1373               	.LM140:
+ 1374 0422 0097      		sbiw r24,0
+ 1375 0424 01F0      		breq .L59
+ 327:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rfRxInfo.max_length = size;
+ 1377               	.LM141:
+ 1378 0426 9093 0000 		sts tdma_rfRxInfo+5+1,r25
+ 1379 042a 8093 0000 		sts tdma_rfRxInfo+5,r24
+ 328:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rx_buf_empty = 1;
+ 1381               	.LM142:
+ 1382 042e 6093 0000 		sts tdma_rfRxInfo+4,r22
+ 329:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   return NRK_OK;
+ 1384               	.LM143:
+ 1385 0432 81E0      		ldi r24,lo8(1)
+ 1386 0434 8093 0000 		sts tdma_rx_buf_empty,r24
+ 330:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 1388               	.LM144:
+ 1389 0438 0895      		ret
+ 1390               	.L59:
+ 326:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rfRxInfo.pPayload = buf;
+ 1392               	.LM145:
+ 1393 043a 8FEF      		ldi r24,lo8(-1)
+ 331:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 1395               	.LM146:
+ 1396 043c 0895      		ret
+ 1398               	.Lscope17:
+ 1400               		.stabd	78,0,0
+ 1403               	.global	tdma_ttl_set
+ 1405               	tdma_ttl_set:
+ 1406               		.stabd	46,0,0
+ 334:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** tdma_ttl=ttl;
+ 1408               	.LM147:
+ 1409               	.LFBB18:
+ 1410               	/* prologue: function */
+ 1411               	/* frame size = 0 */
+ 1412               	/* stack size = 0 */
+ 1413               	.L__stack_usage = 0
+ 335:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 1415               	.LM148:
+ 1416 043e 8093 0000 		sts tdma_ttl,r24
+ 1417 0442 0895      		ret
+ 1419               	.Lscope18:
+ 1421               		.stabd	78,0,0
+ 1425               	.global	tdma_init
+ 1427               	tdma_init:
+ 1428               		.stabd	46,0,0
+ 339:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tx_reserve = -1;
+ 1430               	.LM149:
+ 1431               	.LFBB19:
+ 1432 0444 0F93      		push r16
+ 1433 0446 1F93      		push r17
+ 1434 0448 CF93      		push r28
+ 1435 044a DF93      		push r29
+ 1436               	/* prologue: function */
+ 1437               	/* frame size = 0 */
+ 1438               	/* stack size = 4 */
+ 1439               	.L__stack_usage = 4
+ 1440 044c 162F      		mov r17,r22
+ 1441 044e D42F      		mov r29,r20
+ 1442 0450 052F      		mov r16,r21
+ 340:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rx_failure_cnt = 0;
+ 1444               	.LM150:
+ 1445 0452 9FEF      		ldi r25,lo8(-1)
+ 1446 0454 9093 0000 		sts tx_reserve,r25
+ 341:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_mode = mode;
+ 1448               	.LM151:
+ 1449 0458 1092 0000 		sts tdma_rx_failure_cnt+1,__zero_reg__
+ 1450 045c 1092 0000 		sts tdma_rx_failure_cnt,__zero_reg__
+ 342:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_tx_slots = 0;
+ 1452               	.LM152:
+ 1453 0460 8093 0000 		sts tdma_mode,r24
+ 343:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_ttl=TDMA_DEFAULT_TTL;
+ 1455               	.LM153:
+ 1456 0464 1092 0000 		sts tdma_tx_slots,__zero_reg__
+ 344:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   sync_status=0;
+ 1458               	.LM154:
+ 1459 0468 83E0      		ldi r24,lo8(3)
+ 1460 046a 8093 0000 		sts tdma_ttl,r24
+ 345:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 1462               	.LM155:
+ 1463 046e 1092 0000 		sts sync_status,__zero_reg__
+ 354:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 1465               	.LM156:
+ 1466 0472 80E0      		ldi r24,0
+ 1467 0474 94E0      		ldi r25,lo8(4)
+ 1468 0476 9093 0000 		sts tdma_slots_per_cycle+1,r25
+ 1469 047a 8093 0000 		sts tdma_slots_per_cycle,r24
+ 356:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   _tdma_slot_time.secs = 0;
+ 1471               	.LM157:
+ 1472 047e 80E8      		ldi r24,lo8(-128)
+ 1473 0480 96E9      		ldi r25,lo8(-106)
+ 1474 0482 A8E9      		ldi r26,lo8(-104)
+ 1475 0484 B0E0      		ldi r27,0
+ 1476 0486 8093 0000 		sts _tdma_slot_time+4,r24
+ 1477 048a 9093 0000 		sts _tdma_slot_time+4+1,r25
+ 1478 048e A093 0000 		sts _tdma_slot_time+4+2,r26
+ 1479 0492 B093 0000 		sts _tdma_slot_time+4+3,r27
+ 357:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 1481               	.LM158:
+ 1482 0496 1092 0000 		sts _tdma_slot_time,__zero_reg__
+ 1483 049a 1092 0000 		sts _tdma_slot_time+1,__zero_reg__
+ 1484 049e 1092 0000 		sts _tdma_slot_time+2,__zero_reg__
+ 1485 04a2 1092 0000 		sts _tdma_slot_time+3,__zero_reg__
+ 359:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   if (tdma_rx_pkt_signal == NRK_ERROR) {
+ 1487               	.LM159:
+ 1488 04a6 0E94 0000 		call nrk_signal_create
+ 1489 04aa C82F      		mov r28,r24
+ 1490 04ac 8093 0000 		sts tdma_rx_pkt_signal,r24
+ 360:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     nrk_kprintf (PSTR ("TDMA ERROR: creating rx signal failed\r\n"));
+ 1492               	.LM160:
+ 1493 04b0 8F3F      		cpi r24,lo8(-1)
+ 1494 04b2 01F4      		brne .L62
+ 361:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     nrk_kernel_error_add (NRK_SIGNAL_CREATE_ERROR, nrk_cur_task_TCB->task_ID);
+ 1496               	.LM161:
+ 1497 04b4 80E0      		ldi r24,lo8(__c.3743)
+ 1498 04b6 90E0      		ldi r25,hi8(__c.3743)
+ 1499 04b8 00C0      		rjmp .L68
+ 1500               	.L62:
+ 365:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   if (tdma_tx_pkt_done_signal == NRK_ERROR) {
+ 1502               	.LM162:
+ 1503 04ba 0E94 0000 		call nrk_signal_create
+ 1504 04be C82F      		mov r28,r24
+ 1505 04c0 8093 0000 		sts tdma_tx_pkt_done_signal,r24
+ 366:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     nrk_kprintf (PSTR ("TDMA ERROR: creating tx signal failed\r\n"));
+ 1507               	.LM163:
+ 1508 04c4 8F3F      		cpi r24,lo8(-1)
+ 1509 04c6 01F4      		brne .L64
+ 367:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     nrk_kernel_error_add (NRK_SIGNAL_CREATE_ERROR, nrk_cur_task_TCB->task_ID);
+ 1511               	.LM164:
+ 1512 04c8 80E0      		ldi r24,lo8(__c.3745)
+ 1513 04ca 90E0      		ldi r25,hi8(__c.3745)
+ 1514               	.L68:
+ 1515 04cc 0E94 0000 		call nrk_kprintf
+ 368:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return NRK_ERROR;
+ 1517               	.LM165:
+ 1518 04d0 E091 0000 		lds r30,nrk_cur_task_TCB
+ 1519 04d4 F091 0000 		lds r31,nrk_cur_task_TCB+1
+ 1520 04d8 6085      		ldd r22,Z+8
+ 1521 04da 8EE0      		ldi r24,lo8(14)
+ 1522 04dc 0E94 0000 		call nrk_kernel_error_add
+ 369:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   }
+ 1524               	.LM166:
+ 1525 04e0 00C0      		rjmp .L63
+ 1526               	.L64:
+ 371:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   if (tdma_enable_signal == NRK_ERROR) {
+ 1528               	.LM167:
+ 1529 04e2 0E94 0000 		call nrk_signal_create
+ 1530 04e6 C82F      		mov r28,r24
+ 1531 04e8 8093 0000 		sts tdma_enable_signal,r24
+ 372:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     nrk_kprintf (PSTR ("TDMA ERROR: creating enable signal failed\r\n"));
+ 1533               	.LM168:
+ 1534 04ec 8F3F      		cpi r24,lo8(-1)
+ 1535 04ee 01F4      		brne .L67
+ 373:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     nrk_kernel_error_add (NRK_SIGNAL_CREATE_ERROR, nrk_cur_task_TCB->task_ID);
+ 1537               	.LM169:
+ 1538 04f0 80E0      		ldi r24,lo8(__c.3747)
+ 1539 04f2 90E0      		ldi r25,hi8(__c.3747)
+ 1540 04f4 00C0      		rjmp .L68
+ 1541               	.L67:
+ 1542               	.LBB16:
+ 1543               	.LBB17:
+ 327:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rfRxInfo.max_length = size;
+ 1545               	.LM170:
+ 1546 04f6 80E0      		ldi r24,lo8(tdma_rx_buf)
+ 1547 04f8 90E0      		ldi r25,hi8(tdma_rx_buf)
+ 1548 04fa 9093 0000 		sts tdma_rfRxInfo+5+1,r25
+ 1549 04fe 8093 0000 		sts tdma_rfRxInfo+5,r24
+ 328:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_rx_buf_empty = 1;
+ 1551               	.LM171:
+ 1552 0502 80E7      		ldi r24,lo8(112)
+ 1553 0504 8093 0000 		sts tdma_rfRxInfo+4,r24
+ 1554               	.LBE17:
+ 1555               	.LBE16:
+ 381:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tx_data_ready = 0;
+ 1557               	.LM172:
+ 1558 0508 C1E0      		ldi r28,lo8(1)
+ 1559 050a C093 0000 		sts tdma_rx_buf_empty,r28
+ 382:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 1561               	.LM173:
+ 1562 050e 1092 0000 		sts tx_data_ready,__zero_reg__
+ 386:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_chan = chan;
+ 1564               	.LM174:
+ 1565 0512 2D2F      		mov r18,r29
+ 1566 0514 302F      		mov r19,r16
+ 1567 0516 4FEF      		ldi r20,lo8(-1)
+ 1568 0518 5FEF      		ldi r21,lo8(-1)
+ 1569 051a 612F      		mov r22,r17
+ 1570 051c 80E0      		ldi r24,lo8(tdma_rfRxInfo)
+ 1571 051e 90E0      		ldi r25,hi8(tdma_rfRxInfo)
+ 1572 0520 0E94 0000 		call rf_init
+ 387:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_my_mac = my_mac;
+ 1574               	.LM175:
+ 1575 0524 1093 0000 		sts tdma_chan,r17
+ 388:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 1577               	.LM176:
+ 1578 0528 D093 0000 		sts tdma_my_mac,r29
+ 394:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 1580               	.LM177:
+ 1581 052c 83ED      		ldi r24,lo8(-45)
+ 1582 052e 9FEF      		ldi r25,lo8(-1)
+ 1583 0530 0E94 0000 		call rf_set_cca_thresh
+ 396:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_running = 1;
+ 1585               	.LM178:
+ 397:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_is_enabled = 1;
+ 1587               	.LM179:
+ 1588 0534 C093 0000 		sts tdma_running,r28
+ 398:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   return NRK_OK;
+ 1590               	.LM180:
+ 1591 0538 C093 0000 		sts tdma_is_enabled,r28
+ 1592               	.L63:
+ 400:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 1594               	.LM181:
+ 1595 053c 8C2F      		mov r24,r28
+ 1596               	/* epilogue start */
+ 1597 053e DF91      		pop r29
+ 1598 0540 CF91      		pop r28
+ 1599 0542 1F91      		pop r17
+ 1600 0544 0F91      		pop r16
+ 1601 0546 0895      		ret
+ 1603               	.Lscope19:
+ 1605               		.stabd	78,0,0
+ 1607               	.global	tdma_get_rx_pkt_signal
+ 1609               	tdma_get_rx_pkt_signal:
+ 1610               		.stabd	46,0,0
+ 404:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   nrk_signal_register (tdma_rx_pkt_signal);
+ 1612               	.LM182:
+ 1613               	.LFBB20:
+ 1614               	/* prologue: function */
+ 1615               	/* frame size = 0 */
+ 1616               	/* stack size = 0 */
+ 1617               	.L__stack_usage = 0
+ 405:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   return (tdma_rx_pkt_signal);
+ 1619               	.LM183:
+ 1620 0548 8091 0000 		lds r24,tdma_rx_pkt_signal
+ 1621 054c 0E94 0000 		call nrk_signal_register
+ 407:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 1623               	.LM184:
+ 1624 0550 8091 0000 		lds r24,tdma_rx_pkt_signal
+ 1625 0554 0895      		ret
+ 1627               	.Lscope20:
+ 1629               		.stabd	78,0,0
+ 1631               	.global	tdma_get_tx_done_signal
+ 1633               	tdma_get_tx_done_signal:
+ 1634               		.stabd	46,0,0
+ 410:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   nrk_signal_register (tdma_tx_pkt_done_signal);
+ 1636               	.LM185:
+ 1637               	.LFBB21:
+ 1638               	/* prologue: function */
+ 1639               	/* frame size = 0 */
+ 1640               	/* stack size = 0 */
+ 1641               	.L__stack_usage = 0
+ 411:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   return (tdma_tx_pkt_done_signal);
+ 1643               	.LM186:
+ 1644 0556 8091 0000 		lds r24,tdma_tx_pkt_done_signal
+ 1645 055a 0E94 0000 		call nrk_signal_register
+ 413:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 1647               	.LM187:
+ 1648 055e 8091 0000 		lds r24,tdma_tx_pkt_done_signal
+ 1649 0562 0895      		ret
+ 1651               	.Lscope21:
+ 1653               		.stabd	78,0,0
+ 1657               	.global	tdma_rx_pkt_get
+ 1659               	tdma_rx_pkt_get:
+ 1660               		.stabd	46,0,0
+ 418:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 1662               	.LM188:
+ 1663               	.LFBB22:
+ 1664               	/* prologue: function */
+ 1665               	/* frame size = 0 */
+ 1666               	/* stack size = 0 */
+ 1667               	.L__stack_usage = 0
+ 420:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     *len = 0;
+ 1669               	.LM189:
+ 1670 0564 2091 0000 		lds r18,tdma_rx_buf_empty
+ 1671 0568 2130      		cpi r18,lo8(1)
+ 1672 056a 01F4      		brne .L72
+ 421:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     *rssi = 0;
+ 1674               	.LM190:
+ 1675 056c FC01      		movw r30,r24
+ 1676 056e 1082      		st Z,__zero_reg__
+ 422:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return NULL;
+ 1678               	.LM191:
+ 1679 0570 FB01      		movw r30,r22
+ 1680 0572 1082      		st Z,__zero_reg__
+ 423:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   }
+ 1682               	.LM192:
+ 1683 0574 80E0      		ldi r24,0
+ 1684 0576 90E0      		ldi r25,0
+ 1685 0578 0895      		ret
+ 1686               	.L72:
+ 425:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   *rssi = tdma_rfRxInfo.rssi;
+ 1688               	.LM193:
+ 1689 057a 2091 0000 		lds r18,tdma_rfRxInfo+3
+ 1690 057e FC01      		movw r30,r24
+ 1691 0580 2083      		st Z,r18
+ 426:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   return tdma_rfRxInfo.pPayload;
+ 1693               	.LM194:
+ 1694 0582 8091 0000 		lds r24,tdma_rfRxInfo+8
+ 1695 0586 FB01      		movw r30,r22
+ 1696 0588 8083      		st Z,r24
+ 427:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 1698               	.LM195:
+ 1699 058a 8091 0000 		lds r24,tdma_rfRxInfo+5
+ 1700 058e 9091 0000 		lds r25,tdma_rfRxInfo+5+1
+ 428:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 1702               	.LM196:
+ 1703 0592 0895      		ret
+ 1705               	.Lscope22:
+ 1707               		.stabd	78,0,0
+ 1709               	.global	tdma_rx_pkt_release
+ 1711               	tdma_rx_pkt_release:
+ 1712               		.stabd	46,0,0
+ 432:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     tdma_rx_buf_empty=1;
+ 1714               	.LM197:
+ 1715               	.LFBB23:
+ 1716               	/* prologue: function */
+ 1717               	/* frame size = 0 */
+ 1718               	/* stack size = 0 */
+ 1719               	.L__stack_usage = 0
+ 433:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** return NRK_OK;
+ 1721               	.LM198:
+ 1722 0594 81E0      		ldi r24,lo8(1)
+ 1723 0596 8093 0000 		sts tdma_rx_buf_empty,r24
+ 435:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 1725               	.LM199:
+ 1726 059a 0895      		ret
+ 1728               	.Lscope23:
+ 1730               		.stabd	78,0,0
+ 1732               	.global	tdma_disable
+ 1734               	tdma_disable:
+ 1735               		.stabd	46,0,0
+ 439:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_is_enabled = 0;
+ 1737               	.LM200:
+ 1738               	.LFBB24:
+ 1739               	/* prologue: function */
+ 1740               	/* frame size = 0 */
+ 1741               	/* stack size = 0 */
+ 1742               	.L__stack_usage = 0
+ 440:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   rf_power_down ();
+ 1744               	.LM201:
+ 1745 059c 1092 0000 		sts tdma_is_enabled,__zero_reg__
+ 441:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 1747               	.LM202:
+ 1748 05a0 0C94 0000 		jmp rf_power_down
+ 1750               	.Lscope24:
+ 1752               		.stabd	78,0,0
+ 1754               	.global	tdma_enable
+ 1756               	tdma_enable:
+ 1757               		.stabd	46,0,0
+ 445:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_is_enabled = 1;
+ 1759               	.LM203:
+ 1760               	.LFBB25:
+ 1761               	/* prologue: function */
+ 1762               	/* frame size = 0 */
+ 1763               	/* stack size = 0 */
+ 1764               	.L__stack_usage = 0
+ 446:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   rf_power_up ();
+ 1766               	.LM204:
+ 1767 05a4 81E0      		ldi r24,lo8(1)
+ 1768 05a6 8093 0000 		sts tdma_is_enabled,r24
+ 447:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   nrk_event_signal (tdma_enable_signal);
+ 1770               	.LM205:
+ 1771 05aa 0E94 0000 		call rf_power_up
+ 448:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 1773               	.LM206:
+ 1774 05ae 8091 0000 		lds r24,tdma_enable_signal
+ 1775 05b2 0C94 0000 		jmp nrk_event_signal
+ 1777               	.Lscope25:
+ 1779               		.stabd	78,0,0
+ 1781               	.global	tdma_wakeup
+ 1783               	tdma_wakeup:
+ 1784               		.stabd	46,0,0
+ 671:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** tdma_wakeup_flag=1;
+ 1786               	.LM207:
+ 1787               	.LFBB26:
+ 1788               	/* prologue: function */
+ 1789               	/* frame size = 0 */
+ 1790               	/* stack size = 0 */
+ 1791               	.L__stack_usage = 0
+ 672:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 1793               	.LM208:
+ 1794 05b6 81E0      		ldi r24,lo8(1)
+ 1795 05b8 8093 0000 		sts tdma_wakeup_flag,r24
+ 1796 05bc 0895      		ret
+ 1798               	.Lscope26:
+ 1800               		.stabd	78,0,0
+ 1802               	.global	tdma_started
+ 1804               	tdma_started:
+ 1805               		.stabd	46,0,0
+ 677:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   return tdma_running;
+ 1807               	.LM209:
+ 1808               	.LFBB27:
+ 1809               	/* prologue: function */
+ 1810               	/* frame size = 0 */
+ 1811               	/* stack size = 0 */
+ 1812               	.L__stack_usage = 0
+ 678:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 1814               	.LM210:
+ 1815 05be 8091 0000 		lds r24,tdma_running
+ 679:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 1817               	.LM211:
+ 1818 05c2 0895      		ret
+ 1820               	.Lscope27:
+ 1822               		.stabd	78,0,0
+ 1824               	.global	_tdma_rx
+ 1826               	_tdma_rx:
+ 1827               		.stabd	46,0,0
+ 733:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 734:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 735:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** int8_t _tdma_rx ()
+ 736:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 1829               	.LM212:
+ 1830               	.LFBB28:
+ 1831 05c4 CF93      		push r28
+ 1832 05c6 DF93      		push r29
+ 1833               	/* prologue: function */
+ 1834               	/* frame size = 0 */
+ 1835               	/* stack size = 2 */
+ 1836               	.L__stack_usage = 2
+ 737:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   int8_t v, i;
+ 738:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   v = 0;
+ 739:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 740:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   if (tdma_rx_buf_empty != 1)
+ 1838               	.LM213:
+ 1839 05c8 8091 0000 		lds r24,tdma_rx_buf_empty
+ 1840 05cc 8130      		cpi r24,lo8(1)
+ 1841 05ce 01F0      		breq .L86
+ 1842               	.L84:
+ 741:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     return NRK_ERROR;
+ 1844               	.LM214:
+ 1845 05d0 8FEF      		ldi r24,lo8(-1)
+ 1846 05d2 00C0      		rjmp .L81
+ 1847               	.L86:
+ 1848 05d4 D4E6      		ldi r29,lo8(100)
+ 1849               	.L80:
+ 742:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 743:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   #ifdef GPIO_DEBUG
+ 744:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     nrk_gpio_set(NRK_MISO);
+ 745:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   #endif
+ 746:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** //  if (rf_rx_check_fifop () == 1) {
+ 747:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     for (i = 0; i < 100; i++) {
+ 748:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   //    v = rf_polling_rx_packet ();
+ 749:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   v = rf_rx_packet_nonblock ();
+ 1851               	.LM215:
+ 1852 05d6 0E94 0000 		call rf_rx_packet_nonblock
+ 1853 05da C82F      		mov r28,r24
+ 750:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       if (v == 1) {
+ 1855               	.LM216:
+ 1856 05dc 8130      		cpi r24,lo8(1)
+ 1857 05de 01F4      		brne .L82
+ 751:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         // Grab packet, do good stuff
+ 752:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         if (tdma_rfRxInfo.length > TDMA_PCF_HEADER) {
+ 1859               	.LM217:
+ 1860 05e0 6091 0000 		lds r22,tdma_rfRxInfo+3
+ 1861 05e4 6D30      		cpi r22,lo8(13)
+ 1862 05e6 04F0      		brlt .L87
+ 753:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	if(_tdma_aes_enabled)
+ 1864               	.LM218:
+ 1865 05e8 8091 0000 		lds r24,_tdma_aes_enabled
+ 1866 05ec 8111      		cpse r24,__zero_reg__
+ 1867 05ee 00C0      		rjmp .L83
+ 1868               	.L85:
+ 754:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	{
+ 755:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           aes_decrypt(tdma_rfRxInfo.pPayload, tdma_rfRxInfo.length );
+ 756:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	  if(tdma_rfRxInfo.pPayload[tdma_rfRxInfo.length-1]!= 0xCA ||
+ 757:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	     tdma_rfRxInfo.pPayload[tdma_rfRxInfo.length-2]!= 0xFE ||
+ 758:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	     tdma_rfRxInfo.pPayload[tdma_rfRxInfo.length-3]!= 0xBE ||
+ 759:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	     tdma_rfRxInfo.pPayload[tdma_rfRxInfo.length-4]!= 0xEF ) {
+ 760:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   #ifdef GPIO_DEBUG
+ 761:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     nrk_gpio_clr(NRK_MISO);
+ 762:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   #endif
+ 763:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 			return NRK_ERROR; 
+ 764:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 			}
+ 765:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	 }
+ 766:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	  tdma_rx_buf_empty = 0;
+ 1870               	.LM219:
+ 1871 05f0 1092 0000 		sts tdma_rx_buf_empty,__zero_reg__
+ 767:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           nrk_event_signal (tdma_rx_pkt_signal);
+ 1873               	.LM220:
+ 1874 05f4 8091 0000 		lds r24,tdma_rx_pkt_signal
+ 1875 05f8 0E94 0000 		call nrk_event_signal
+ 1876 05fc 00C0      		rjmp .L87
+ 1877               	.L83:
+ 755:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	  if(tdma_rfRxInfo.pPayload[tdma_rfRxInfo.length-1]!= 0xCA ||
+ 1879               	.LM221:
+ 1880 05fe 8091 0000 		lds r24,tdma_rfRxInfo+5
+ 1881 0602 9091 0000 		lds r25,tdma_rfRxInfo+5+1
+ 1882 0606 0E94 0000 		call aes_decrypt
+ 756:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	     tdma_rfRxInfo.pPayload[tdma_rfRxInfo.length-2]!= 0xFE ||
+ 1884               	.LM222:
+ 1885 060a 8091 0000 		lds r24,tdma_rfRxInfo+5
+ 1886 060e 9091 0000 		lds r25,tdma_rfRxInfo+5+1
+ 1887 0612 2091 0000 		lds r18,tdma_rfRxInfo+3
+ 1888 0616 820F      		add r24,r18
+ 1889 0618 911D      		adc r25,__zero_reg__
+ 1890 061a 27FD      		sbrc r18,7
+ 1891 061c 9A95      		dec r25
+ 1892 061e FC01      		movw r30,r24
+ 1893 0620 3197      		sbiw r30,1
+ 1894 0622 2081      		ld r18,Z
+ 1895 0624 2A3C      		cpi r18,lo8(-54)
+ 1896 0626 01F4      		brne .L84
+ 757:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	     tdma_rfRxInfo.pPayload[tdma_rfRxInfo.length-3]!= 0xBE ||
+ 1898               	.LM223:
+ 1899 0628 3197      		sbiw r30,1
+ 756:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	     tdma_rfRxInfo.pPayload[tdma_rfRxInfo.length-2]!= 0xFE ||
+ 1901               	.LM224:
+ 1902 062a 2081      		ld r18,Z
+ 1903 062c 2E3F      		cpi r18,lo8(-2)
+ 1904 062e 01F4      		brne .L84
+ 758:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	     tdma_rfRxInfo.pPayload[tdma_rfRxInfo.length-4]!= 0xEF ) {
+ 1906               	.LM225:
+ 1907 0630 3197      		sbiw r30,1
+ 757:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	     tdma_rfRxInfo.pPayload[tdma_rfRxInfo.length-3]!= 0xBE ||
+ 1909               	.LM226:
+ 1910 0632 2081      		ld r18,Z
+ 1911 0634 2E3B      		cpi r18,lo8(-66)
+ 1912 0636 01F4      		brne .L84
+ 759:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   #ifdef GPIO_DEBUG
+ 1914               	.LM227:
+ 1915 0638 3197      		sbiw r30,1
+ 758:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	     tdma_rfRxInfo.pPayload[tdma_rfRxInfo.length-4]!= 0xEF ) {
+ 1917               	.LM228:
+ 1918 063a 8081      		ld r24,Z
+ 1919 063c 8F3E      		cpi r24,lo8(-17)
+ 1920 063e 01F0      		breq .L85
+ 1921 0640 00C0      		rjmp .L84
+ 1922               	.L82:
+ 768:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         }
+ 769:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         break;
+ 770:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       }
+ 771:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       nrk_spin_wait_us (100);
+ 1924               	.LM229:
+ 1925 0642 84E6      		ldi r24,lo8(100)
+ 1926 0644 90E0      		ldi r25,0
+ 1927 0646 0E94 0000 		call nrk_spin_wait_us
+ 1928 064a D150      		subi r29,lo8(-(-1))
+ 747:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   //    v = rf_polling_rx_packet ();
+ 1930               	.LM230:
+ 1931 064c 01F4      		brne .L80
+ 1932 064e 8C2F      		mov r24,r28
+ 1933 0650 00C0      		rjmp .L81
+ 1934               	.L87:
+ 749:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       if (v == 1) {
+ 1936               	.LM231:
+ 1937 0652 81E0      		ldi r24,lo8(1)
+ 1938               	.L81:
+ 1939               	/* epilogue start */
+ 772:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     }
+ 773:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 774:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** //  }
+ 775:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 776:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   #ifdef GPIO_DEBUG
+ 777:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     nrk_gpio_clr(NRK_MISO);
+ 778:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   #endif
+ 779:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   return v;
+ 780:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 1941               	.LM232:
+ 1942 0654 DF91      		pop r29
+ 1943 0656 CF91      		pop r28
+ 1944 0658 0895      		ret
+ 1949               	.Lscope28:
+ 1951               		.stabd	78,0,0
+ 1953               	.global	_tdma_tx
+ 1955               	_tdma_tx:
+ 1956               		.stabd	46,0,0
+ 781:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 782:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 783:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** int8_t _tdma_tx ()
+ 784:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 1958               	.LM233:
+ 1959               	.LFBB29:
+ 1960 065a 0F93      		push r16
+ 1961 065c 1F93      		push r17
+ 1962 065e CF93      		push r28
+ 1963               	/* prologue: function */
+ 1964               	/* frame size = 0 */
+ 1965               	/* stack size = 3 */
+ 1966               	.L__stack_usage = 3
+ 785:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   int8_t v;
+ 786:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   uint8_t checksum, i;
+ 787:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   uint8_t *data_start, *frame_start = &TRXFBST;
+ 788:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****  
+ 789:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 790:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** if(_tdma_aes_enabled)
+ 1968               	.LM234:
+ 1969 0660 9091 0000 		lds r25,_tdma_aes_enabled
+ 1970 0664 9923      		tst r25
+ 1971 0666 01F4      		brne .+2
+ 1972 0668 00C0      		rjmp .L90
+ 791:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 792:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****    // Add 0xCAFEBEEF as a magic number for AES MAC
+ 793:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****    tdma_rfTxInfo.length=tdma_rfTxInfo.length+4;
+ 1974               	.LM235:
+ 1975 066a 2091 0000 		lds r18,tdma_rfTxInfo+2
+ 1976 066e 84E0      		ldi r24,lo8(4)
+ 1977 0670 820F      		add r24,r18
+ 794:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 795:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****    // Make packet a multiple of 16
+ 796:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****    if((tdma_rfTxInfo.length%16)!=0) tdma_rfTxInfo.length=((tdma_rfTxInfo.length/16)+1)*16;
+ 1979               	.LM236:
+ 1980 0672 382F      		mov r19,r24
+ 1981 0674 3F70      		andi r19,lo8(15)
+ 1982 0676 01F0      		breq .L103
+ 1984               	.LM237:
+ 1985 0678 87FF      		sbrs r24,7
+ 1986 067a 00C0      		rjmp .L93
+ 1987 067c 83E1      		ldi r24,lo8(19)
+ 1988 067e 820F      		add r24,r18
+ 1989               	.L93:
+ 1990 0680 807F      		andi r24,lo8(-16)
+ 1991 0682 805F      		subi r24,lo8(-(16))
+ 1992               	.L103:
+ 1993 0684 8093 0000 		sts tdma_rfTxInfo+2,r24
+ 797:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****    
+ 798:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** //   printf( "l2: %d\r\n",tdma_rfTxInfo.length );
+ 799:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****    tdma_rfTxInfo.pPayload[tdma_rfTxInfo.length-1]=0xCA;
+ 1995               	.LM238:
+ 1996 0688 8091 0000 		lds r24,tdma_rfTxInfo+2
+ 1997 068c E091 0000 		lds r30,tdma_rfTxInfo+3
+ 1998 0690 F091 0000 		lds r31,tdma_rfTxInfo+3+1
+ 1999 0694 E80F      		add r30,r24
+ 2000 0696 F11D      		adc r31,__zero_reg__
+ 2001 0698 87FD      		sbrc r24,7
+ 2002 069a FA95      		dec r31
+ 2003 069c 3197      		sbiw r30,1
+ 2004 069e 8AEC      		ldi r24,lo8(-54)
+ 2005 06a0 8083      		st Z,r24
+ 800:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****    tdma_rfTxInfo.pPayload[tdma_rfTxInfo.length-2]=0xFE;
+ 2007               	.LM239:
+ 2008 06a2 8091 0000 		lds r24,tdma_rfTxInfo+2
+ 2009 06a6 E091 0000 		lds r30,tdma_rfTxInfo+3
+ 2010 06aa F091 0000 		lds r31,tdma_rfTxInfo+3+1
+ 2011 06ae E80F      		add r30,r24
+ 2012 06b0 F11D      		adc r31,__zero_reg__
+ 2013 06b2 87FD      		sbrc r24,7
+ 2014 06b4 FA95      		dec r31
+ 2015 06b6 3297      		sbiw r30,2
+ 2016 06b8 8EEF      		ldi r24,lo8(-2)
+ 2017 06ba 8083      		st Z,r24
+ 801:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****    tdma_rfTxInfo.pPayload[tdma_rfTxInfo.length-3]=0xBE;
+ 2019               	.LM240:
+ 2020 06bc 8091 0000 		lds r24,tdma_rfTxInfo+2
+ 2021 06c0 E091 0000 		lds r30,tdma_rfTxInfo+3
+ 2022 06c4 F091 0000 		lds r31,tdma_rfTxInfo+3+1
+ 2023 06c8 E80F      		add r30,r24
+ 2024 06ca F11D      		adc r31,__zero_reg__
+ 2025 06cc 87FD      		sbrc r24,7
+ 2026 06ce FA95      		dec r31
+ 2027 06d0 3397      		sbiw r30,3
+ 2028 06d2 8EEB      		ldi r24,lo8(-66)
+ 2029 06d4 8083      		st Z,r24
+ 802:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****    tdma_rfTxInfo.pPayload[tdma_rfTxInfo.length-4]=0xEF;
+ 2031               	.LM241:
+ 2032 06d6 8091 0000 		lds r24,tdma_rfTxInfo+2
+ 2033 06da E091 0000 		lds r30,tdma_rfTxInfo+3
+ 2034 06de F091 0000 		lds r31,tdma_rfTxInfo+3+1
+ 2035 06e2 E80F      		add r30,r24
+ 2036 06e4 F11D      		adc r31,__zero_reg__
+ 2037 06e6 87FD      		sbrc r24,7
+ 2038 06e8 FA95      		dec r31
+ 2039 06ea 3497      		sbiw r30,4
+ 2040 06ec 8FEE      		ldi r24,lo8(-17)
+ 2041 06ee 8083      		st Z,r24
+ 2042               	.L90:
+ 803:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 804:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   checksum=0;
+ 805:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   for(i=0; i<tdma_rfTxInfo.length; i++ )
+ 2044               	.LM242:
+ 2045 06f0 6091 0000 		lds r22,tdma_rfTxInfo+2
+ 2046 06f4 062F      		mov r16,r22
+ 2047 06f6 1127      		clr r17
+ 2048 06f8 07FD      		sbrc r16,7
+ 2049 06fa 1095      		com r17
+ 806:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	checksum+=tdma_rfTxInfo.pPayload[i];
+ 2051               	.LM243:
+ 2052 06fc E091 0000 		lds r30,tdma_rfTxInfo+3
+ 2053 0700 F091 0000 		lds r31,tdma_rfTxInfo+3+1
+ 2054 0704 C0E0      		ldi r28,0
+ 2055 0706 40E0      		ldi r20,0
+ 2056               	.L94:
+ 805:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	checksum+=tdma_rfTxInfo.pPayload[i];
+ 2058               	.LM244:
+ 2059 0708 242F      		mov r18,r20
+ 2060 070a 30E0      		ldi r19,0
+ 2061 070c 2017      		cp r18,r16
+ 2062 070e 3107      		cpc r19,r17
+ 2063 0710 04F4      		brge .L104
+ 2065               	.LM245:
+ 2066 0712 2E0F      		add r18,r30
+ 2067 0714 3F1F      		adc r19,r31
+ 2068 0716 D901      		movw r26,r18
+ 2069 0718 8C91      		ld r24,X
+ 2070 071a C80F      		add r28,r24
+ 805:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	checksum+=tdma_rfTxInfo.pPayload[i];
+ 2072               	.LM246:
+ 2073 071c 4F5F      		subi r20,lo8(-(1))
+ 2074 071e 00C0      		rjmp .L94
+ 2075               	.L104:
+ 807:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 808:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** if(_tdma_aes_enabled)   aes_encrypt(tdma_rfTxInfo.pPayload, tdma_rfTxInfo.length );
+ 2077               	.LM247:
+ 2078 0720 9923      		tst r25
+ 2079 0722 01F0      		breq .L96
+ 2081               	.LM248:
+ 2082 0724 CF01      		movw r24,r30
+ 2083 0726 0E94 0000 		call aes_encrypt
+ 2084               	.L96:
+ 809:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   
+ 810:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 811:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   data_start = frame_start + 9 + 1 + tdma_rfTxInfo.length;
+ 2086               	.LM249:
+ 2087 072a E091 0000 		lds r30,tdma_rfTxInfo+2
+ 2088 072e FF27      		clr r31
+ 2089 0730 E7FD      		sbrc r30,7
+ 2090 0732 F095      		com r31
+ 812:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   memcpy(data_start, &checksum, sizeof(uint8_t));
+ 2092               	.LM250:
+ 2093 0734 E657      		subi r30,118
+ 2094 0736 FE4F      		sbci r31,-2
+ 2095 0738 C083      		st Z,r28
+ 813:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 814:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   #ifdef GPIO_DEBUG
+ 815:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     nrk_gpio_set(NRK_MOSI);
+ 816:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   #endif
+ 817:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 818:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** for(i=0; i<TX_PKT_RETRY; i++ )
+ 819:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 820:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   v = rf_tx_packet (&tdma_rfTxInfo);
+ 2097               	.LM251:
+ 2098 073a 80E0      		ldi r24,lo8(tdma_rfTxInfo)
+ 2099 073c 90E0      		ldi r25,hi8(tdma_rfTxInfo)
+ 2100 073e 0E94 0000 		call rf_tx_packet
+ 821:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   // Too delay or not?
+ 822:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 823:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 824:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tx_data_ready = 0;
+ 2102               	.LM252:
+ 2103 0742 1092 0000 		sts tx_data_ready,__zero_reg__
+ 825:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   nrk_event_signal (tdma_tx_pkt_done_signal);
+ 2105               	.LM253:
+ 2106 0746 8091 0000 		lds r24,tdma_tx_pkt_done_signal
+ 2107 074a 0E94 0000 		call nrk_event_signal
+ 826:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   #ifdef GPIO_DEBUG
+ 827:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     nrk_gpio_clr(NRK_MOSI);
+ 828:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   #endif
+ 829:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   return NRK_OK;
+ 830:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 2109               	.LM254:
+ 2110 074e 81E0      		ldi r24,lo8(1)
+ 2111               	/* epilogue start */
+ 2112 0750 CF91      		pop r28
+ 2113 0752 1F91      		pop r17
+ 2114 0754 0F91      		pop r16
+ 2115 0756 0895      		ret
+ 2121               	.Lscope29:
+ 2123               		.stabd	78,0,0
+ 2125               	.global	tdma_nw_task
+ 2127               	tdma_nw_task:
+ 2128               		.stabd	46,0,0
+ 453:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   int8_t v, i;
+ 2130               	.LM255:
+ 2131               	.LFBB30:
+ 2132 0758 CF93      		push r28
+ 2133 075a DF93      		push r29
+ 2134 075c 00D0      		rcall .
+ 2135 075e CDB7      		in r28,__SP_L__
+ 2136 0760 DEB7      		in r29,__SP_H__
+ 2137               	/* prologue: function */
+ 2138               	/* frame size = 2 */
+ 2139               	/* stack size = 4 */
+ 2140               	.L__stack_usage = 4
+ 2141               	.L106:
+ 459:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   } while (!tdma_started ());
+ 2143               	.LM256:
+ 2144 0762 0E94 0000 		call nrk_wait_until_next_period
+ 2145               	.LBB18:
+ 2146               	.LBB19:
+ 678:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** }
+ 2148               	.LM257:
+ 2149 0766 8091 0000 		lds r24,tdma_running
+ 2150               	.LBE19:
+ 2151               	.LBE18:
+ 460:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 2153               	.LM258:
+ 2154 076a 8823      		tst r24
+ 2155 076c 01F0      		breq .L106
+ 463:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   if (v == NRK_ERROR)
+ 2157               	.LM259:
+ 2158 076e 8091 0000 		lds r24,tdma_enable_signal
+ 2159 0772 0E94 0000 		call nrk_signal_register
+ 2160 0776 8A83      		std Y+2,r24
+ 464:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     nrk_kprintf (PSTR ("Failed to register signal\r\n"));
+ 2162               	.LM260:
+ 2163 0778 8F3F      		cpi r24,lo8(-1)
+ 2164 077a 01F4      		brne .L107
+ 465:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   slot = 0;
+ 2166               	.LM261:
+ 2167 077c 80E0      		ldi r24,lo8(__c.3777)
+ 2168 077e 90E0      		ldi r25,hi8(__c.3777)
+ 2169 0780 0E94 0000 		call nrk_kprintf
+ 2170               	.L107:
+ 537:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	}
+ 2172               	.LM262:
+ 2173 0784 612C      		mov r6,__zero_reg__
+ 2174 0786 712C      		mov r7,__zero_reg__
+ 647:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         tdma_rfTxInfo.ackRequest = 0;
+ 2176               	.LM263:
+ 2177 0788 2224      		clr r2
+ 2178 078a 2A94      		dec r2
+ 2179 078c 322C      		mov r3,r2
+ 2180               	.L108:
+ 472:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	    sync_status=1; // HOST is always synced
+ 2182               	.LM264:
+ 2183 078e 8091 0000 		lds r24,tdma_mode
+ 2184 0792 8130      		cpi r24,lo8(1)
+ 2185 0794 01F0      		breq .+2
+ 2186 0796 00C0      		rjmp .L109
+ 473:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       // This is the downstream transmit slot
+ 2188               	.LM265:
+ 2189 0798 8093 0000 		sts sync_status,r24
+ 475:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 2191               	.LM266:
+ 2192 079c 6114      		cp r6,__zero_reg__
+ 2193 079e 7104      		cpc r7,__zero_reg__
+ 2194 07a0 01F0      		breq .+2
+ 2195 07a2 00C0      		rjmp .L110
+ 480:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           tdma_rfTxInfo.pPayload = tdma_tx_buf;
+ 2197               	.LM267:
+ 2198 07a4 8091 0000 		lds r24,tx_data_ready
+ 2199 07a8 8111      		cpse r24,__zero_reg__
+ 2200 07aa 00C0      		rjmp .L111
+ 481:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           // Setup the header data
+ 2202               	.LM268:
+ 2203 07ac 20E0      		ldi r18,lo8(tdma_tx_buf)
+ 2204 07ae 30E0      		ldi r19,hi8(tdma_tx_buf)
+ 2205 07b0 3093 0000 		sts tdma_rfTxInfo+3+1,r19
+ 2206 07b4 2093 0000 		sts tdma_rfTxInfo+3,r18
+ 483:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           tdma_rfTxInfo.pPayload[TDMA_DST_HIGH] = 0xff;
+ 2208               	.LM269:
+ 2209 07b8 3FEF      		ldi r19,lo8(-1)
+ 2210 07ba 3093 0000 		sts tdma_tx_buf+2,r19
+ 484:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           tdma_rfTxInfo.pPayload[TDMA_SRC_LOW] = 0x00;  // src
+ 2212               	.LM270:
+ 2213 07be 3093 0000 		sts tdma_tx_buf+3,r19
+ 485:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           tdma_rfTxInfo.pPayload[TDMA_SRC_HIGH] = 0x00;
+ 2215               	.LM271:
+ 2216 07c2 1092 0000 		sts tdma_tx_buf+4,__zero_reg__
+ 486:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           tdma_rfTxInfo.pPayload[TDMA_SEQ_NUM_LOW] = 0x00;      // seq num
+ 2218               	.LM272:
+ 2219 07c6 1092 0000 		sts tdma_tx_buf+5,__zero_reg__
+ 487:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           tdma_rfTxInfo.pPayload[TDMA_SEQ_NUM_HIGH] = 0x00;
+ 2221               	.LM273:
+ 2222 07ca 1092 0000 		sts tdma_tx_buf+6,__zero_reg__
+ 488:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           tdma_rfTxInfo.length = TDMA_PCF_HEADER;
+ 2224               	.LM274:
+ 2225 07ce 1092 0000 		sts tdma_tx_buf+7,__zero_reg__
+ 489:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         }
+ 2227               	.LM275:
+ 2228 07d2 8CE0      		ldi r24,lo8(12)
+ 2229 07d4 8093 0000 		sts tdma_rfTxInfo+2,r24
+ 2230               	.L111:
+ 491:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         tdma_rfTxInfo.pPayload[TDMA_CYCLE_SIZE_HIGH] =
+ 2232               	.LM276:
+ 2233 07d8 E091 0000 		lds r30,tdma_rfTxInfo+3
+ 2234 07dc F091 0000 		lds r31,tdma_rfTxInfo+3+1
+ 2235 07e0 9091 0000 		lds r25,tdma_slots_per_cycle
+ 2236 07e4 8091 0000 		lds r24,tdma_slots_per_cycle+1
+ 2237 07e8 9087      		std Z+8,r25
+ 492:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           tdma_slots_per_cycle >> 8;
+ 2239               	.LM277:
+ 2240 07ea 8187      		std Z+9,r24
+ 494:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         tdma_rfTxInfo.pPayload[TDMA_SLOT_HIGH] = 0;
+ 2242               	.LM278:
+ 2243 07ec 1082      		st Z,__zero_reg__
+ 495:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         tdma_rfTxInfo.pPayload[TDMA_TTL] = tdma_ttl<<4 | (tdma_ttl);
+ 2245               	.LM279:
+ 2246 07ee E091 0000 		lds r30,tdma_rfTxInfo+3
+ 2247 07f2 F091 0000 		lds r31,tdma_rfTxInfo+3+1
+ 2248 07f6 1182      		std Z+1,__zero_reg__
+ 496:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         tdma_rfTxInfo.pPayload[TDMA_SLOT_SIZE] = tdma_slot_len_ms;
+ 2250               	.LM280:
+ 2251 07f8 E091 0000 		lds r30,tdma_rfTxInfo+3
+ 2252 07fc F091 0000 		lds r31,tdma_rfTxInfo+3+1
+ 2253 0800 2091 0000 		lds r18,tdma_ttl
+ 2254 0804 30E1      		ldi r19,lo8(16)
+ 2255 0806 239F      		mul r18,r19
+ 2256 0808 C001      		movw r24,r0
+ 2257 080a 1124      		clr __zero_reg__
+ 2258 080c 822B      		or r24,r18
+ 2259 080e 8287      		std Z+10,r24
+ 497:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         nrk_time_get (&_tdma_next_wakeup);
+ 2261               	.LM281:
+ 2262 0810 8091 0000 		lds r24,tdma_slot_len_ms
+ 2263 0814 8387      		std Z+11,r24
+ 498:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         tdma_rfTxInfo.destAddr = 0xffff;
+ 2265               	.LM282:
+ 2266 0816 80E0      		ldi r24,lo8(_tdma_next_wakeup)
+ 2267 0818 90E0      		ldi r25,hi8(_tdma_next_wakeup)
+ 2268 081a 0E94 0000 		call nrk_time_get
+ 499:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         tdma_rfTxInfo.ackRequest = 0;
+ 2270               	.LM283:
+ 2271 081e 3092 0000 		sts tdma_rfTxInfo+1,r3
+ 2272 0822 2092 0000 		sts tdma_rfTxInfo,r2
+ 500:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         tdma_rfTxInfo.cca = 0;
+ 2274               	.LM284:
+ 2275 0826 1092 0000 		sts tdma_rfTxInfo+6,__zero_reg__
+ 501:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         _tdma_tx ();
+ 2277               	.LM285:
+ 2278 082a 1092 0000 		sts tdma_rfTxInfo+5,__zero_reg__
+ 502:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         rf_rx_on ();
+ 2280               	.LM286:
+ 2281 082e 0E94 0000 		call _tdma_tx
+ 503:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	if(tdma_wakeup_flag==1)
+ 2283               	.LM287:
+ 2284 0832 0E94 0000 		call rf_rx_on
+ 504:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 		{
+ 2286               	.LM288:
+ 2287 0836 8091 0000 		lds r24,tdma_wakeup_flag
+ 2288 083a 8130      		cpi r24,lo8(1)
+ 2289 083c 01F0      		breq .+2
+ 2290 083e 00C0      		rjmp .L112
+ 2291 0840 412C      		mov r4,__zero_reg__
+ 2292 0842 512C      		mov r5,__zero_reg__
+ 2293               	.L114:
+ 508:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         			tdma_rfTxInfo.pPayload[TDMA_SLOT_LOW] = 0xff;      // slot
+ 2295               	.LM289:
+ 2296 0844 C201      		movw r24,r4
+ 2297 0846 65E0      		ldi r22,lo8(5)
+ 2298 0848 70E0      		ldi r23,0
+ 2299 084a 0E94 0000 		call __udivmodhi4
+ 2300 084e 892B      		or r24,r25
+ 2301 0850 01F4      		brne .L113
+ 508:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         			tdma_rfTxInfo.pPayload[TDMA_SLOT_LOW] = 0xff;      // slot
+ 2303               	.LM290:
+ 2304 0852 83E0      		ldi r24,lo8(3)
+ 2305 0854 90E0      		ldi r25,0
+ 2306 0856 0E94 0000 		call nrk_led_toggle
+ 2307               	.L113:
+ 509:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         			tdma_rfTxInfo.pPayload[TDMA_SLOT_HIGH] = 0xff;
+ 2309               	.LM291:
+ 2310 085a E091 0000 		lds r30,tdma_rfTxInfo+3
+ 2311 085e F091 0000 		lds r31,tdma_rfTxInfo+3+1
+ 2312 0862 8FEF      		ldi r24,lo8(-1)
+ 2313 0864 8083      		st Z,r24
+ 510:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           			tdma_rfTxInfo.pPayload[TDMA_SRC_LOW] = 0x0;  // src
+ 2315               	.LM292:
+ 2316 0866 E091 0000 		lds r30,tdma_rfTxInfo+3
+ 2317 086a F091 0000 		lds r31,tdma_rfTxInfo+3+1
+ 2318 086e 8183      		std Z+1,r24
+ 511:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           			tdma_rfTxInfo.pPayload[TDMA_SRC_HIGH] = 0x0;
+ 2320               	.LM293:
+ 2321 0870 E091 0000 		lds r30,tdma_rfTxInfo+3
+ 2322 0874 F091 0000 		lds r31,tdma_rfTxInfo+3+1
+ 2323 0878 1482      		std Z+4,__zero_reg__
+ 512:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           			tdma_rfTxInfo.length = TDMA_PCF_HEADER;
+ 2325               	.LM294:
+ 2326 087a E091 0000 		lds r30,tdma_rfTxInfo+3
+ 2327 087e F091 0000 		lds r31,tdma_rfTxInfo+3+1
+ 2328 0882 1582      		std Z+5,__zero_reg__
+ 513:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         			_tdma_tx ();
+ 2330               	.LM295:
+ 2331 0884 9CE0      		ldi r25,lo8(12)
+ 2332 0886 9093 0000 		sts tdma_rfTxInfo+2,r25
+ 514:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         			//rf_rx_on ();
+ 2334               	.LM296:
+ 2335 088a 0E94 0000 		call _tdma_tx
+ 516:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 			}
+ 2337               	.LM297:
+ 2338 088e 8AE0      		ldi r24,lo8(10)
+ 2339 0890 90E0      		ldi r25,0
+ 2340 0892 0E94 0000 		call nrk_wait_until_ticks
+ 506:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 			{
+ 2342               	.LM298:
+ 2343 0896 EFEF      		ldi r30,-1
+ 2344 0898 4E1A      		sub r4,r30
+ 2345 089a 5E0A      		sbc r5,r30
+ 2346 089c F8EE      		ldi r31,-24
+ 2347 089e 4F16      		cp r4,r31
+ 2348 08a0 F3E0      		ldi r31,3
+ 2349 08a2 5F06      		cpc r5,r31
+ 2350 08a4 01F4      		brne .L114
+ 518:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 		slot=0;
+ 2352               	.LM299:
+ 2353 08a6 83E0      		ldi r24,lo8(3)
+ 2354 08a8 90E0      		ldi r25,0
+ 2355 08aa 0E94 0000 		call nrk_led_clr
+ 520:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 		}
+ 2357               	.LM300:
+ 2358 08ae 1092 0000 		sts tdma_wakeup_flag,__zero_reg__
+ 2359 08b2 00C0      		rjmp .L112
+ 2360               	.L110:
+ 528:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         if (v == 1)
+ 2362               	.LM301:
+ 2363 08b4 80E0      		ldi r24,lo8(gs(_tdma_rx_master))
+ 2364 08b6 90E0      		ldi r25,hi8(gs(_tdma_rx_master))
+ 2365 08b8 0E94 0000 		call rx_end_callback
+ 529:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           tdma_last_tx_slot = slot;
+ 2367               	.LM302:
+ 2368 08bc 2A81      		ldd r18,Y+2
+ 2369 08be 2130      		cpi r18,lo8(1)
+ 2370 08c0 01F4      		brne .L112
+ 530:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       }
+ 2372               	.LM303:
+ 2373 08c2 7092 0000 		sts tdma_last_tx_slot+1,r7
+ 2374 08c6 6092 0000 		sts tdma_last_tx_slot,r6
+ 2375               	.L112:
+ 532:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	// For the last slot, we wakeup a bit late to make sure all other nodes have woken up in time to
+ 2377               	.LM304:
+ 2378 08ca 3FEF      		ldi r19,-1
+ 2379 08cc 631A      		sub r6,r19
+ 2380 08ce 730A      		sbc r7,r19
+ 535:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         nrk_wait_until_ticks(TDMA_WAKEUP_GAURD_TIME_MS);
+ 2382               	.LM305:
+ 2383 08d0 8091 0000 		lds r24,tdma_slots_per_cycle
+ 2384 08d4 9091 0000 		lds r25,tdma_slots_per_cycle+1
+ 2385 08d8 8615      		cp r24,r6
+ 2386 08da 9705      		cpc r25,r7
+ 2387 08dc 00F4      		brsh .L115
+ 536:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	slot = 0;
+ 2389               	.LM306:
+ 2390 08de 8AE0      		ldi r24,lo8(10)
+ 2391 08e0 90E0      		ldi r25,0
+ 2392 08e2 0E94 0000 		call nrk_wait_until_ticks
+ 2393 08e6 00C0      		rjmp .L148
+ 2394               	.L115:
+ 540:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       nrk_time_compact_nanos (&_tdma_next_wakeup);
+ 2396               	.LM307:
+ 2397 08e8 8090 0000 		lds r8,_tdma_slot_time
+ 2398 08ec 9090 0000 		lds r9,_tdma_slot_time+1
+ 2399 08f0 A090 0000 		lds r10,_tdma_slot_time+2
+ 2400 08f4 B090 0000 		lds r11,_tdma_slot_time+3
+ 2401 08f8 C090 0000 		lds r12,_tdma_slot_time+4
+ 2402 08fc D090 0000 		lds r13,_tdma_slot_time+5
+ 2403 0900 E090 0000 		lds r14,_tdma_slot_time+6
+ 2404 0904 F090 0000 		lds r15,_tdma_slot_time+7
+ 2405 0908 0091 0000 		lds r16,_tdma_next_wakeup
+ 2406 090c 1091 0000 		lds r17,_tdma_next_wakeup+1
+ 2407 0910 2091 0000 		lds r18,_tdma_next_wakeup+2
+ 2408 0914 3091 0000 		lds r19,_tdma_next_wakeup+3
+ 2409 0918 4091 0000 		lds r20,_tdma_next_wakeup+4
+ 2410 091c 5091 0000 		lds r21,_tdma_next_wakeup+5
+ 2411 0920 6091 0000 		lds r22,_tdma_next_wakeup+6
+ 2412 0924 7091 0000 		lds r23,_tdma_next_wakeup+7
+ 2413 0928 80E0      		ldi r24,lo8(_tdma_next_wakeup)
+ 2414 092a 90E0      		ldi r25,hi8(_tdma_next_wakeup)
+ 2415 092c 0E94 0000 		call nrk_time_add
+ 541:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       nrk_wait_until (_tdma_next_wakeup);
+ 2417               	.LM308:
+ 2418 0930 80E0      		ldi r24,lo8(_tdma_next_wakeup)
+ 2419 0932 90E0      		ldi r25,hi8(_tdma_next_wakeup)
+ 2420 0934 0E94 0000 		call nrk_time_compact_nanos
+ 542:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	
+ 2422               	.LM309:
+ 2423 0938 2091 0000 		lds r18,_tdma_next_wakeup
+ 2424 093c 3091 0000 		lds r19,_tdma_next_wakeup+1
+ 2425 0940 4091 0000 		lds r20,_tdma_next_wakeup+2
+ 2426 0944 5091 0000 		lds r21,_tdma_next_wakeup+3
+ 2427 0948 6091 0000 		lds r22,_tdma_next_wakeup+4
+ 2428 094c 7091 0000 		lds r23,_tdma_next_wakeup+5
+ 2429 0950 8091 0000 		lds r24,_tdma_next_wakeup+6
+ 2430 0954 9091 0000 		lds r25,_tdma_next_wakeup+7
+ 2431 0958 0E94 0000 		call nrk_wait_until
+ 2432 095c 00C0      		rjmp .L108
+ 2433               	.L109:
+ 548:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 2435               	.LM310:
+ 2436 095e 6728      		or r6,r7
+ 2437 0960 01F0      		breq .+2
+ 2438 0962 00C0      		rjmp .L117
+ 554:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	rf_rx_on ();
+ 2440               	.LM311:
+ 2441 0964 0E94 0000 		call rf_power_up
+ 555:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         do {
+ 2443               	.LM312:
+ 2444 0968 0E94 0000 		call rf_rx_on
+ 553:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	rf_power_up();
+ 2446               	.LM313:
+ 2447 096c 612C      		mov r6,__zero_reg__
+ 2448 096e 712C      		mov r7,__zero_reg__
+ 2449               	.L126:
+ 557:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           nrk_time_get (&_tdma_next_wakeup);
+ 2451               	.LM314:
+ 2452 0970 0E94 0000 		call _tdma_rx
+ 2453 0974 8A83      		std Y+2,r24
+ 558:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****           if (v == NRK_OK) {
+ 2455               	.LM315:
+ 2456 0976 80E0      		ldi r24,lo8(_tdma_next_wakeup)
+ 2457 0978 90E0      		ldi r25,hi8(_tdma_next_wakeup)
+ 2458 097a 0E94 0000 		call nrk_time_get
+ 559:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 2460               	.LM316:
+ 2461 097e 8A81      		ldd r24,Y+2
+ 2462 0980 8130      		cpi r24,lo8(1)
+ 2463 0982 01F4      		brne .L118
+ 563:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****               pPayload[TDMA_SRC_LOW];
+ 2465               	.LM317:
+ 2466 0984 E091 0000 		lds r30,tdma_rfRxInfo+5
+ 2467 0988 F091 0000 		lds r31,tdma_rfRxInfo+5+1
+ 567:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****               pPayload[TDMA_SLOT_LOW];
+ 2469               	.LM318:
+ 2470 098c 8181      		ldd r24,Z+1
+ 2471 098e 90E0      		ldi r25,0
+ 2472 0990 982F      		mov r25,r24
+ 2473 0992 8827      		clr r24
+ 2474 0994 2081      		ld r18,Z
+ 2475 0996 822B      		or r24,r18
+ 563:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****               pPayload[TDMA_SRC_LOW];
+ 2477               	.LM319:
+ 2478 0998 2581      		ldd r18,Z+5
+ 2479 099a 30E0      		ldi r19,0
+ 2480 099c 322F      		mov r19,r18
+ 2481 099e 2227      		clr r18
+ 2482 09a0 4481      		ldd r20,Z+4
+ 2483 09a2 242B      		or r18,r20
+ 570:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 2485               	.LM320:
+ 2486 09a4 232B      		or r18,r19
+ 2487 09a6 01F4      		brne .L119
+ 570:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 2489               	.LM321:
+ 2490 09a8 8F3F      		cpi r24,-1
+ 2491 09aa 2FEF      		ldi r18,-1
+ 2492 09ac 9207      		cpc r25,r18
+ 2493 09ae 01F0      		breq .L140
+ 2494               	.L119:
+ 572:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****               v = NRK_ERROR;
+ 2496               	.LM322:
+ 2497 09b0 892B      		or r24,r25
+ 2498 09b2 01F4      		brne .+2
+ 2499 09b4 00C0      		rjmp .L121
+ 2500 09b6 00C0      		rjmp .L120
+ 2501               	.L140:
+ 570:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 2503               	.LM323:
+ 2504 09b8 612C      		mov r6,__zero_reg__
+ 2505 09ba 712C      		mov r7,__zero_reg__
+ 2506               	.L120:
+ 574:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	      // agr remove next 3 lines?
+ 2508               	.LM324:
+ 2509 09bc 31E0      		ldi r19,lo8(1)
+ 2510 09be 3093 0000 		sts tdma_rx_buf_empty,r19
+ 2511 09c2 8FEF      		ldi r24,lo8(-1)
+ 2512 09c4 8A83      		std Y+2,r24
+ 2513               	.L118:
+ 595:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 		  		sync_status=0; /*nrk_led_set(RED_LED);*/ 
+ 2515               	.LM325:
+ 2516 09c6 94E6      		ldi r25,100
+ 2517 09c8 6916      		cp r6,r25
+ 2518 09ca 7104      		cpc r7,__zero_reg__
+ 2519 09cc 00F0      		brlo .L139
+ 596:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 				//sync=30000; 
+ 2521               	.LM326:
+ 2522 09ce 1092 0000 		sts sync_status,__zero_reg__
+ 598:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 		if(i==NRK_OK) { tdma_rx_buf_empty=1; /*nrk_kprintf( PSTR("sync=0\r\n"));*/ sync=0; }
+ 2524               	.LM327:
+ 2525 09d2 E091 0000 		lds r30,tdma_error_callback
+ 2526 09d6 F091 0000 		lds r31,tdma_error_callback+1
+ 2527 09da 3097      		sbiw r30,0
+ 2528 09dc 01F0      		breq .L123
+ 598:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 		if(i==NRK_OK) { tdma_rx_buf_empty=1; /*nrk_kprintf( PSTR("sync=0\r\n"));*/ sync=0; }
+ 2530               	.LM328:
+ 2531 09de C301      		movw r24,r6
+ 2532 09e0 8456      		subi r24,100
+ 2533 09e2 9109      		sbc r25,__zero_reg__
+ 2534 09e4 0995      		icall
+ 2535 09e6 8983      		std Y+1,r24
+ 2536               	.L123:
+ 599:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	  } 
+ 2538               	.LM329:
+ 2539 09e8 E981      		ldd r30,Y+1
+ 2540 09ea E130      		cpi r30,lo8(1)
+ 2541 09ec 01F4      		brne .L124
+ 599:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	  } 
+ 2543               	.LM330:
+ 2544 09ee 612C      		mov r6,__zero_reg__
+ 2545 09f0 712C      		mov r7,__zero_reg__
+ 2546 09f2 00C0      		rjmp .L139
+ 2547               	.L124:
+ 601:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	tdma_rx_pkt_release();
+ 2549               	.LM331:
+ 2550 09f4 F0E3      		ldi r31,48
+ 2551 09f6 6F16      		cp r6,r31
+ 2552 09f8 F5E7      		ldi r31,117
+ 2553 09fa 7F06      		cpc r7,r31
+ 2554 09fc 00F4      		brsh .L125
+ 2555               	.L139:
+ 601:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	tdma_rx_pkt_release();
+ 2557               	.LM332:
+ 2558 09fe 2FEF      		ldi r18,-1
+ 2559 0a00 621A      		sub r6,r18
+ 2560 0a02 720A      		sbc r7,r18
+ 2561               	.L125:
+ 2562               	.LBB20:
+ 2563               	.LBB21:
+ 433:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** return NRK_OK;
+ 2565               	.LM333:
+ 2566 0a04 31E0      		ldi r19,lo8(1)
+ 2567 0a06 3093 0000 		sts tdma_rx_buf_empty,r19
+ 2568               	.LBE21:
+ 2569               	.LBE20:
+ 603:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       //if(sync==30000)  sync_status=1; /*nrk_led_clr(RED_LED);*/ 
+ 2571               	.LM334:
+ 2572 0a0a 8A81      		ldd r24,Y+2
+ 2573 0a0c 8130      		cpi r24,lo8(1)
+ 2574 0a0e 01F0      		breq .+2
+ 2575 0a10 00C0      		rjmp .L126
+ 2576               	.L117:
+ 608:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       if(ttl_delay>16) ttl_delay=0;
+ 2578               	.LM335:
+ 2579 0a12 E091 0000 		lds r30,tdma_rfRxInfo+5
+ 2580 0a16 F091 0000 		lds r31,tdma_rfRxInfo+5+1
+ 2581 0a1a 9285      		ldd r25,Z+10
+ 2582 0a1c 892F      		mov r24,r25
+ 2583 0a1e 8295      		swap r24
+ 2584 0a20 8F70      		andi r24,lo8(15)
+ 2585 0a22 9F70      		andi r25,lo8(15)
+ 2586 0a24 891B      		sub r24,r25
+ 609:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       _ttl_delay_total.secs=0;
+ 2588               	.LM336:
+ 2589 0a26 8131      		cpi r24,lo8(17)
+ 2590 0a28 00F4      		brsh .L127
+ 608:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       if(ttl_delay>16) ttl_delay=0;
+ 2592               	.LM337:
+ 2593 0a2a 8093 0000 		sts ttl_delay,r24
+ 2594 0a2e 00C0      		rjmp .L128
+ 2595               	.L127:
+ 609:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       _ttl_delay_total.secs=0;
+ 2597               	.LM338:
+ 2598 0a30 1092 0000 		sts ttl_delay,__zero_reg__
+ 2599               	.L128:
+ 610:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       _ttl_delay_total.nano_secs=0;
+ 2601               	.LM339:
+ 2602 0a34 1092 0000 		sts _ttl_delay_total,__zero_reg__
+ 2603 0a38 1092 0000 		sts _ttl_delay_total+1,__zero_reg__
+ 2604 0a3c 1092 0000 		sts _ttl_delay_total+2,__zero_reg__
+ 2605 0a40 1092 0000 		sts _ttl_delay_total+3,__zero_reg__
+ 611:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       _ttl_delay_per_tx.secs=0;
+ 2607               	.LM340:
+ 2608 0a44 1092 0000 		sts _ttl_delay_total+4,__zero_reg__
+ 2609 0a48 1092 0000 		sts _ttl_delay_total+4+1,__zero_reg__
+ 2610 0a4c 1092 0000 		sts _ttl_delay_total+4+2,__zero_reg__
+ 2611 0a50 1092 0000 		sts _ttl_delay_total+4+3,__zero_reg__
+ 612:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       _ttl_delay_per_tx.nano_secs=0;
+ 2613               	.LM341:
+ 2614 0a54 1092 0000 		sts _ttl_delay_per_tx,__zero_reg__
+ 2615 0a58 1092 0000 		sts _ttl_delay_per_tx+1,__zero_reg__
+ 2616 0a5c 1092 0000 		sts _ttl_delay_per_tx+2,__zero_reg__
+ 2617 0a60 1092 0000 		sts _ttl_delay_per_tx+3,__zero_reg__
+ 616:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 2619               	.LM342:
+ 2620 0a64 A091 0000 		lds r26,tdma_rfRxInfo+3
+ 2621 0a68 BB27      		clr r27
+ 2622 0a6a A7FD      		sbrc r26,7
+ 2623 0a6c B095      		com r27
+ 2624 0a6e 20E0      		ldi r18,0
+ 2625 0a70 3DE7      		ldi r19,lo8(125)
+ 2626 0a72 0E94 0000 		call __usmulhisi3
+ 2627 0a76 DC01      		movw r26,r24
+ 2628 0a78 CB01      		movw r24,r22
+ 2629 0a7a 935B      		subi r25,-77
+ 2630 0a7c A74F      		sbci r26,-9
+ 2631 0a7e BF4F      		sbci r27,-1
+ 2632 0a80 8093 0000 		sts _ttl_delay_per_tx+4,r24
+ 2633 0a84 9093 0000 		sts _ttl_delay_per_tx+4+1,r25
+ 2634 0a88 A093 0000 		sts _ttl_delay_per_tx+4+2,r26
+ 2635 0a8c B093 0000 		sts _ttl_delay_per_tx+4+3,r27
+ 618:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         nrk_time_add (&_ttl_delay_total, _ttl_delay_total, _ttl_delay_per_tx);
+ 2637               	.LM343:
+ 2638 0a90 612C      		mov r6,__zero_reg__
+ 2639 0a92 712C      		mov r7,__zero_reg__
+ 2640               	.L129:
+ 618:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         nrk_time_add (&_ttl_delay_total, _ttl_delay_total, _ttl_delay_per_tx);
+ 2642               	.LM344:
+ 2643 0a94 8091 0000 		lds r24,ttl_delay
+ 2644 0a98 90E0      		ldi r25,0
+ 2645 0a9a 6816      		cp r6,r24
+ 2646 0a9c 7906      		cpc r7,r25
+ 2647 0a9e 00F4      		brsh .L149
+ 619:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 2649               	.LM345:
+ 2650 0aa0 8090 0000 		lds r8,_ttl_delay_per_tx
+ 2651 0aa4 9090 0000 		lds r9,_ttl_delay_per_tx+1
+ 2652 0aa8 A090 0000 		lds r10,_ttl_delay_per_tx+2
+ 2653 0aac B090 0000 		lds r11,_ttl_delay_per_tx+3
+ 2654 0ab0 C090 0000 		lds r12,_ttl_delay_per_tx+4
+ 2655 0ab4 D090 0000 		lds r13,_ttl_delay_per_tx+5
+ 2656 0ab8 E090 0000 		lds r14,_ttl_delay_per_tx+6
+ 2657 0abc F090 0000 		lds r15,_ttl_delay_per_tx+7
+ 2658 0ac0 0091 0000 		lds r16,_ttl_delay_total
+ 2659 0ac4 1091 0000 		lds r17,_ttl_delay_total+1
+ 2660 0ac8 2091 0000 		lds r18,_ttl_delay_total+2
+ 2661 0acc 3091 0000 		lds r19,_ttl_delay_total+3
+ 2662 0ad0 4091 0000 		lds r20,_ttl_delay_total+4
+ 2663 0ad4 5091 0000 		lds r21,_ttl_delay_total+5
+ 2664 0ad8 6091 0000 		lds r22,_ttl_delay_total+6
+ 2665 0adc 7091 0000 		lds r23,_ttl_delay_total+7
+ 2666 0ae0 80E0      		ldi r24,lo8(_ttl_delay_total)
+ 2667 0ae2 90E0      		ldi r25,hi8(_ttl_delay_total)
+ 2668 0ae4 0E94 0000 		call nrk_time_add
+ 618:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         nrk_time_add (&_ttl_delay_total, _ttl_delay_total, _ttl_delay_per_tx);
+ 2670               	.LM346:
+ 2671 0ae8 9FEF      		ldi r25,-1
+ 2672 0aea 691A      		sub r6,r25
+ 2673 0aec 790A      		sbc r7,r25
+ 2674 0aee 00C0      		rjmp .L129
+ 2675               	.L149:
+ 622:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	rf_rx_off ();
+ 2677               	.LM347:
+ 2678 0af0 E1E0      		ldi r30,lo8(1)
+ 2679 0af2 E093 0000 		sts sync_status,r30
+ 623:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	rf_power_down();
+ 2681               	.LM348:
+ 2682 0af6 0E94 0000 		call rf_rx_off
+ 624:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 2684               	.LM349:
+ 2685 0afa 0E94 0000 		call rf_power_down
+ 627:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       if (slot > tdma_slots_per_cycle)
+ 2687               	.LM350:
+ 2688 0afe 8091 0000 		lds r24,tdma_tx_sched
+ 2689 0b02 9091 0000 		lds r25,tdma_tx_sched+1
+ 628:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         slot = tdma_slots_per_cycle;
+ 2691               	.LM351:
+ 2692 0b06 6090 0000 		lds r6,tdma_slots_per_cycle
+ 2693 0b0a 7090 0000 		lds r7,tdma_slots_per_cycle+1
+ 2694 0b0e 8615      		cp r24,r6
+ 2695 0b10 9705      		cpc r25,r7
+ 2696 0b12 00F4      		brsh .L131
+ 2697 0b14 3C01      		movw r6,r24
+ 2698               	.L131:
+ 633:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         nrk_time_add (&_tdma_next_wakeup, _tdma_next_wakeup, _tdma_slot_time);
+ 2700               	.LM352:
+ 2701 0b16 412C      		mov r4,__zero_reg__
+ 2702 0b18 512C      		mov r5,__zero_reg__
+ 2703               	.L132:
+ 633:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         nrk_time_add (&_tdma_next_wakeup, _tdma_next_wakeup, _tdma_slot_time);
+ 2705               	.LM353:
+ 2706 0b1a 4614      		cp r4,r6
+ 2707 0b1c 5704      		cpc r5,r7
+ 2708 0b1e 01F0      		breq .L150
+ 634:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       // Subtract TTL delay time
+ 2710               	.LM354:
+ 2711 0b20 8090 0000 		lds r8,_tdma_slot_time
+ 2712 0b24 9090 0000 		lds r9,_tdma_slot_time+1
+ 2713 0b28 A090 0000 		lds r10,_tdma_slot_time+2
+ 2714 0b2c B090 0000 		lds r11,_tdma_slot_time+3
+ 2715 0b30 C090 0000 		lds r12,_tdma_slot_time+4
+ 2716 0b34 D090 0000 		lds r13,_tdma_slot_time+5
+ 2717 0b38 E090 0000 		lds r14,_tdma_slot_time+6
+ 2718 0b3c F090 0000 		lds r15,_tdma_slot_time+7
+ 2719 0b40 0091 0000 		lds r16,_tdma_next_wakeup
+ 2720 0b44 1091 0000 		lds r17,_tdma_next_wakeup+1
+ 2721 0b48 2091 0000 		lds r18,_tdma_next_wakeup+2
+ 2722 0b4c 3091 0000 		lds r19,_tdma_next_wakeup+3
+ 2723 0b50 4091 0000 		lds r20,_tdma_next_wakeup+4
+ 2724 0b54 5091 0000 		lds r21,_tdma_next_wakeup+5
+ 2725 0b58 6091 0000 		lds r22,_tdma_next_wakeup+6
+ 2726 0b5c 7091 0000 		lds r23,_tdma_next_wakeup+7
+ 2727 0b60 80E0      		ldi r24,lo8(_tdma_next_wakeup)
+ 2728 0b62 90E0      		ldi r25,hi8(_tdma_next_wakeup)
+ 2729 0b64 0E94 0000 		call nrk_time_add
+ 633:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         nrk_time_add (&_tdma_next_wakeup, _tdma_next_wakeup, _tdma_slot_time);
+ 2731               	.LM355:
+ 2732 0b68 FFEF      		ldi r31,-1
+ 2733 0b6a 4F1A      		sub r4,r31
+ 2734 0b6c 5F0A      		sbc r5,r31
+ 2735 0b6e 00C0      		rjmp .L132
+ 2736               	.L150:
+ 636:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 2738               	.LM356:
+ 2739 0b70 8090 0000 		lds r8,_ttl_delay_total
+ 2740 0b74 9090 0000 		lds r9,_ttl_delay_total+1
+ 2741 0b78 A090 0000 		lds r10,_ttl_delay_total+2
+ 2742 0b7c B090 0000 		lds r11,_ttl_delay_total+3
+ 2743 0b80 C090 0000 		lds r12,_ttl_delay_total+4
+ 2744 0b84 D090 0000 		lds r13,_ttl_delay_total+5
+ 2745 0b88 E090 0000 		lds r14,_ttl_delay_total+6
+ 2746 0b8c F090 0000 		lds r15,_ttl_delay_total+7
+ 2747 0b90 0091 0000 		lds r16,_tdma_next_wakeup
+ 2748 0b94 1091 0000 		lds r17,_tdma_next_wakeup+1
+ 2749 0b98 2091 0000 		lds r18,_tdma_next_wakeup+2
+ 2750 0b9c 3091 0000 		lds r19,_tdma_next_wakeup+3
+ 2751 0ba0 4091 0000 		lds r20,_tdma_next_wakeup+4
+ 2752 0ba4 5091 0000 		lds r21,_tdma_next_wakeup+5
+ 2753 0ba8 6091 0000 		lds r22,_tdma_next_wakeup+6
+ 2754 0bac 7091 0000 		lds r23,_tdma_next_wakeup+7
+ 2755 0bb0 80E0      		ldi r24,lo8(_tdma_next_wakeup)
+ 2756 0bb2 90E0      		ldi r25,hi8(_tdma_next_wakeup)
+ 2757 0bb4 0E94 0000 		call nrk_time_sub
+ 638:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 2759               	.LM357:
+ 2760 0bb8 80E0      		ldi r24,lo8(_tdma_next_wakeup)
+ 2761 0bba 90E0      		ldi r25,hi8(_tdma_next_wakeup)
+ 2762 0bbc 0E94 0000 		call nrk_time_compact_nanos
+ 641:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 2764               	.LM358:
+ 2765 0bc0 2091 0000 		lds r18,_tdma_next_wakeup
+ 2766 0bc4 3091 0000 		lds r19,_tdma_next_wakeup+1
+ 2767 0bc8 4091 0000 		lds r20,_tdma_next_wakeup+2
+ 2768 0bcc 5091 0000 		lds r21,_tdma_next_wakeup+3
+ 2769 0bd0 6091 0000 		lds r22,_tdma_next_wakeup+4
+ 2770 0bd4 7091 0000 		lds r23,_tdma_next_wakeup+5
+ 2771 0bd8 8091 0000 		lds r24,_tdma_next_wakeup+6
+ 2772 0bdc 9091 0000 		lds r25,_tdma_next_wakeup+7
+ 2773 0be0 0E94 0000 		call nrk_wait_until
+ 644:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         tdma_rfTxInfo.pPayload[TDMA_SLOT_LOW] = slot & 0xff;    // slot
+ 2775               	.LM359:
+ 2776 0be4 8091 0000 		lds r24,tx_data_ready
+ 2777 0be8 8130      		cpi r24,lo8(1)
+ 2778 0bea 01F4      		brne .L134
+ 645:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         tdma_rfTxInfo.pPayload[TDMA_SLOT_HIGH] = slot >> 8;
+ 2780               	.LM360:
+ 2781 0bec E091 0000 		lds r30,tdma_rfTxInfo+3
+ 2782 0bf0 F091 0000 		lds r31,tdma_rfTxInfo+3+1
+ 2783 0bf4 6082      		st Z,r6
+ 646:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         tdma_rfTxInfo.destAddr = 0xffff;
+ 2785               	.LM361:
+ 2786 0bf6 E091 0000 		lds r30,tdma_rfTxInfo+3
+ 2787 0bfa F091 0000 		lds r31,tdma_rfTxInfo+3+1
+ 2788 0bfe 7182      		std Z+1,r7
+ 647:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         tdma_rfTxInfo.ackRequest = 0;
+ 2790               	.LM362:
+ 2791 0c00 3092 0000 		sts tdma_rfTxInfo+1,r3
+ 2792 0c04 2092 0000 		sts tdma_rfTxInfo,r2
+ 648:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         tdma_rfTxInfo.cca = 0;
+ 2794               	.LM363:
+ 2795 0c08 1092 0000 		sts tdma_rfTxInfo+6,__zero_reg__
+ 649:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	rf_power_up();
+ 2797               	.LM364:
+ 2798 0c0c 1092 0000 		sts tdma_rfTxInfo+5,__zero_reg__
+ 650:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         _tdma_tx ();
+ 2800               	.LM365:
+ 2801 0c10 0E94 0000 		call rf_power_up
+ 651:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       }
+ 2803               	.LM366:
+ 2804 0c14 0E94 0000 		call _tdma_tx
+ 2805               	.L134:
+ 655:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	rf_power_down();
+ 2807               	.LM367:
+ 2808 0c18 0E94 0000 		call rf_rx_off
+ 656:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       for (tmp = 0; tmp < ((uint16_t)tdma_slots_per_cycle - (uint16_t)slot); tmp++)
+ 2810               	.LM368:
+ 2811 0c1c 0E94 0000 		call rf_power_down
+ 657:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         nrk_time_add (&_tdma_next_wakeup, _tdma_next_wakeup, _tdma_slot_time);
+ 2813               	.LM369:
+ 2814 0c20 412C      		mov r4,__zero_reg__
+ 2815 0c22 512C      		mov r5,__zero_reg__
+ 2816               	.L135:
+ 657:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         nrk_time_add (&_tdma_next_wakeup, _tdma_next_wakeup, _tdma_slot_time);
+ 2818               	.LM370:
+ 2819 0c24 8091 0000 		lds r24,tdma_slots_per_cycle
+ 2820 0c28 9091 0000 		lds r25,tdma_slots_per_cycle+1
+ 2821 0c2c 8619      		sub r24,r6
+ 2822 0c2e 9709      		sbc r25,r7
+ 2823 0c30 4816      		cp r4,r24
+ 2824 0c32 5906      		cpc r5,r25
+ 2825 0c34 00F4      		brsh .L151
+ 658:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       nrk_time_compact_nanos (&_tdma_next_wakeup);
+ 2827               	.LM371:
+ 2828 0c36 8090 0000 		lds r8,_tdma_slot_time
+ 2829 0c3a 9090 0000 		lds r9,_tdma_slot_time+1
+ 2830 0c3e A090 0000 		lds r10,_tdma_slot_time+2
+ 2831 0c42 B090 0000 		lds r11,_tdma_slot_time+3
+ 2832 0c46 C090 0000 		lds r12,_tdma_slot_time+4
+ 2833 0c4a D090 0000 		lds r13,_tdma_slot_time+5
+ 2834 0c4e E090 0000 		lds r14,_tdma_slot_time+6
+ 2835 0c52 F090 0000 		lds r15,_tdma_slot_time+7
+ 2836 0c56 0091 0000 		lds r16,_tdma_next_wakeup
+ 2837 0c5a 1091 0000 		lds r17,_tdma_next_wakeup+1
+ 2838 0c5e 2091 0000 		lds r18,_tdma_next_wakeup+2
+ 2839 0c62 3091 0000 		lds r19,_tdma_next_wakeup+3
+ 2840 0c66 4091 0000 		lds r20,_tdma_next_wakeup+4
+ 2841 0c6a 5091 0000 		lds r21,_tdma_next_wakeup+5
+ 2842 0c6e 6091 0000 		lds r22,_tdma_next_wakeup+6
+ 2843 0c72 7091 0000 		lds r23,_tdma_next_wakeup+7
+ 2844 0c76 80E0      		ldi r24,lo8(_tdma_next_wakeup)
+ 2845 0c78 90E0      		ldi r25,hi8(_tdma_next_wakeup)
+ 2846 0c7a 0E94 0000 		call nrk_time_add
+ 657:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****         nrk_time_add (&_tdma_next_wakeup, _tdma_next_wakeup, _tdma_slot_time);
+ 2848               	.LM372:
+ 2849 0c7e 2FEF      		ldi r18,-1
+ 2850 0c80 421A      		sub r4,r18
+ 2851 0c82 520A      		sbc r5,r18
+ 2852 0c84 00C0      		rjmp .L135
+ 2853               	.L151:
+ 659:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       nrk_wait_until (_tdma_next_wakeup);
+ 2855               	.LM373:
+ 2856 0c86 80E0      		ldi r24,lo8(_tdma_next_wakeup)
+ 2857 0c88 90E0      		ldi r25,hi8(_tdma_next_wakeup)
+ 2858 0c8a 0E94 0000 		call nrk_time_compact_nanos
+ 660:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****       slot = 0;
+ 2860               	.LM374:
+ 2861 0c8e 2091 0000 		lds r18,_tdma_next_wakeup
+ 2862 0c92 3091 0000 		lds r19,_tdma_next_wakeup+1
+ 2863 0c96 4091 0000 		lds r20,_tdma_next_wakeup+2
+ 2864 0c9a 5091 0000 		lds r21,_tdma_next_wakeup+3
+ 2865 0c9e 6091 0000 		lds r22,_tdma_next_wakeup+4
+ 2866 0ca2 7091 0000 		lds r23,_tdma_next_wakeup+5
+ 2867 0ca6 8091 0000 		lds r24,_tdma_next_wakeup+6
+ 2868 0caa 9091 0000 		lds r25,_tdma_next_wakeup+7
+ 2869 0cae 0E94 0000 		call nrk_wait_until
+ 2870               	.L137:
+ 662:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 		
+ 2872               	.LM375:
+ 2873 0cb2 8091 0000 		lds r24,tdma_is_enabled
+ 2874 0cb6 8111      		cpse r24,__zero_reg__
+ 2875 0cb8 00C0      		rjmp .L148
+ 662:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 		
+ 2877               	.LM376:
+ 2878 0cba 0E94 0000 		call nrk_wait_until_next_period
+ 2879 0cbe 00C0      		rjmp .L137
+ 2880               	.L148:
+ 664:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****     }
+ 2882               	.LM377:
+ 2883 0cc0 612C      		mov r6,__zero_reg__
+ 2884 0cc2 712C      		mov r7,__zero_reg__
+ 2885 0cc4 00C0      		rjmp .L108
+ 2886               	.L121:
+ 584:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****             tdma_slots_per_cycle =
+ 2888               	.LM378:
+ 2889 0cc6 8285      		ldd r24,Z+10
+ 2890 0cc8 8295      		swap r24
+ 2891 0cca 8F70      		andi r24,lo8(15)
+ 2892 0ccc 8093 0000 		sts tdma_ttl,r24
+ 587:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****               pPayload[TDMA_CYCLE_SIZE_LOW];
+ 2894               	.LM379:
+ 2895 0cd0 8185      		ldd r24,Z+9
+ 2896 0cd2 90E0      		ldi r25,0
+ 2897 0cd4 982F      		mov r25,r24
+ 2898 0cd6 8827      		clr r24
+ 2899 0cd8 2085      		ldd r18,Z+8
+ 2900 0cda 822B      		or r24,r18
+ 585:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****               (tdma_rfRxInfo.
+ 2902               	.LM380:
+ 2903 0cdc 9093 0000 		sts tdma_slots_per_cycle+1,r25
+ 2904 0ce0 8093 0000 		sts tdma_slots_per_cycle,r24
+ 589:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****             _tdma_slot_time.nano_secs = tdma_slot_len_ms * NANOS_PER_MS;
+ 2906               	.LM381:
+ 2907 0ce4 A385      		ldd r26,Z+11
+ 2908 0ce6 8A2F      		mov r24,r26
+ 2909 0ce8 90E0      		ldi r25,0
+ 2910 0cea 9093 0000 		sts tdma_slot_len_ms+1,r25
+ 2911 0cee 8093 0000 		sts tdma_slot_len_ms,r24
+ 590:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****             _tdma_slot_time.secs = 0;
+ 2913               	.LM382:
+ 2914 0cf2 DC01      		movw r26,r24
+ 2915 0cf4 20E4      		ldi r18,lo8(64)
+ 2916 0cf6 32E4      		ldi r19,lo8(66)
+ 2917 0cf8 4FE0      		ldi r20,lo8(15)
+ 2918 0cfa 50E0      		ldi r21,0
+ 2919 0cfc 0E94 0000 		call __muluhisi3
+ 2920 0d00 6093 0000 		sts _tdma_slot_time+4,r22
+ 2921 0d04 7093 0000 		sts _tdma_slot_time+4+1,r23
+ 2922 0d08 8093 0000 		sts _tdma_slot_time+4+2,r24
+ 2923 0d0c 9093 0000 		sts _tdma_slot_time+4+3,r25
+ 591:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 	    }
+ 2925               	.LM383:
+ 2926 0d10 1092 0000 		sts _tdma_slot_time,__zero_reg__
+ 2927 0d14 1092 0000 		sts _tdma_slot_time+1,__zero_reg__
+ 2928 0d18 1092 0000 		sts _tdma_slot_time+2,__zero_reg__
+ 2929 0d1c 1092 0000 		sts _tdma_slot_time+3,__zero_reg__
+ 2930 0d20 00C0      		rjmp .L118
+ 2938               	.Lscope30:
+ 2940               		.stabd	78,0,0
+ 2942               	.global	tdma_task_config
+ 2944               	tdma_task_config:
+ 2945               		.stabd	46,0,0
+ 831:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 832:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** 
+ 833:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** void tdma_task_config ()
+ 834:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c **** {
+ 2947               	.LM384:
+ 2948               	.LFBB31:
+ 2949               	/* prologue: function */
+ 2950               	/* frame size = 0 */
+ 2951               	/* stack size = 0 */
+ 2952               	.L__stack_usage = 0
+ 835:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   nrk_task_set_entry_function (&tdma_task, tdma_nw_task);
+ 2954               	.LM385:
+ 2955 0d22 60E0      		ldi r22,lo8(gs(tdma_nw_task))
+ 2956 0d24 70E0      		ldi r23,hi8(gs(tdma_nw_task))
+ 2957 0d26 80E0      		ldi r24,lo8(tdma_task)
+ 2958 0d28 90E0      		ldi r25,hi8(tdma_task)
+ 2959 0d2a 0E94 0000 		call nrk_task_set_entry_function
+ 836:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   nrk_task_set_stk (&tdma_task, tdma_task_stack, TDMA_STACKSIZE);
+ 2961               	.LM386:
+ 2962 0d2e 40E0      		ldi r20,0
+ 2963 0d30 51E0      		ldi r21,lo8(1)
+ 2964 0d32 60E0      		ldi r22,lo8(tdma_task_stack)
+ 2965 0d34 70E0      		ldi r23,hi8(tdma_task_stack)
+ 2966 0d36 80E0      		ldi r24,lo8(tdma_task)
+ 2967 0d38 90E0      		ldi r25,hi8(tdma_task)
+ 2968 0d3a 0E94 0000 		call nrk_task_set_stk
+ 837:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_task.prio = TDMA_TASK_PRIORITY;
+ 2970               	.LM387:
+ 2971 0d3e E0E0      		ldi r30,lo8(tdma_task)
+ 2972 0d40 F0E0      		ldi r31,hi8(tdma_task)
+ 2973 0d42 84E1      		ldi r24,lo8(20)
+ 2974 0d44 8087      		std Z+8,r24
+ 838:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_task.FirstActivation = TRUE;
+ 2976               	.LM388:
+ 2977 0d46 81E0      		ldi r24,lo8(1)
+ 2978 0d48 8783      		std Z+7,r24
+ 839:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_task.Type = BASIC_TASK;
+ 2980               	.LM389:
+ 2981 0d4a 8187      		std Z+9,r24
+ 840:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_task.SchType = PREEMPTIVE;
+ 2983               	.LM390:
+ 2984 0d4c 8287      		std Z+10,r24
+ 841:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_task.period.secs = 1;
+ 2986               	.LM391:
+ 2987 0d4e 81E0      		ldi r24,lo8(1)
+ 2988 0d50 90E0      		ldi r25,0
+ 2989 0d52 A0E0      		ldi r26,0
+ 2990 0d54 B0E0      		ldi r27,0
+ 2991 0d56 8387      		std Z+11,r24
+ 2992 0d58 9487      		std Z+12,r25
+ 2993 0d5a A587      		std Z+13,r26
+ 2994 0d5c B687      		std Z+14,r27
+ 842:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_task.period.nano_secs = 0; // 20 * NANOS_PER_MS;
+ 2996               	.LM392:
+ 2997 0d5e 1786      		std Z+15,__zero_reg__
+ 2998 0d60 108A      		std Z+16,__zero_reg__
+ 2999 0d62 118A      		std Z+17,__zero_reg__
+ 3000 0d64 128A      		std Z+18,__zero_reg__
+ 843:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_task.cpu_reserve.secs = PCF_TDMA_TIMEOUT;       // bmac reserve , 0 to disable
+ 3002               	.LM393:
+ 3003 0d66 87E0      		ldi r24,lo8(7)
+ 3004 0d68 90E0      		ldi r25,0
+ 3005 0d6a A0E0      		ldi r26,0
+ 3006 0d6c B0E0      		ldi r27,0
+ 3007 0d6e 838B      		std Z+19,r24
+ 3008 0d70 948B      		std Z+20,r25
+ 3009 0d72 A58B      		std Z+21,r26
+ 3010 0d74 B68B      		std Z+22,r27
+ 844:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_task.cpu_reserve.nano_secs = 0;
+ 3012               	.LM394:
+ 3013 0d76 178A      		std Z+23,__zero_reg__
+ 3014 0d78 108E      		std Z+24,__zero_reg__
+ 3015 0d7a 118E      		std Z+25,__zero_reg__
+ 3016 0d7c 128E      		std Z+26,__zero_reg__
+ 845:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_task.offset.secs = 0;
+ 3018               	.LM395:
+ 3019 0d7e 138E      		std Z+27,__zero_reg__
+ 3020 0d80 148E      		std Z+28,__zero_reg__
+ 3021 0d82 158E      		std Z+29,__zero_reg__
+ 3022 0d84 168E      		std Z+30,__zero_reg__
+ 846:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   tdma_task.offset.nano_secs = 0;
+ 3024               	.LM396:
+ 3025 0d86 178E      		std Z+31,__zero_reg__
+ 3026 0d88 10A2      		std Z+32,__zero_reg__
+ 3027 0d8a 11A2      		std Z+33,__zero_reg__
+ 3028 0d8c 12A2      		std Z+34,__zero_reg__
+ 847:../../src/net/pcf_tdma/rf231_soc/pcf_tdma.c ****   nrk_activate_task (&tdma_task);
+ 3030               	.LM397:
+ 3031 0d8e CF01      		movw r24,r30
+ 3032 0d90 0C94 0000 		jmp nrk_activate_task
+ 3034               	.Lscope31:
+ 3036               		.stabd	78,0,0
+ 3037               		.local	cnt.3805
+ 3038               		.comm	cnt.3805,1,1
+ 3039               		.section	.progmem.data,"a",@progbits
+ 3042               	__c.3777:
+ 3043 0000 4661 696C 		.string	"Failed to register signal\r\n"
+ 3043      6564 2074 
+ 3043      6F20 7265 
+ 3043      6769 7374 
+ 3043      6572 2073 
+ 3046               	__c.3747:
+ 3047 001c 5444 4D41 		.string	"TDMA ERROR: creating enable signal failed\r\n"
+ 3047      2045 5252 
+ 3047      4F52 3A20 
+ 3047      6372 6561 
+ 3047      7469 6E67 
+ 3050               	__c.3745:
+ 3051 0048 5444 4D41 		.string	"TDMA ERROR: creating tx signal failed\r\n"
+ 3051      2045 5252 
+ 3051      4F52 3A20 
+ 3051      6372 6561 
+ 3051      7469 6E67 
+ 3054               	__c.3743:
+ 3055 0070 5444 4D41 		.string	"TDMA ERROR: creating rx signal failed\r\n"
+ 3055      2045 5252 
+ 3055      4F52 3A20 
+ 3055      6372 6561 
+ 3055      7469 6E67 
+ 3058               	__c.3718:
+ 3059 0098 5444 4D41 		.string	"TDMA TX: Woke up on wrong signal\r\n"
+ 3059      2054 583A 
+ 3059      2057 6F6B 
+ 3059      6520 7570 
+ 3059      206F 6E20 
+ 3062               	__c.3716:
+ 3063 00bb 5444 4D41 		.string	"TDMA TX: Error calling event wait\r\n"
+ 3063      2054 583A 
+ 3063      2045 7272 
+ 3063      6F72 2063 
+ 3063      616C 6C69 
+ 3064               		.local	tdma_error_callback
+ 3065               		.comm	tdma_error_callback,2,1
+ 3066               		.local	sync_status
+ 3067               		.comm	sync_status,1,1
+ 3068               		.local	tdma_rx_failure_cnt
+ 3069               		.comm	tdma_rx_failure_cnt,2,1
+ 3070               		.local	tx_reserve
+ 3071               		.comm	tx_reserve,1,1
+ 3072               		.local	_tdma_next_wakeup
+ 3073               		.comm	_tdma_next_wakeup,8,1
+ 3074               		.local	_tdma_slot_time
+ 3075               		.comm	_tdma_slot_time,8,1
+ 3076               		.local	_ttl_delay_per_tx
+ 3077               		.comm	_ttl_delay_per_tx,8,1
+ 3078               		.local	_ttl_delay_total
+ 3079               		.comm	_ttl_delay_total,8,1
+ 3080               		.local	ttl_delay
+ 3081               		.comm	ttl_delay,1,1
+ 3082               		.local	tdma_is_enabled
+ 3083               		.comm	tdma_is_enabled,1,1
+ 3084               		.local	tdma_chan
+ 3085               		.comm	tdma_chan,1,1
+ 3086               		.local	tdma_running
+ 3087               		.comm	tdma_running,1,1
+ 3088               		.local	tdma_rx_buf_empty
+ 3089               		.comm	tdma_rx_buf_empty,1,1
+ 3090               		.local	tdma_last_tx_slot
+ 3091               		.comm	tdma_last_tx_slot,2,1
+ 3092               		.local	tdma_slots_per_cycle
+ 3093               		.comm	tdma_slots_per_cycle,2,1
+ 3094               		.local	tdma_slot_len_ms
+ 3095               		.comm	tdma_slot_len_ms,2,1
+ 3096               		.local	tx_data_ready
+ 3097               		.comm	tx_data_ready,1,1
+ 3098               		.local	tdma_ttl
+ 3099               		.comm	tdma_ttl,1,1
+ 3100               		.local	tdma_mode
+ 3101               		.comm	tdma_mode,1,1
+ 3102               		.local	tdma_my_mac
+ 3103               		.comm	tdma_my_mac,1,1
+ 3104               		.local	_tdma_aes_enabled
+ 3105               		.comm	_tdma_aes_enabled,1,1
+ 3106               		.local	tdma_tx_slots
+ 3107               		.comm	tdma_tx_slots,1,1
+ 3108               		.local	tdma_tx_sched
+ 3109               		.comm	tdma_tx_sched,8,1
+ 3110               		.local	tdma_rx_buf
+ 3111               		.comm	tdma_rx_buf,112,1
+ 3112               		.local	tdma_tx_buf
+ 3113               		.comm	tdma_tx_buf,112,1
+ 3114               		.local	tdma_task_stack
+ 3115               		.comm	tdma_task_stack,256,1
+ 3116               		.local	tdma_task
+ 3117               		.comm	tdma_task,35,1
+ 3118               		.local	tdma_wakeup_flag
+ 3119               		.comm	tdma_wakeup_flag,1,1
+ 3120               		.comm	tdma_rfTxInfo,7,1
+ 3121               		.comm	tdma_rfRxInfo,12,1
+ 3122               		.comm	tdma_enable_signal,1,1
+ 3123               		.comm	tdma_tx_pkt_done_signal,1,1
+ 3124               		.comm	tdma_rx_pkt_signal,1,1
+ 3125               		.comm	error_num,1,1
+ 3126               		.comm	error_task,1,1
+ 3127               		.comm	app_timer0_prescale,1,1
+ 3128               		.comm	app_timer0_callback,2,1
+ 3129               		.comm	_nrk_time_trigger,1,1
+ 3130               		.comm	_nrk_prev_timer_val,1,1
+ 3131               		.comm	nrk_kernel_stk_ptr,2,1
+ 3132               		.comm	nrk_idle_task_stk,128,1
+ 3133               		.comm	_nrk_signal_list,4,1
+ 3176               		.text
+ 3178               	.Letext0:
+ 3179               		.ident	"GCC: (GNU) 4.9.1"
+ 3180               	.global __do_clear_bss
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 pcf_tdma.c
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:5      *ABS*:000000000000003b __RAMPZ__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:6      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:7      *ABS*:0000000000000001 __zero_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:343    .text:0000000000000000 _tdma_rx_master
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3087   .bss:000000000000002b tdma_rx_buf_empty
+                             .bss:0000000000000000 cnt.3805
+                            *COM*:0000000000000001 tdma_rx_pkt_signal
+                            *COM*:000000000000000c tdma_rfRxInfo
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3103   .bss:0000000000000036 _tdma_aes_enabled
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:485    .text:00000000000000a0 rf_rx_callback
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:505    .text:00000000000000a2 tdma_aes_setkey
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:524    .text:00000000000000a6 tdma_aes_enable
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:545    .text:00000000000000ae tdma_aes_disable
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:566    .text:00000000000000b6 tdma_sync_ok
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3065   .bss:0000000000000003 sync_status
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:587    .text:00000000000000bc tdma_set_error_callback
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3038   .bss:0000000000000001 tdma_error_callback
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:623    .text:00000000000000d0 tdma_tx_slot_add
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3107   .bss:0000000000000038 tdma_tx_sched
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3105   .bss:0000000000000037 tdma_tx_slots
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:652    .text:00000000000000e0 tdma_tx_reserve_set
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:672    .text:00000000000000e4 tdma_tx_reserve_get
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:694    .text:00000000000000ea tdma_set_rf_power
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:729    .text:00000000000000fa tdma_set_channel
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3083   .bss:0000000000000029 tdma_chan
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:774    .text:000000000000011c tdma_set_slot_len_ms
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3093   .bss:0000000000000030 tdma_slot_len_ms
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3073   .bss:000000000000000f _tdma_slot_time
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:819    .text:000000000000014a tdma_set_slots_per_cycle
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3091   .bss:000000000000002e tdma_slots_per_cycle
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:846    .text:0000000000000154 tdma_send
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3095   .bss:0000000000000032 tx_data_ready
+                            *COM*:0000000000000001 tdma_tx_pkt_done_signal
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3111   .bss:00000000000000b0 tdma_tx_buf
+                            *COM*:0000000000000007 tdma_rfTxInfo
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3101   .bss:0000000000000035 tdma_my_mac
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3097   .bss:0000000000000033 tdma_ttl
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3062   .progmem.data:00000000000000bb __c.3716
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3058   .progmem.data:0000000000000098 __c.3718
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:1087   .text:00000000000002a2 tdma_recv
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:1363   .text:0000000000000422 tdma_rx_pkt_set_buffer
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:1405   .text:000000000000043e tdma_ttl_set
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:1427   .text:0000000000000444 tdma_init
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3069   .bss:0000000000000006 tx_reserve
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3067   .bss:0000000000000004 tdma_rx_failure_cnt
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3099   .bss:0000000000000034 tdma_mode
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3054   .progmem.data:0000000000000070 __c.3743
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3050   .progmem.data:0000000000000048 __c.3745
+                            *COM*:0000000000000001 tdma_enable_signal
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3046   .progmem.data:000000000000001c __c.3747
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3109   .bss:0000000000000040 tdma_rx_buf
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3085   .bss:000000000000002a tdma_running
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3081   .bss:0000000000000028 tdma_is_enabled
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:1609   .text:0000000000000548 tdma_get_rx_pkt_signal
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:1633   .text:0000000000000556 tdma_get_tx_done_signal
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:1659   .text:0000000000000564 tdma_rx_pkt_get
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:1711   .text:0000000000000594 tdma_rx_pkt_release
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:1734   .text:000000000000059c tdma_disable
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:1756   .text:00000000000005a4 tdma_enable
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:1783   .text:00000000000005b6 tdma_wakeup
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3117   .bss:0000000000000243 tdma_wakeup_flag
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:1804   .text:00000000000005be tdma_started
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:1826   .text:00000000000005c4 _tdma_rx
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:1955   .text:000000000000065a _tdma_tx
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:2127   .text:0000000000000758 tdma_nw_task
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3042   .progmem.data:0000000000000000 __c.3777
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3071   .bss:0000000000000007 _tdma_next_wakeup
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3089   .bss:000000000000002c tdma_last_tx_slot
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3079   .bss:0000000000000027 ttl_delay
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3077   .bss:000000000000001f _ttl_delay_total
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3075   .bss:0000000000000017 _ttl_delay_per_tx
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:2944   .text:0000000000000d22 tdma_task_config
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3115   .bss:0000000000000220 tdma_task
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTMdCXn.s:3113   .bss:0000000000000120 tdma_task_stack
+                            *COM*:0000000000000001 error_num
+                            *COM*:0000000000000001 error_task
+                            *COM*:0000000000000001 app_timer0_prescale
+                            *COM*:0000000000000002 app_timer0_callback
+                            *COM*:0000000000000001 _nrk_time_trigger
+                            *COM*:0000000000000001 _nrk_prev_timer_val
+                            *COM*:0000000000000002 nrk_kernel_stk_ptr
+                            *COM*:0000000000000080 nrk_idle_task_stk
+                            *COM*:0000000000000004 _nrk_signal_list
+
+UNDEFINED SYMBOLS
+rf_rx_off
+rf_rx_on
+nrk_event_signal
+rf_rx_packet_nonblock
+aes_decrypt
+aes_setkey
+rf_tx_power
+rf_init
+__muluhisi3
+nrk_signal_register
+nrk_event_wait
+nrk_kprintf
+nrk_signal_create
+nrk_cur_task_TCB
+nrk_kernel_error_add
+rf_set_cca_thresh
+rf_power_down
+rf_power_up
+nrk_spin_wait_us
+aes_encrypt
+rf_tx_packet
+nrk_wait_until_next_period
+nrk_time_get
+__udivmodhi4
+nrk_led_toggle
+nrk_wait_until_ticks
+nrk_led_clr
+rx_end_callback
+nrk_time_add
+nrk_time_compact_nanos
+nrk_wait_until
+__usmulhisi3
+nrk_time_sub
+nrk_task_set_entry_function
+nrk_task_set_stk
+nrk_activate_task
+__do_clear_bss
