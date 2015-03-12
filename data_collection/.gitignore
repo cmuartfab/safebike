@@ -1,9 +1,9 @@
 # compiled files
 *.o
 *.a
-read_piksi
-driver_accelerometers
-slipstream_server
+./driver_piksi/read_piksi
+./driver_accelerometers/driver_accelerometers
+./driver_accelerometers/slipstream_server
 
 # collected data
 data
