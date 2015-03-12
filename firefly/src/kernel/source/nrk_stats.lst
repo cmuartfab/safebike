@@ -1,0 +1,1324 @@
+   1               		.file	"nrk_stats.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__RAMPZ__ = 0x3b
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+  10               		.text
+  11               	.Ltext0:
+ 323               	.global	nrk_stats_reset
+ 325               	nrk_stats_reset:
+ 326               		.stabd	46,0,0
+   1:../../src/kernel/source/nrk_stats.c **** #include <nrk.h>
+   2:../../src/kernel/source/nrk_stats.c **** #include <nrk_stats.h>
+   3:../../src/kernel/source/nrk_stats.c **** #include <nrk_time.h>
+   4:../../src/kernel/source/nrk_stats.c **** #include <nrk_defs.h>
+   5:../../src/kernel/source/nrk_stats.c **** #include <nrk_error.h>
+   6:../../src/kernel/source/nrk_stats.c **** #include <stdio.h>
+   7:../../src/kernel/source/nrk_stats.c **** 
+   8:../../src/kernel/source/nrk_stats.c **** #ifdef NRK_STATS_TRACKER
+   9:../../src/kernel/source/nrk_stats.c **** void nrk_stats_reset()
+  10:../../src/kernel/source/nrk_stats.c **** {
+ 328               	.LM0:
+ 329               	.LFBB1:
+ 330               	/* prologue: function */
+ 331               	/* frame size = 0 */
+ 332               	/* stack size = 0 */
+ 333               	.L__stack_usage = 0
+  11:../../src/kernel/source/nrk_stats.c ****     uint8_t i;
+  12:../../src/kernel/source/nrk_stats.c **** 
+  13:../../src/kernel/source/nrk_stats.c ****     _nrk_stats_sleep_time.secs=0;
+ 335               	.LM1:
+ 336 0000 1092 0000 		sts _nrk_stats_sleep_time,__zero_reg__
+ 337 0004 1092 0000 		sts _nrk_stats_sleep_time+1,__zero_reg__
+ 338 0008 1092 0000 		sts _nrk_stats_sleep_time+2,__zero_reg__
+ 339 000c 1092 0000 		sts _nrk_stats_sleep_time+3,__zero_reg__
+  14:../../src/kernel/source/nrk_stats.c ****     _nrk_stats_sleep_time.nano_secs=0;
+ 341               	.LM2:
+ 342 0010 1092 0000 		sts _nrk_stats_sleep_time+4,__zero_reg__
+ 343 0014 1092 0000 		sts _nrk_stats_sleep_time+4+1,__zero_reg__
+ 344 0018 1092 0000 		sts _nrk_stats_sleep_time+4+2,__zero_reg__
+ 345 001c 1092 0000 		sts _nrk_stats_sleep_time+4+3,__zero_reg__
+ 346 0020 E0E0      		ldi r30,lo8(cur_task_stats)
+ 347 0022 F0E0      		ldi r31,hi8(cur_task_stats)
+ 348 0024 80E0      		ldi r24,0
+ 349 0026 90E0      		ldi r25,0
+ 350               	.L2:
+  15:../../src/kernel/source/nrk_stats.c ****     for(i=0; i<NRK_MAX_TASKS; i++ )
+  16:../../src/kernel/source/nrk_stats.c ****     {
+  17:../../src/kernel/source/nrk_stats.c ****         cur_task_stats[i].total_ticks=0;
+ 352               	.LM3:
+ 353 0028 1082      		st Z,__zero_reg__
+ 354 002a 1182      		std Z+1,__zero_reg__
+ 355 002c 1282      		std Z+2,__zero_reg__
+ 356 002e 1382      		std Z+3,__zero_reg__
+  18:../../src/kernel/source/nrk_stats.c ****         cur_task_stats[i].max_exec_ticks=0;
+ 358               	.LM4:
+ 359 0030 1086      		std Z+8,__zero_reg__
+ 360 0032 1186      		std Z+9,__zero_reg__
+ 361 0034 1286      		std Z+10,__zero_reg__
+ 362 0036 1386      		std Z+11,__zero_reg__
+  19:../../src/kernel/source/nrk_stats.c ****         cur_task_stats[i].min_exec_ticks=0;
+ 364               	.LM5:
+ 365 0038 1482      		std Z+4,__zero_reg__
+ 366 003a 1582      		std Z+5,__zero_reg__
+ 367 003c 1682      		std Z+6,__zero_reg__
+ 368 003e 1782      		std Z+7,__zero_reg__
+  20:../../src/kernel/source/nrk_stats.c ****         cur_task_stats[i].last_exec_ticks=0;
+ 370               	.LM6:
+ 371 0040 1486      		std Z+12,__zero_reg__
+ 372 0042 1586      		std Z+13,__zero_reg__
+ 373 0044 1686      		std Z+14,__zero_reg__
+ 374 0046 1786      		std Z+15,__zero_reg__
+  21:../../src/kernel/source/nrk_stats.c ****         cur_task_stats[i].swapped_in=0;
+ 376               	.LM7:
+ 377 0048 108A      		std Z+16,__zero_reg__
+ 378 004a 118A      		std Z+17,__zero_reg__
+ 379 004c 128A      		std Z+18,__zero_reg__
+ 380 004e 138A      		std Z+19,__zero_reg__
+  22:../../src/kernel/source/nrk_stats.c ****         cur_task_stats[i].preempted=0;
+ 382               	.LM8:
+ 383 0050 108E      		std Z+24,__zero_reg__
+ 384 0052 118E      		std Z+25,__zero_reg__
+ 385 0054 128E      		std Z+26,__zero_reg__
+ 386 0056 138E      		std Z+27,__zero_reg__
+ 387 0058 DC01      		movw r26,r24
+ 388 005a A050      		subi r26,lo8(-(cur_task_stats))
+ 389 005c B040      		sbci r27,hi8(-(cur_task_stats))
+  23:../../src/kernel/source/nrk_stats.c ****         cur_task_stats[i].violations=0;
+ 391               	.LM9:
+ 392 005e 5C96      		adiw r26,28
+ 393 0060 1C92      		st X,__zero_reg__
+ 394 0062 5C97      		sbiw r26,28
+  24:../../src/kernel/source/nrk_stats.c ****         cur_task_stats[i].overflow=0;
+ 396               	.LM10:
+ 397 0064 5D96      		adiw r26,29
+ 398 0066 1C92      		st X,__zero_reg__
+ 399 0068 7E96      		adiw r30,30
+ 400 006a 4E96      		adiw r24,30
+  15:../../src/kernel/source/nrk_stats.c ****     {
+ 402               	.LM11:
+ 403 006c 8639      		cpi r24,-106
+ 404 006e 9105      		cpc r25,__zero_reg__
+ 405 0070 01F4      		brne .L2
+ 406               	/* epilogue start */
+  25:../../src/kernel/source/nrk_stats.c ****     }
+  26:../../src/kernel/source/nrk_stats.c **** 
+  27:../../src/kernel/source/nrk_stats.c **** }
+ 408               	.LM12:
+ 409 0072 0895      		ret
+ 411               	.Lscope1:
+ 413               		.stabd	78,0,0
+ 416               	.global	_nrk_stats_sleep
+ 418               	_nrk_stats_sleep:
+ 419               		.stabd	46,0,0
+  28:../../src/kernel/source/nrk_stats.c **** 
+  29:../../src/kernel/source/nrk_stats.c **** 
+  30:../../src/kernel/source/nrk_stats.c **** void _nrk_stats_sleep(uint8_t t)
+  31:../../src/kernel/source/nrk_stats.c **** {
+ 421               	.LM13:
+ 422               	.LFBB2:
+ 423 0074 0F93      		push r16
+ 424 0076 1F93      		push r17
+ 425               	/* prologue: function */
+ 426               	/* frame size = 0 */
+ 427               	/* stack size = 2 */
+ 428               	.L__stack_usage = 2
+  32:../../src/kernel/source/nrk_stats.c **** //_nrk_stats_sleep_time+=t;
+  33:../../src/kernel/source/nrk_stats.c ****     _nrk_stats_sleep_time.nano_secs+=t*NANOS_PER_TICK;
+ 430               	.LM14:
+ 431 0078 E0E0      		ldi r30,lo8(_nrk_stats_sleep_time)
+ 432 007a F0E0      		ldi r31,hi8(_nrk_stats_sleep_time)
+ 433 007c A82F      		mov r26,r24
+ 434 007e B0E0      		ldi r27,0
+ 435 0080 23EB      		ldi r18,lo8(-77)
+ 436 0082 36EE      		ldi r19,lo8(-26)
+ 437 0084 4EE0      		ldi r20,lo8(14)
+ 438 0086 50E0      		ldi r21,0
+ 439 0088 0E94 0000 		call __muluhisi3
+ 440 008c 0481      		ldd r16,Z+4
+ 441 008e 1581      		ldd r17,Z+5
+ 442 0090 2681      		ldd r18,Z+6
+ 443 0092 3781      		ldd r19,Z+7
+ 444 0094 DC01      		movw r26,r24
+ 445 0096 CB01      		movw r24,r22
+ 446 0098 800F      		add r24,r16
+ 447 009a 911F      		adc r25,r17
+ 448 009c A21F      		adc r26,r18
+ 449 009e B31F      		adc r27,r19
+ 450 00a0 8483      		std Z+4,r24
+ 451 00a2 9583      		std Z+5,r25
+ 452 00a4 A683      		std Z+6,r26
+ 453 00a6 B783      		std Z+7,r27
+  34:../../src/kernel/source/nrk_stats.c ****     nrk_time_compact_nanos(&_nrk_stats_sleep_time);
+ 455               	.LM15:
+ 456 00a8 CF01      		movw r24,r30
+ 457               	/* epilogue start */
+  35:../../src/kernel/source/nrk_stats.c **** }
+ 459               	.LM16:
+ 460 00aa 1F91      		pop r17
+ 461 00ac 0F91      		pop r16
+  34:../../src/kernel/source/nrk_stats.c ****     nrk_time_compact_nanos(&_nrk_stats_sleep_time);
+ 463               	.LM17:
+ 464 00ae 0C94 0000 		jmp nrk_time_compact_nanos
+ 466               	.Lscope2:
+ 468               		.stabd	78,0,0
+ 471               	.global	nrk_stats_get_deep_sleep
+ 473               	nrk_stats_get_deep_sleep:
+ 474               		.stabd	46,0,0
+  36:../../src/kernel/source/nrk_stats.c **** 
+  37:../../src/kernel/source/nrk_stats.c **** void nrk_stats_get_deep_sleep(nrk_time_t *t)
+  38:../../src/kernel/source/nrk_stats.c **** {
+ 476               	.LM18:
+ 477               	.LFBB3:
+ 478               	/* prologue: function */
+ 479               	/* frame size = 0 */
+ 480               	/* stack size = 0 */
+ 481               	.L__stack_usage = 0
+  39:../../src/kernel/source/nrk_stats.c ****     t->secs=_nrk_stats_sleep_time.secs;
+ 483               	.LM19:
+ 484 00b2 E0E0      		ldi r30,lo8(_nrk_stats_sleep_time)
+ 485 00b4 F0E0      		ldi r31,hi8(_nrk_stats_sleep_time)
+ 486 00b6 4081      		ld r20,Z
+ 487 00b8 5181      		ldd r21,Z+1
+ 488 00ba 6281      		ldd r22,Z+2
+ 489 00bc 7381      		ldd r23,Z+3
+ 490 00be DC01      		movw r26,r24
+ 491 00c0 4D93      		st X+,r20
+ 492 00c2 5D93      		st X+,r21
+ 493 00c4 6D93      		st X+,r22
+ 494 00c6 7C93      		st X,r23
+ 495 00c8 1397      		sbiw r26,3
+  40:../../src/kernel/source/nrk_stats.c ****     t->nano_secs=_nrk_stats_sleep_time.nano_secs;
+ 497               	.LM20:
+ 498 00ca 4481      		ldd r20,Z+4
+ 499 00cc 5581      		ldd r21,Z+5
+ 500 00ce 6681      		ldd r22,Z+6
+ 501 00d0 7781      		ldd r23,Z+7
+ 502 00d2 FC01      		movw r30,r24
+ 503 00d4 4483      		std Z+4,r20
+ 504 00d6 5583      		std Z+5,r21
+ 505 00d8 6683      		std Z+6,r22
+ 506 00da 7783      		std Z+7,r23
+ 507 00dc 0895      		ret
+ 509               	.Lscope3:
+ 511               		.stabd	78,0,0
+ 514               	.global	_nrk_stats_add_violation
+ 516               	_nrk_stats_add_violation:
+ 517               		.stabd	46,0,0
+  41:../../src/kernel/source/nrk_stats.c **** }
+  42:../../src/kernel/source/nrk_stats.c **** 
+  43:../../src/kernel/source/nrk_stats.c **** void _nrk_stats_add_violation(uint8_t task_id)
+  44:../../src/kernel/source/nrk_stats.c **** {
+ 519               	.LM21:
+ 520               	.LFBB4:
+ 521               	/* prologue: function */
+ 522               	/* frame size = 0 */
+ 523               	/* stack size = 0 */
+ 524               	.L__stack_usage = 0
+  45:../../src/kernel/source/nrk_stats.c ****     if( cur_task_stats[task_id].overflow==1) return;
+ 526               	.LM22:
+ 527 00de 2EE1      		ldi r18,lo8(30)
+ 528 00e0 829F      		mul r24,r18
+ 529 00e2 C001      		movw r24,r0
+ 530 00e4 1124      		clr __zero_reg__
+ 531 00e6 FC01      		movw r30,r24
+ 532 00e8 E050      		subi r30,lo8(-(cur_task_stats))
+ 533 00ea F040      		sbci r31,hi8(-(cur_task_stats))
+ 534 00ec 858D      		ldd r24,Z+29
+ 535 00ee 8130      		cpi r24,lo8(1)
+ 536 00f0 01F0      		breq .L7
+  46:../../src/kernel/source/nrk_stats.c ****     cur_task_stats[task_id].violations++;
+ 538               	.LM23:
+ 539 00f2 848D      		ldd r24,Z+28
+ 540 00f4 8F5F      		subi r24,lo8(-(1))
+ 541 00f6 848F      		std Z+28,r24
+  47:../../src/kernel/source/nrk_stats.c ****     if(cur_task_stats[task_id].violations==255) cur_task_stats[task_id].overflow=1;
+ 543               	.LM24:
+ 544 00f8 8F3F      		cpi r24,lo8(-1)
+ 545 00fa 01F4      		brne .L7
+ 547               	.LM25:
+ 548 00fc 81E0      		ldi r24,lo8(1)
+ 549 00fe 858F      		std Z+29,r24
+ 550               	.L7:
+ 551 0100 0895      		ret
+ 553               	.Lscope4:
+ 555               		.stabd	78,0,0
+ 558               	.global	_nrk_stats_task_start
+ 560               	_nrk_stats_task_start:
+ 561               		.stabd	46,0,0
+  48:../../src/kernel/source/nrk_stats.c **** }
+  49:../../src/kernel/source/nrk_stats.c **** 
+  50:../../src/kernel/source/nrk_stats.c **** 
+  51:../../src/kernel/source/nrk_stats.c **** // task_id is the PID of the task in question
+  52:../../src/kernel/source/nrk_stats.c **** void _nrk_stats_task_start(uint8_t task_id)
+  53:../../src/kernel/source/nrk_stats.c **** {
+ 563               	.LM26:
+ 564               	.LFBB5:
+ 565               	/* prologue: function */
+ 566               	/* frame size = 0 */
+ 567               	/* stack size = 0 */
+ 568               	.L__stack_usage = 0
+  54:../../src/kernel/source/nrk_stats.c ****     if( cur_task_stats[task_id].overflow==1) return;
+ 570               	.LM27:
+ 571 0102 2EE1      		ldi r18,lo8(30)
+ 572 0104 829F      		mul r24,r18
+ 573 0106 C001      		movw r24,r0
+ 574 0108 1124      		clr __zero_reg__
+ 575 010a FC01      		movw r30,r24
+ 576 010c E050      		subi r30,lo8(-(cur_task_stats))
+ 577 010e F040      		sbci r31,hi8(-(cur_task_stats))
+ 578 0110 858D      		ldd r24,Z+29
+ 579 0112 8130      		cpi r24,lo8(1)
+ 580 0114 01F0      		breq .L11
+  55:../../src/kernel/source/nrk_stats.c ****     cur_task_stats[task_id].cur_ticks=0;
+ 582               	.LM28:
+ 583 0116 148A      		std Z+20,__zero_reg__
+ 584 0118 158A      		std Z+21,__zero_reg__
+ 585 011a 168A      		std Z+22,__zero_reg__
+ 586 011c 178A      		std Z+23,__zero_reg__
+  56:../../src/kernel/source/nrk_stats.c ****     cur_task_stats[task_id].swapped_in++;
+ 588               	.LM29:
+ 589 011e 8089      		ldd r24,Z+16
+ 590 0120 9189      		ldd r25,Z+17
+ 591 0122 A289      		ldd r26,Z+18
+ 592 0124 B389      		ldd r27,Z+19
+ 593 0126 0196      		adiw r24,1
+ 594 0128 A11D      		adc r26,__zero_reg__
+ 595 012a B11D      		adc r27,__zero_reg__
+ 596 012c 808B      		std Z+16,r24
+ 597 012e 918B      		std Z+17,r25
+ 598 0130 A28B      		std Z+18,r26
+ 599 0132 B38B      		std Z+19,r27
+  57:../../src/kernel/source/nrk_stats.c ****     if(cur_task_stats[task_id].swapped_in==(UINT32_MAX-1)) cur_task_stats[task_id].overflow=1;
+ 601               	.LM30:
+ 602 0134 8E3F      		cpi r24,-2
+ 603 0136 9F4F      		sbci r25,-1
+ 604 0138 AF4F      		sbci r26,-1
+ 605 013a BF4F      		sbci r27,-1
+ 606 013c 01F4      		brne .L11
+ 608               	.LM31:
+ 609 013e 81E0      		ldi r24,lo8(1)
+ 610 0140 858F      		std Z+29,r24
+ 611               	.L11:
+ 612 0142 0895      		ret
+ 614               	.Lscope5:
+ 616               		.stabd	78,0,0
+ 620               	.global	_nrk_stats_task_preempted
+ 622               	_nrk_stats_task_preempted:
+ 623               		.stabd	46,0,0
+  58:../../src/kernel/source/nrk_stats.c **** }
+  59:../../src/kernel/source/nrk_stats.c **** 
+  60:../../src/kernel/source/nrk_stats.c **** 
+  61:../../src/kernel/source/nrk_stats.c **** void _nrk_stats_task_preempted(uint8_t task_id, uint8_t ticks)
+  62:../../src/kernel/source/nrk_stats.c **** {
+ 625               	.LM32:
+ 626               	.LFBB6:
+ 627 0144 0F93      		push r16
+ 628 0146 1F93      		push r17
+ 629               	/* prologue: function */
+ 630               	/* frame size = 0 */
+ 631               	/* stack size = 2 */
+ 632               	.L__stack_usage = 2
+  63:../../src/kernel/source/nrk_stats.c ****     if( cur_task_stats[task_id].overflow==1) return;
+ 634               	.LM33:
+ 635 0148 2EE1      		ldi r18,lo8(30)
+ 636 014a 829F      		mul r24,r18
+ 637 014c C001      		movw r24,r0
+ 638 014e 1124      		clr __zero_reg__
+ 639 0150 FC01      		movw r30,r24
+ 640 0152 E050      		subi r30,lo8(-(cur_task_stats))
+ 641 0154 F040      		sbci r31,hi8(-(cur_task_stats))
+ 642 0156 858D      		ldd r24,Z+29
+ 643 0158 8130      		cpi r24,lo8(1)
+ 644 015a 01F0      		breq .L15
+  64:../../src/kernel/source/nrk_stats.c ****     cur_task_stats[task_id].preempted++;
+ 646               	.LM34:
+ 647 015c 808D      		ldd r24,Z+24
+ 648 015e 918D      		ldd r25,Z+25
+ 649 0160 A28D      		ldd r26,Z+26
+ 650 0162 B38D      		ldd r27,Z+27
+ 651 0164 0196      		adiw r24,1
+ 652 0166 A11D      		adc r26,__zero_reg__
+ 653 0168 B11D      		adc r27,__zero_reg__
+ 654 016a 808F      		std Z+24,r24
+ 655 016c 918F      		std Z+25,r25
+ 656 016e A28F      		std Z+26,r26
+ 657 0170 B38F      		std Z+27,r27
+  65:../../src/kernel/source/nrk_stats.c ****     cur_task_stats[task_id].cur_ticks+=ticks;
+ 659               	.LM35:
+ 660 0172 462F      		mov r20,r22
+ 661 0174 50E0      		ldi r21,0
+ 662 0176 60E0      		ldi r22,0
+ 663 0178 70E0      		ldi r23,0
+ 664 017a 0489      		ldd r16,Z+20
+ 665 017c 1589      		ldd r17,Z+21
+ 666 017e 2689      		ldd r18,Z+22
+ 667 0180 3789      		ldd r19,Z+23
+ 668 0182 040F      		add r16,r20
+ 669 0184 151F      		adc r17,r21
+ 670 0186 261F      		adc r18,r22
+ 671 0188 371F      		adc r19,r23
+ 672 018a 048B      		std Z+20,r16
+ 673 018c 158B      		std Z+21,r17
+ 674 018e 268B      		std Z+22,r18
+ 675 0190 378B      		std Z+23,r19
+  66:../../src/kernel/source/nrk_stats.c ****     cur_task_stats[task_id].total_ticks+=ticks;
+ 677               	.LM36:
+ 678 0192 0081      		ld r16,Z
+ 679 0194 1181      		ldd r17,Z+1
+ 680 0196 2281      		ldd r18,Z+2
+ 681 0198 3381      		ldd r19,Z+3
+ 682 019a 400F      		add r20,r16
+ 683 019c 511F      		adc r21,r17
+ 684 019e 621F      		adc r22,r18
+ 685 01a0 731F      		adc r23,r19
+ 686 01a2 4083      		st Z,r20
+ 687 01a4 5183      		std Z+1,r21
+ 688 01a6 6283      		std Z+2,r22
+ 689 01a8 7383      		std Z+3,r23
+  67:../../src/kernel/source/nrk_stats.c ****     if(cur_task_stats[task_id].preempted==(UINT32_MAX-1)) cur_task_stats[task_id].overflow=1;
+ 691               	.LM37:
+ 692 01aa 8E3F      		cpi r24,-2
+ 693 01ac 9F4F      		sbci r25,-1
+ 694 01ae AF4F      		sbci r26,-1
+ 695 01b0 BF4F      		sbci r27,-1
+ 696 01b2 01F4      		brne .L15
+ 698               	.LM38:
+ 699 01b4 81E0      		ldi r24,lo8(1)
+ 700 01b6 858F      		std Z+29,r24
+ 701               	.L15:
+ 702               	/* epilogue start */
+  68:../../src/kernel/source/nrk_stats.c **** }
+ 704               	.LM39:
+ 705 01b8 1F91      		pop r17
+ 706 01ba 0F91      		pop r16
+ 707 01bc 0895      		ret
+ 709               	.Lscope6:
+ 711               		.stabd	78,0,0
+ 715               	.global	_nrk_stats_task_suspend
+ 717               	_nrk_stats_task_suspend:
+ 718               		.stabd	46,0,0
+  69:../../src/kernel/source/nrk_stats.c **** 
+  70:../../src/kernel/source/nrk_stats.c **** void _nrk_stats_task_suspend(uint8_t task_id, uint8_t ticks)
+  71:../../src/kernel/source/nrk_stats.c **** {
+ 720               	.LM40:
+ 721               	.LFBB7:
+ 722 01be CF92      		push r12
+ 723 01c0 DF92      		push r13
+ 724 01c2 EF92      		push r14
+ 725 01c4 FF92      		push r15
+ 726               	/* prologue: function */
+ 727               	/* frame size = 0 */
+ 728               	/* stack size = 4 */
+ 729               	.L__stack_usage = 4
+  72:../../src/kernel/source/nrk_stats.c ****     if( cur_task_stats[task_id].overflow==1) return;
+ 731               	.LM41:
+ 732 01c6 282F      		mov r18,r24
+ 733 01c8 30E0      		ldi r19,0
+ 734 01ca 9EE1      		ldi r25,lo8(30)
+ 735 01cc 899F      		mul r24,r25
+ 736 01ce F001      		movw r30,r0
+ 737 01d0 1124      		clr __zero_reg__
+ 738 01d2 E050      		subi r30,lo8(-(cur_task_stats))
+ 739 01d4 F040      		sbci r31,hi8(-(cur_task_stats))
+ 740 01d6 858D      		ldd r24,Z+29
+ 741 01d8 8130      		cpi r24,lo8(1)
+ 742 01da 01F4      		brne .+2
+ 743 01dc 00C0      		rjmp .L19
+  73:../../src/kernel/source/nrk_stats.c ****     cur_task_stats[task_id].last_exec_ticks = cur_task_stats[task_id].cur_ticks+ticks;
+ 745               	.LM42:
+ 746 01de 462F      		mov r20,r22
+ 747 01e0 50E0      		ldi r21,0
+ 748 01e2 60E0      		ldi r22,0
+ 749 01e4 70E0      		ldi r23,0
+ 750 01e6 8489      		ldd r24,Z+20
+ 751 01e8 9589      		ldd r25,Z+21
+ 752 01ea A689      		ldd r26,Z+22
+ 753 01ec B789      		ldd r27,Z+23
+ 754 01ee 840F      		add r24,r20
+ 755 01f0 951F      		adc r25,r21
+ 756 01f2 A61F      		adc r26,r22
+ 757 01f4 B71F      		adc r27,r23
+ 758 01f6 8487      		std Z+12,r24
+ 759 01f8 9587      		std Z+13,r25
+ 760 01fa A687      		std Z+14,r26
+ 761 01fc B787      		std Z+15,r27
+  74:../../src/kernel/source/nrk_stats.c ****     cur_task_stats[task_id].total_ticks+=ticks;
+ 763               	.LM43:
+ 764 01fe C080      		ld r12,Z
+ 765 0200 D180      		ldd r13,Z+1
+ 766 0202 E280      		ldd r14,Z+2
+ 767 0204 F380      		ldd r15,Z+3
+ 768 0206 4C0D      		add r20,r12
+ 769 0208 5D1D      		adc r21,r13
+ 770 020a 6E1D      		adc r22,r14
+ 771 020c 7F1D      		adc r23,r15
+ 772 020e 4083      		st Z,r20
+ 773 0210 5183      		std Z+1,r21
+ 774 0212 6283      		std Z+2,r22
+ 775 0214 7383      		std Z+3,r23
+  75:../../src/kernel/source/nrk_stats.c **** 
+  76:../../src/kernel/source/nrk_stats.c ****     if(cur_task_stats[task_id].min_exec_ticks==0 || cur_task_stats[task_id].last_exec_ticks<cur_tas
+ 777               	.LM44:
+ 778 0216 4481      		ldd r20,Z+4
+ 779 0218 5581      		ldd r21,Z+5
+ 780 021a 6681      		ldd r22,Z+6
+ 781 021c 7781      		ldd r23,Z+7
+ 782 021e 4115      		cp r20,__zero_reg__
+ 783 0220 5105      		cpc r21,__zero_reg__
+ 784 0222 6105      		cpc r22,__zero_reg__
+ 785 0224 7105      		cpc r23,__zero_reg__
+ 786 0226 01F0      		breq .L22
+ 788               	.LM45:
+ 789 0228 8417      		cp r24,r20
+ 790 022a 9507      		cpc r25,r21
+ 791 022c A607      		cpc r26,r22
+ 792 022e B707      		cpc r27,r23
+ 793 0230 00F4      		brsh .L23
+ 794               	.L22:
+  77:../../src/kernel/source/nrk_stats.c ****         cur_task_stats[task_id].min_exec_ticks=cur_task_stats[task_id].last_exec_ticks;
+ 796               	.LM46:
+ 797 0232 4EE1      		ldi r20,lo8(30)
+ 798 0234 429F      		mul r20,r18
+ 799 0236 F001      		movw r30,r0
+ 800 0238 439F      		mul r20,r19
+ 801 023a F00D      		add r31,r0
+ 802 023c 1124      		clr __zero_reg__
+ 803 023e E050      		subi r30,lo8(-(cur_task_stats))
+ 804 0240 F040      		sbci r31,hi8(-(cur_task_stats))
+ 805 0242 8483      		std Z+4,r24
+ 806 0244 9583      		std Z+5,r25
+ 807 0246 A683      		std Z+6,r26
+ 808 0248 B783      		std Z+7,r27
+ 809               	.L23:
+  78:../../src/kernel/source/nrk_stats.c **** 
+  79:../../src/kernel/source/nrk_stats.c ****     if(cur_task_stats[task_id].last_exec_ticks>cur_task_stats[task_id].max_exec_ticks)
+ 811               	.LM47:
+ 812 024a 4EE1      		ldi r20,lo8(30)
+ 813 024c 429F      		mul r20,r18
+ 814 024e F001      		movw r30,r0
+ 815 0250 439F      		mul r20,r19
+ 816 0252 F00D      		add r31,r0
+ 817 0254 1124      		clr __zero_reg__
+ 818 0256 E050      		subi r30,lo8(-(cur_task_stats))
+ 819 0258 F040      		sbci r31,hi8(-(cur_task_stats))
+ 820 025a 4085      		ldd r20,Z+8
+ 821 025c 5185      		ldd r21,Z+9
+ 822 025e 6285      		ldd r22,Z+10
+ 823 0260 7385      		ldd r23,Z+11
+ 824 0262 4817      		cp r20,r24
+ 825 0264 5907      		cpc r21,r25
+ 826 0266 6A07      		cpc r22,r26
+ 827 0268 7B07      		cpc r23,r27
+ 828 026a 00F4      		brsh .L19
+  80:../../src/kernel/source/nrk_stats.c ****         cur_task_stats[task_id].max_exec_ticks=cur_task_stats[task_id].last_exec_ticks;
+ 830               	.LM48:
+ 831 026c 8087      		std Z+8,r24
+ 832 026e 9187      		std Z+9,r25
+ 833 0270 A287      		std Z+10,r26
+ 834 0272 B387      		std Z+11,r27
+ 835               	.L19:
+ 836               	/* epilogue start */
+  81:../../src/kernel/source/nrk_stats.c **** 
+  82:../../src/kernel/source/nrk_stats.c **** }
+ 838               	.LM49:
+ 839 0274 FF90      		pop r15
+ 840 0276 EF90      		pop r14
+ 841 0278 DF90      		pop r13
+ 842 027a CF90      		pop r12
+ 843 027c 0895      		ret
+ 845               	.Lscope7:
+ 847               		.stabd	78,0,0
+ 848               		.section	.rodata.str1.1,"aMS",@progbits,1
+ 849               	.LC0:
+ 850 0000 2564 00   		.string	"%d"
+ 851               	.LC1:
+ 852 0003 256C 7520 		.string	"%lu secs %lu ms"
+ 852      7365 6373 
+ 852      2025 6C75 
+ 852      206D 7300 
+ 853               	.LC2:
+ 854 0013 256C 7520 		.string	"%lu secs %lu ms, "
+ 854      7365 6373 
+ 854      2025 6C75 
+ 854      206D 732C 
+ 854      2000 
+ 855               	.LC3:
+ 856 0025 256C 7500 		.string	"%lu"
+ 857               	.LC4:
+ 858 0029 2575 00   		.string	"%u"
+ 859               		.text
+ 862               	.global	nrk_stats_display_pid
+ 864               	nrk_stats_display_pid:
+ 865               		.stabd	46,0,0
+  83:../../src/kernel/source/nrk_stats.c **** 
+  84:../../src/kernel/source/nrk_stats.c **** 
+  85:../../src/kernel/source/nrk_stats.c **** 
+  86:../../src/kernel/source/nrk_stats.c **** void nrk_stats_display_pid(uint8_t pid)
+  87:../../src/kernel/source/nrk_stats.c **** {
+ 867               	.LM50:
+ 868               	.LFBB8:
+ 869 027e 8F92      		push r8
+ 870 0280 9F92      		push r9
+ 871 0282 AF92      		push r10
+ 872 0284 BF92      		push r11
+ 873 0286 CF92      		push r12
+ 874 0288 DF92      		push r13
+ 875 028a EF92      		push r14
+ 876 028c FF92      		push r15
+ 877 028e 0F93      		push r16
+ 878 0290 1F93      		push r17
+ 879 0292 CF93      		push r28
+ 880 0294 DF93      		push r29
+ 881 0296 CDB7      		in r28,__SP_L__
+ 882 0298 DEB7      		in r29,__SP_H__
+ 883 029a 2897      		sbiw r28,8
+ 884 029c 0FB6      		in __tmp_reg__,__SREG__
+ 885 029e F894      		cli
+ 886 02a0 DEBF      		out __SP_H__,r29
+ 887 02a2 0FBE      		out __SREG__,__tmp_reg__
+ 888 02a4 CDBF      		out __SP_L__,r28
+ 889               	/* prologue: function */
+ 890               	/* frame size = 8 */
+ 891               	/* stack size = 20 */
+ 892               	.L__stack_usage = 20
+ 893 02a6 182F      		mov r17,r24
+  88:../../src/kernel/source/nrk_stats.c ****     nrk_time_t t;
+  89:../../src/kernel/source/nrk_stats.c **** 
+  90:../../src/kernel/source/nrk_stats.c ****     nrk_kprintf( PSTR( " Task ID: "));
+ 895               	.LM51:
+ 896 02a8 80E0      		ldi r24,lo8(__c.3318)
+ 897 02aa 90E0      		ldi r25,hi8(__c.3318)
+ 898 02ac 0E94 0000 		call nrk_kprintf
+  91:../../src/kernel/source/nrk_stats.c ****     printf( "%d",pid );
+ 900               	.LM52:
+ 901 02b0 A12E      		mov r10,r17
+ 902 02b2 B12C      		mov r11,__zero_reg__
+ 903 02b4 1F92      		push __zero_reg__
+ 904 02b6 1F93      		push r17
+ 905 02b8 80E0      		ldi r24,lo8(.LC0)
+ 906 02ba 90E0      		ldi r25,hi8(.LC0)
+ 907 02bc 9F93      		push r25
+ 908 02be 8F93      		push r24
+ 909 02c0 0E94 0000 		call printf
+  92:../../src/kernel/source/nrk_stats.c ****     if(pid==NRK_IDLE_TASK_ID)
+ 911               	.LM53:
+ 912 02c4 0F90      		pop __tmp_reg__
+ 913 02c6 0F90      		pop __tmp_reg__
+ 914 02c8 0F90      		pop __tmp_reg__
+ 915 02ca 0F90      		pop __tmp_reg__
+ 916 02cc 1111      		cpse r17,__zero_reg__
+ 917 02ce 00C0      		rjmp .L29
+  93:../../src/kernel/source/nrk_stats.c ****     {
+  94:../../src/kernel/source/nrk_stats.c ****         nrk_kprintf( PSTR( "\r\n   Total System Uptime: "));
+ 919               	.LM54:
+ 920 02d0 80E0      		ldi r24,lo8(__c.3320)
+ 921 02d2 90E0      		ldi r25,hi8(__c.3320)
+ 922 02d4 0E94 0000 		call nrk_kprintf
+  95:../../src/kernel/source/nrk_stats.c ****         nrk_time_get(&t);
+ 924               	.LM55:
+ 925 02d8 CE01      		movw r24,r28
+ 926 02da 0196      		adiw r24,1
+ 927 02dc 0E94 0000 		call nrk_time_get
+  96:../../src/kernel/source/nrk_stats.c ****         printf( "%lu secs %lu ms", t.secs, t.nano_secs/NANOS_PER_MS );
+ 929               	.LM56:
+ 930 02e0 6D81      		ldd r22,Y+5
+ 931 02e2 7E81      		ldd r23,Y+6
+ 932 02e4 8F81      		ldd r24,Y+7
+ 933 02e6 9885      		ldd r25,Y+8
+ 934 02e8 E0E4      		ldi r30,lo8(64)
+ 935 02ea CE2E      		mov r12,r30
+ 936 02ec E2E4      		ldi r30,lo8(66)
+ 937 02ee DE2E      		mov r13,r30
+ 938 02f0 EFE0      		ldi r30,lo8(15)
+ 939 02f2 EE2E      		mov r14,r30
+ 940 02f4 F12C      		mov r15,__zero_reg__
+ 941 02f6 A701      		movw r20,r14
+ 942 02f8 9601      		movw r18,r12
+ 943 02fa 0E94 0000 		call __udivmodsi4
+ 944 02fe 5F93      		push r21
+ 945 0300 4F93      		push r20
+ 946 0302 3F93      		push r19
+ 947 0304 2F93      		push r18
+ 948 0306 8C81      		ldd r24,Y+4
+ 949 0308 8F93      		push r24
+ 950 030a 8B81      		ldd r24,Y+3
+ 951 030c 8F93      		push r24
+ 952 030e 8A81      		ldd r24,Y+2
+ 953 0310 8F93      		push r24
+ 954 0312 8981      		ldd r24,Y+1
+ 955 0314 8F93      		push r24
+ 956 0316 00E0      		ldi r16,lo8(.LC1)
+ 957 0318 10E0      		ldi r17,hi8(.LC1)
+ 958 031a 1F93      		push r17
+ 959 031c 0F93      		push r16
+ 960 031e 0E94 0000 		call printf
+  97:../../src/kernel/source/nrk_stats.c ****         nrk_kprintf( PSTR( "\r\n   Idle Task Deep Sleep Time: "));
+ 962               	.LM57:
+ 963 0322 80E0      		ldi r24,lo8(__c.3322)
+ 964 0324 90E0      		ldi r25,hi8(__c.3322)
+ 965 0326 0E94 0000 		call nrk_kprintf
+  98:../../src/kernel/source/nrk_stats.c ****         //t=_nrk_ticks_to_time(_nrk_stats_sleep_time);
+  99:../../src/kernel/source/nrk_stats.c ****         //printf( "%lu secs %lu ms", t.secs, t.nano_secs/NANOS_PER_MS );
+ 100:../../src/kernel/source/nrk_stats.c ****         printf( "%lu secs %lu ms", _nrk_stats_sleep_time.secs, _nrk_stats_sleep_time.nano_secs/NANO
+ 967               	.LM58:
+ 968 032a 6091 0000 		lds r22,_nrk_stats_sleep_time+4
+ 969 032e 7091 0000 		lds r23,_nrk_stats_sleep_time+4+1
+ 970 0332 8091 0000 		lds r24,_nrk_stats_sleep_time+4+2
+ 971 0336 9091 0000 		lds r25,_nrk_stats_sleep_time+4+3
+ 972 033a A701      		movw r20,r14
+ 973 033c 9601      		movw r18,r12
+ 974 033e 0E94 0000 		call __udivmodsi4
+ 975 0342 5F93      		push r21
+ 976 0344 4F93      		push r20
+ 977 0346 3F93      		push r19
+ 978 0348 2F93      		push r18
+ 979 034a 8091 0000 		lds r24,_nrk_stats_sleep_time+3
+ 980 034e 8F93      		push r24
+ 981 0350 8091 0000 		lds r24,_nrk_stats_sleep_time+2
+ 982 0354 8F93      		push r24
+ 983 0356 8091 0000 		lds r24,_nrk_stats_sleep_time+1
+ 984 035a 8F93      		push r24
+ 985 035c 8091 0000 		lds r24,_nrk_stats_sleep_time
+ 986 0360 8F93      		push r24
+ 987 0362 1F93      		push r17
+ 988 0364 0F93      		push r16
+ 989 0366 0E94 0000 		call printf
+ 990 036a 0FB6      		in __tmp_reg__,__SREG__
+ 991 036c F894      		cli
+ 992 036e DEBF      		out __SP_H__,r29
+ 993 0370 0FBE      		out __SREG__,__tmp_reg__
+ 994 0372 CDBF      		out __SP_L__,r28
+ 995               	.L29:
+ 101:../../src/kernel/source/nrk_stats.c ****     }
+ 102:../../src/kernel/source/nrk_stats.c ****     nrk_kprintf( PSTR( "\r\n   Total CPU: "));
+ 997               	.LM59:
+ 998 0374 80E0      		ldi r24,lo8(__c.3324)
+ 999 0376 90E0      		ldi r25,hi8(__c.3324)
+ 1000 0378 0E94 0000 		call nrk_kprintf
+ 103:../../src/kernel/source/nrk_stats.c ****     t=_nrk_ticks_to_time(cur_task_stats[pid].total_ticks);
+ 1002               	.LM60:
+ 1003 037c 8EE1      		ldi r24,lo8(30)
+ 1004 037e 8A9D      		mul r24,r10
+ 1005 0380 8001      		movw r16,r0
+ 1006 0382 8B9D      		mul r24,r11
+ 1007 0384 100D      		add r17,r0
+ 1008 0386 1124      		clr __zero_reg__
+ 1009 0388 0050      		subi r16,lo8(-(cur_task_stats))
+ 1010 038a 1040      		sbci r17,hi8(-(cur_task_stats))
+ 1011 038c F801      		movw r30,r16
+ 1012 038e 6081      		ld r22,Z
+ 1013 0390 7181      		ldd r23,Z+1
+ 1014 0392 8281      		ldd r24,Z+2
+ 1015 0394 9381      		ldd r25,Z+3
+ 1016 0396 0E94 0000 		call _nrk_ticks_to_time
+ 1017 039a 2983      		std Y+1,r18
+ 1018 039c 3A83      		std Y+2,r19
+ 1019 039e 4B83      		std Y+3,r20
+ 1020 03a0 5C83      		std Y+4,r21
+ 1021 03a2 6D83      		std Y+5,r22
+ 1022 03a4 7E83      		std Y+6,r23
+ 1023 03a6 8F83      		std Y+7,r24
+ 1024 03a8 9887      		std Y+8,r25
+ 104:../../src/kernel/source/nrk_stats.c ****     printf( "%lu secs %lu ms", t.secs, t.nano_secs/NANOS_PER_MS );
+ 1026               	.LM61:
+ 1027 03aa 6D81      		ldd r22,Y+5
+ 1028 03ac 7E81      		ldd r23,Y+6
+ 1029 03ae 8F81      		ldd r24,Y+7
+ 1030 03b0 9885      		ldd r25,Y+8
+ 1031 03b2 20E4      		ldi r18,lo8(64)
+ 1032 03b4 822E      		mov r8,r18
+ 1033 03b6 22E4      		ldi r18,lo8(66)
+ 1034 03b8 922E      		mov r9,r18
+ 1035 03ba 2FE0      		ldi r18,lo8(15)
+ 1036 03bc A22E      		mov r10,r18
+ 1037 03be B12C      		mov r11,__zero_reg__
+ 1038 03c0 A501      		movw r20,r10
+ 1039 03c2 9401      		movw r18,r8
+ 1040 03c4 0E94 0000 		call __udivmodsi4
+ 1041 03c8 5F93      		push r21
+ 1042 03ca 4F93      		push r20
+ 1043 03cc 3F93      		push r19
+ 1044 03ce 2F93      		push r18
+ 1045 03d0 8C81      		ldd r24,Y+4
+ 1046 03d2 8F93      		push r24
+ 1047 03d4 8B81      		ldd r24,Y+3
+ 1048 03d6 8F93      		push r24
+ 1049 03d8 8A81      		ldd r24,Y+2
+ 1050 03da 8F93      		push r24
+ 1051 03dc 8981      		ldd r24,Y+1
+ 1052 03de 8F93      		push r24
+ 1053 03e0 30E0      		ldi r19,lo8(.LC1)
+ 1054 03e2 E32E      		mov r14,r19
+ 1055 03e4 30E0      		ldi r19,hi8(.LC1)
+ 1056 03e6 F32E      		mov r15,r19
+ 1057 03e8 FF92      		push r15
+ 1058 03ea EF92      		push r14
+ 1059 03ec 0E94 0000 		call printf
+ 105:../../src/kernel/source/nrk_stats.c ****     nrk_kprintf( PSTR( "\r\n   Time [Min,Last,Max]: "));
+ 1061               	.LM62:
+ 1062 03f0 80E0      		ldi r24,lo8(__c.3326)
+ 1063 03f2 90E0      		ldi r25,hi8(__c.3326)
+ 1064 03f4 0E94 0000 		call nrk_kprintf
+ 106:../../src/kernel/source/nrk_stats.c ****     t=_nrk_ticks_to_time(cur_task_stats[pid].min_exec_ticks);
+ 1066               	.LM63:
+ 1067 03f8 F801      		movw r30,r16
+ 1068 03fa 6481      		ldd r22,Z+4
+ 1069 03fc 7581      		ldd r23,Z+5
+ 1070 03fe 8681      		ldd r24,Z+6
+ 1071 0400 9781      		ldd r25,Z+7
+ 1072 0402 0E94 0000 		call _nrk_ticks_to_time
+ 1073 0406 2983      		std Y+1,r18
+ 1074 0408 3A83      		std Y+2,r19
+ 1075 040a 4B83      		std Y+3,r20
+ 1076 040c 5C83      		std Y+4,r21
+ 1077 040e 6D83      		std Y+5,r22
+ 1078 0410 7E83      		std Y+6,r23
+ 1079 0412 8F83      		std Y+7,r24
+ 1080 0414 9887      		std Y+8,r25
+ 107:../../src/kernel/source/nrk_stats.c ****     printf( "%lu secs %lu ms, ", t.secs, t.nano_secs/NANOS_PER_MS );
+ 1082               	.LM64:
+ 1083 0416 6D81      		ldd r22,Y+5
+ 1084 0418 7E81      		ldd r23,Y+6
+ 1085 041a 8F81      		ldd r24,Y+7
+ 1086 041c 9885      		ldd r25,Y+8
+ 1087 041e A501      		movw r20,r10
+ 1088 0420 9401      		movw r18,r8
+ 1089 0422 0E94 0000 		call __udivmodsi4
+ 1090 0426 5F93      		push r21
+ 1091 0428 4F93      		push r20
+ 1092 042a 3F93      		push r19
+ 1093 042c 2F93      		push r18
+ 1094 042e 8C81      		ldd r24,Y+4
+ 1095 0430 8F93      		push r24
+ 1096 0432 8B81      		ldd r24,Y+3
+ 1097 0434 8F93      		push r24
+ 1098 0436 8A81      		ldd r24,Y+2
+ 1099 0438 8F93      		push r24
+ 1100 043a 8981      		ldd r24,Y+1
+ 1101 043c 8F93      		push r24
+ 1102 043e 40E0      		ldi r20,lo8(.LC2)
+ 1103 0440 C42E      		mov r12,r20
+ 1104 0442 40E0      		ldi r20,hi8(.LC2)
+ 1105 0444 D42E      		mov r13,r20
+ 1106 0446 DF92      		push r13
+ 1107 0448 CF92      		push r12
+ 1108 044a 0E94 0000 		call printf
+ 108:../../src/kernel/source/nrk_stats.c ****     t=_nrk_ticks_to_time(cur_task_stats[pid].last_exec_ticks);
+ 1110               	.LM65:
+ 1111 044e F801      		movw r30,r16
+ 1112 0450 6485      		ldd r22,Z+12
+ 1113 0452 7585      		ldd r23,Z+13
+ 1114 0454 8685      		ldd r24,Z+14
+ 1115 0456 9785      		ldd r25,Z+15
+ 1116 0458 0E94 0000 		call _nrk_ticks_to_time
+ 1117 045c 2983      		std Y+1,r18
+ 1118 045e 3A83      		std Y+2,r19
+ 1119 0460 4B83      		std Y+3,r20
+ 1120 0462 5C83      		std Y+4,r21
+ 1121 0464 6D83      		std Y+5,r22
+ 1122 0466 7E83      		std Y+6,r23
+ 1123 0468 8F83      		std Y+7,r24
+ 1124 046a 9887      		std Y+8,r25
+ 109:../../src/kernel/source/nrk_stats.c ****     printf( "%lu secs %lu ms, ", t.secs, t.nano_secs/NANOS_PER_MS );
+ 1126               	.LM66:
+ 1127 046c 6D81      		ldd r22,Y+5
+ 1128 046e 7E81      		ldd r23,Y+6
+ 1129 0470 8F81      		ldd r24,Y+7
+ 1130 0472 9885      		ldd r25,Y+8
+ 1131 0474 A501      		movw r20,r10
+ 1132 0476 9401      		movw r18,r8
+ 1133 0478 0E94 0000 		call __udivmodsi4
+ 1134 047c 5F93      		push r21
+ 1135 047e 4F93      		push r20
+ 1136 0480 3F93      		push r19
+ 1137 0482 2F93      		push r18
+ 1138 0484 8C81      		ldd r24,Y+4
+ 1139 0486 8F93      		push r24
+ 1140 0488 8B81      		ldd r24,Y+3
+ 1141 048a 8F93      		push r24
+ 1142 048c 8A81      		ldd r24,Y+2
+ 1143 048e 8F93      		push r24
+ 1144 0490 8981      		ldd r24,Y+1
+ 1145 0492 8F93      		push r24
+ 1146 0494 DF92      		push r13
+ 1147 0496 CF92      		push r12
+ 1148 0498 0E94 0000 		call printf
+ 110:../../src/kernel/source/nrk_stats.c ****     t=_nrk_ticks_to_time(cur_task_stats[pid].max_exec_ticks);
+ 1150               	.LM67:
+ 1151 049c F801      		movw r30,r16
+ 1152 049e 6085      		ldd r22,Z+8
+ 1153 04a0 7185      		ldd r23,Z+9
+ 1154 04a2 8285      		ldd r24,Z+10
+ 1155 04a4 9385      		ldd r25,Z+11
+ 1156 04a6 0E94 0000 		call _nrk_ticks_to_time
+ 1157 04aa 2983      		std Y+1,r18
+ 1158 04ac 3A83      		std Y+2,r19
+ 1159 04ae 4B83      		std Y+3,r20
+ 1160 04b0 5C83      		std Y+4,r21
+ 1161 04b2 6D83      		std Y+5,r22
+ 1162 04b4 7E83      		std Y+6,r23
+ 1163 04b6 8F83      		std Y+7,r24
+ 1164 04b8 9887      		std Y+8,r25
+ 111:../../src/kernel/source/nrk_stats.c ****     printf( "%lu secs %lu ms", t.secs, t.nano_secs/NANOS_PER_MS );
+ 1166               	.LM68:
+ 1167 04ba 6D81      		ldd r22,Y+5
+ 1168 04bc 7E81      		ldd r23,Y+6
+ 1169 04be 8F81      		ldd r24,Y+7
+ 1170 04c0 9885      		ldd r25,Y+8
+ 1171 04c2 A501      		movw r20,r10
+ 1172 04c4 9401      		movw r18,r8
+ 1173 04c6 0E94 0000 		call __udivmodsi4
+ 1174 04ca 5F93      		push r21
+ 1175 04cc 4F93      		push r20
+ 1176 04ce 3F93      		push r19
+ 1177 04d0 2F93      		push r18
+ 1178 04d2 8C81      		ldd r24,Y+4
+ 1179 04d4 8F93      		push r24
+ 1180 04d6 8B81      		ldd r24,Y+3
+ 1181 04d8 8F93      		push r24
+ 1182 04da 8A81      		ldd r24,Y+2
+ 1183 04dc 8F93      		push r24
+ 1184 04de 8981      		ldd r24,Y+1
+ 1185 04e0 8F93      		push r24
+ 1186 04e2 FF92      		push r15
+ 1187 04e4 EF92      		push r14
+ 1188 04e6 0E94 0000 		call printf
+ 112:../../src/kernel/source/nrk_stats.c ****     nrk_kprintf( PSTR( "\r\n   Swap-ins: "));
+ 1190               	.LM69:
+ 1191 04ea 0FB6      		in __tmp_reg__,__SREG__
+ 1192 04ec F894      		cli
+ 1193 04ee DEBF      		out __SP_H__,r29
+ 1194 04f0 0FBE      		out __SREG__,__tmp_reg__
+ 1195 04f2 CDBF      		out __SP_L__,r28
+ 1196 04f4 80E0      		ldi r24,lo8(__c.3328)
+ 1197 04f6 90E0      		ldi r25,hi8(__c.3328)
+ 1198 04f8 0E94 0000 		call nrk_kprintf
+ 113:../../src/kernel/source/nrk_stats.c ****     printf( "%lu",cur_task_stats[pid].swapped_in );
+ 1200               	.LM70:
+ 1201 04fc F801      		movw r30,r16
+ 1202 04fe 7096      		adiw r30,16
+ 1203 0500 8381      		ldd r24,Z+3
+ 1204 0502 8F93      		push r24
+ 1205 0504 8281      		ldd r24,Z+2
+ 1206 0506 8F93      		push r24
+ 1207 0508 8181      		ldd r24,Z+1
+ 1208 050a 8F93      		push r24
+ 1209 050c F801      		movw r30,r16
+ 1210 050e 8089      		ldd r24,Z+16
+ 1211 0510 8F93      		push r24
+ 1212 0512 50E0      		ldi r21,lo8(.LC3)
+ 1213 0514 E52E      		mov r14,r21
+ 1214 0516 50E0      		ldi r21,hi8(.LC3)
+ 1215 0518 F52E      		mov r15,r21
+ 1216 051a FF92      		push r15
+ 1217 051c EF92      		push r14
+ 1218 051e 0E94 0000 		call printf
+ 114:../../src/kernel/source/nrk_stats.c ****     nrk_kprintf( PSTR( "\r\n   Preemptions: "));
+ 1220               	.LM71:
+ 1221 0522 80E0      		ldi r24,lo8(__c.3330)
+ 1222 0524 90E0      		ldi r25,hi8(__c.3330)
+ 1223 0526 0E94 0000 		call nrk_kprintf
+ 115:../../src/kernel/source/nrk_stats.c ****     printf( "%lu",cur_task_stats[pid].preempted);
+ 1225               	.LM72:
+ 1226 052a F801      		movw r30,r16
+ 1227 052c 7896      		adiw r30,24
+ 1228 052e 8381      		ldd r24,Z+3
+ 1229 0530 8F93      		push r24
+ 1230 0532 8281      		ldd r24,Z+2
+ 1231 0534 8F93      		push r24
+ 1232 0536 8181      		ldd r24,Z+1
+ 1233 0538 8F93      		push r24
+ 1234 053a F801      		movw r30,r16
+ 1235 053c 808D      		ldd r24,Z+24
+ 1236 053e 8F93      		push r24
+ 1237 0540 FF92      		push r15
+ 1238 0542 EF92      		push r14
+ 1239 0544 0E94 0000 		call printf
+ 116:../../src/kernel/source/nrk_stats.c ****     nrk_kprintf( PSTR( "\r\n   Kernel Violations: "));
+ 1241               	.LM73:
+ 1242 0548 80E0      		ldi r24,lo8(__c.3332)
+ 1243 054a 90E0      		ldi r25,hi8(__c.3332)
+ 1244 054c 0E94 0000 		call nrk_kprintf
+ 117:../../src/kernel/source/nrk_stats.c ****     printf( "%u",cur_task_stats[pid].violations);
+ 1246               	.LM74:
+ 1247 0550 F801      		movw r30,r16
+ 1248 0552 848D      		ldd r24,Z+28
+ 1249 0554 1F92      		push __zero_reg__
+ 1250 0556 8F93      		push r24
+ 1251 0558 60E0      		ldi r22,lo8(.LC4)
+ 1252 055a E62E      		mov r14,r22
+ 1253 055c 60E0      		ldi r22,hi8(.LC4)
+ 1254 055e F62E      		mov r15,r22
+ 1255 0560 FF92      		push r15
+ 1256 0562 EF92      		push r14
+ 1257 0564 0E94 0000 		call printf
+ 118:../../src/kernel/source/nrk_stats.c ****     nrk_kprintf( PSTR( "\r\n   Overflow Error Status: "));
+ 1259               	.LM75:
+ 1260 0568 80E0      		ldi r24,lo8(__c.3334)
+ 1261 056a 90E0      		ldi r25,hi8(__c.3334)
+ 1262 056c 0E94 0000 		call nrk_kprintf
+ 119:../../src/kernel/source/nrk_stats.c ****     printf( "%u",cur_task_stats[pid].overflow);
+ 1264               	.LM76:
+ 1265 0570 F801      		movw r30,r16
+ 1266 0572 858D      		ldd r24,Z+29
+ 1267 0574 1F92      		push __zero_reg__
+ 1268 0576 8F93      		push r24
+ 1269 0578 FF92      		push r15
+ 1270 057a EF92      		push r14
+ 1271 057c 0E94 0000 		call printf
+ 120:../../src/kernel/source/nrk_stats.c ****     nrk_kprintf( PSTR("\r\n") );
+ 1273               	.LM77:
+ 1274 0580 80E0      		ldi r24,lo8(__c.3336)
+ 1275 0582 90E0      		ldi r25,hi8(__c.3336)
+ 1276 0584 0E94 0000 		call nrk_kprintf
+ 1277 0588 0FB6      		in __tmp_reg__,__SREG__
+ 1278 058a F894      		cli
+ 1279 058c DEBF      		out __SP_H__,r29
+ 1280 058e 0FBE      		out __SREG__,__tmp_reg__
+ 1281 0590 CDBF      		out __SP_L__,r28
+ 1282               	/* epilogue start */
+ 121:../../src/kernel/source/nrk_stats.c **** 
+ 122:../../src/kernel/source/nrk_stats.c **** }
+ 1284               	.LM78:
+ 1285 0592 2896      		adiw r28,8
+ 1286 0594 0FB6      		in __tmp_reg__,__SREG__
+ 1287 0596 F894      		cli
+ 1288 0598 DEBF      		out __SP_H__,r29
+ 1289 059a 0FBE      		out __SREG__,__tmp_reg__
+ 1290 059c CDBF      		out __SP_L__,r28
+ 1291 059e DF91      		pop r29
+ 1292 05a0 CF91      		pop r28
+ 1293 05a2 1F91      		pop r17
+ 1294 05a4 0F91      		pop r16
+ 1295 05a6 FF90      		pop r15
+ 1296 05a8 EF90      		pop r14
+ 1297 05aa DF90      		pop r13
+ 1298 05ac CF90      		pop r12
+ 1299 05ae BF90      		pop r11
+ 1300 05b0 AF90      		pop r10
+ 1301 05b2 9F90      		pop r9
+ 1302 05b4 8F90      		pop r8
+ 1303 05b6 0895      		ret
+ 1308               	.Lscope8:
+ 1310               		.stabd	78,0,0
+ 1312               	.global	nrk_stats_display_all
+ 1314               	nrk_stats_display_all:
+ 1315               		.stabd	46,0,0
+ 123:../../src/kernel/source/nrk_stats.c **** 
+ 124:../../src/kernel/source/nrk_stats.c **** 
+ 125:../../src/kernel/source/nrk_stats.c **** void nrk_stats_display_all()
+ 126:../../src/kernel/source/nrk_stats.c **** {
+ 1317               	.LM79:
+ 1318               	.LFBB9:
+ 1319 05b8 CF93      		push r28
+ 1320               	/* prologue: function */
+ 1321               	/* frame size = 0 */
+ 1322               	/* stack size = 1 */
+ 1323               	.L__stack_usage = 1
+ 127:../../src/kernel/source/nrk_stats.c ****     uint8_t i;
+ 128:../../src/kernel/source/nrk_stats.c ****     nrk_kprintf( PSTR( "\r\nNano-RK Task Statistics:\r\n" ));
+ 1325               	.LM80:
+ 1326 05ba 80E0      		ldi r24,lo8(__c.3341)
+ 1327 05bc 90E0      		ldi r25,hi8(__c.3341)
+ 1328 05be 0E94 0000 		call nrk_kprintf
+ 129:../../src/kernel/source/nrk_stats.c **** 
+ 130:../../src/kernel/source/nrk_stats.c ****     for(i=0; i<NRK_MAX_TASKS; i++ )
+ 1330               	.LM81:
+ 1331 05c2 C0E0      		ldi r28,0
+ 1332               	.L31:
+ 131:../../src/kernel/source/nrk_stats.c ****         nrk_stats_display_pid(i);
+ 1334               	.LM82:
+ 1335 05c4 8C2F      		mov r24,r28
+ 1336 05c6 0E94 0000 		call nrk_stats_display_pid
+ 130:../../src/kernel/source/nrk_stats.c ****         nrk_stats_display_pid(i);
+ 1338               	.LM83:
+ 1339 05ca CF5F      		subi r28,lo8(-(1))
+ 1340 05cc C530      		cpi r28,lo8(5)
+ 1341 05ce 01F4      		brne .L31
+ 1342               	/* epilogue start */
+ 132:../../src/kernel/source/nrk_stats.c **** }
+ 1344               	.LM84:
+ 1345 05d0 CF91      		pop r28
+ 1346 05d2 0895      		ret
+ 1351               	.Lscope9:
+ 1353               		.stabd	78,0,0
+ 1357               	.global	nrk_stats_get
+ 1359               	nrk_stats_get:
+ 1360               		.stabd	46,0,0
+ 133:../../src/kernel/source/nrk_stats.c **** 
+ 134:../../src/kernel/source/nrk_stats.c **** 
+ 135:../../src/kernel/source/nrk_stats.c **** int8_t nrk_stats_get(uint8_t pid, nrk_task_stat_t *t)
+ 136:../../src/kernel/source/nrk_stats.c **** {
+ 1362               	.LM85:
+ 1363               	.LFBB10:
+ 1364               	/* prologue: function */
+ 1365               	/* frame size = 0 */
+ 1366               	/* stack size = 0 */
+ 1367               	.L__stack_usage = 0
+ 1368 05d4 DB01      		movw r26,r22
+ 137:../../src/kernel/source/nrk_stats.c ****     if(pid>=NRK_MAX_TASKS) return NRK_ERROR;
+ 1370               	.LM86:
+ 1371 05d6 8530      		cpi r24,lo8(5)
+ 1372 05d8 00F0      		brlo .+2
+ 1373 05da 00C0      		rjmp .L35
+ 138:../../src/kernel/source/nrk_stats.c **** 
+ 139:../../src/kernel/source/nrk_stats.c ****     t->total_ticks=cur_task_stats[pid].total_ticks;
+ 1375               	.LM87:
+ 1376 05dc 9EE1      		ldi r25,lo8(30)
+ 1377 05de 899F      		mul r24,r25
+ 1378 05e0 F001      		movw r30,r0
+ 1379 05e2 1124      		clr __zero_reg__
+ 1380 05e4 E050      		subi r30,lo8(-(cur_task_stats))
+ 1381 05e6 F040      		sbci r31,hi8(-(cur_task_stats))
+ 1382 05e8 4081      		ld r20,Z
+ 1383 05ea 5181      		ldd r21,Z+1
+ 1384 05ec 6281      		ldd r22,Z+2
+ 1385 05ee 7381      		ldd r23,Z+3
+ 1386 05f0 4D93      		st X+,r20
+ 1387 05f2 5D93      		st X+,r21
+ 1388 05f4 6D93      		st X+,r22
+ 1389 05f6 7C93      		st X,r23
+ 1390 05f8 1397      		sbiw r26,3
+ 140:../../src/kernel/source/nrk_stats.c ****     t->min_exec_ticks=cur_task_stats[pid].min_exec_ticks;
+ 1392               	.LM88:
+ 1393 05fa 4481      		ldd r20,Z+4
+ 1394 05fc 5581      		ldd r21,Z+5
+ 1395 05fe 6681      		ldd r22,Z+6
+ 1396 0600 7781      		ldd r23,Z+7
+ 1397 0602 1496      		adiw r26,4
+ 1398 0604 4D93      		st X+,r20
+ 1399 0606 5D93      		st X+,r21
+ 1400 0608 6D93      		st X+,r22
+ 1401 060a 7C93      		st X,r23
+ 1402 060c 1797      		sbiw r26,4+3
+ 141:../../src/kernel/source/nrk_stats.c ****     t->max_exec_ticks=cur_task_stats[pid].max_exec_ticks;
+ 1404               	.LM89:
+ 1405 060e 4085      		ldd r20,Z+8
+ 1406 0610 5185      		ldd r21,Z+9
+ 1407 0612 6285      		ldd r22,Z+10
+ 1408 0614 7385      		ldd r23,Z+11
+ 1409 0616 1896      		adiw r26,8
+ 1410 0618 4D93      		st X+,r20
+ 1411 061a 5D93      		st X+,r21
+ 1412 061c 6D93      		st X+,r22
+ 1413 061e 7C93      		st X,r23
+ 1414 0620 1B97      		sbiw r26,8+3
+ 142:../../src/kernel/source/nrk_stats.c ****     t->last_exec_ticks=cur_task_stats[pid].last_exec_ticks;
+ 1416               	.LM90:
+ 1417 0622 4485      		ldd r20,Z+12
+ 1418 0624 5585      		ldd r21,Z+13
+ 1419 0626 6685      		ldd r22,Z+14
+ 1420 0628 7785      		ldd r23,Z+15
+ 1421 062a 1C96      		adiw r26,12
+ 1422 062c 4D93      		st X+,r20
+ 1423 062e 5D93      		st X+,r21
+ 1424 0630 6D93      		st X+,r22
+ 1425 0632 7C93      		st X,r23
+ 1426 0634 1F97      		sbiw r26,12+3
+ 143:../../src/kernel/source/nrk_stats.c ****     t->swapped_in=cur_task_stats[pid].swapped_in;
+ 1428               	.LM91:
+ 1429 0636 4089      		ldd r20,Z+16
+ 1430 0638 5189      		ldd r21,Z+17
+ 1431 063a 6289      		ldd r22,Z+18
+ 1432 063c 7389      		ldd r23,Z+19
+ 1433 063e 5096      		adiw r26,16
+ 1434 0640 4D93      		st X+,r20
+ 1435 0642 5D93      		st X+,r21
+ 1436 0644 6D93      		st X+,r22
+ 1437 0646 7C93      		st X,r23
+ 1438 0648 5397      		sbiw r26,16+3
+ 144:../../src/kernel/source/nrk_stats.c ****     t->cur_ticks=cur_task_stats[pid].cur_ticks;
+ 1440               	.LM92:
+ 1441 064a 4489      		ldd r20,Z+20
+ 1442 064c 5589      		ldd r21,Z+21
+ 1443 064e 6689      		ldd r22,Z+22
+ 1444 0650 7789      		ldd r23,Z+23
+ 1445 0652 5496      		adiw r26,20
+ 1446 0654 4D93      		st X+,r20
+ 1447 0656 5D93      		st X+,r21
+ 1448 0658 6D93      		st X+,r22
+ 1449 065a 7C93      		st X,r23
+ 1450 065c 5797      		sbiw r26,20+3
+ 145:../../src/kernel/source/nrk_stats.c ****     t->preempted=cur_task_stats[pid].preempted;
+ 1452               	.LM93:
+ 1453 065e 408D      		ldd r20,Z+24
+ 1454 0660 518D      		ldd r21,Z+25
+ 1455 0662 628D      		ldd r22,Z+26
+ 1456 0664 738D      		ldd r23,Z+27
+ 1457 0666 5896      		adiw r26,24
+ 1458 0668 4D93      		st X+,r20
+ 1459 066a 5D93      		st X+,r21
+ 1460 066c 6D93      		st X+,r22
+ 1461 066e 7C93      		st X,r23
+ 1462 0670 5B97      		sbiw r26,24+3
+ 146:../../src/kernel/source/nrk_stats.c ****     t->violations=cur_task_stats[pid].violations;
+ 1464               	.LM94:
+ 1465 0672 848D      		ldd r24,Z+28
+ 1466 0674 5C96      		adiw r26,28
+ 1467 0676 8C93      		st X,r24
+ 1468 0678 5C97      		sbiw r26,28
+ 147:../../src/kernel/source/nrk_stats.c ****     t->overflow=cur_task_stats[pid].overflow;
+ 1470               	.LM95:
+ 1471 067a 858D      		ldd r24,Z+29
+ 1472 067c 5D96      		adiw r26,29
+ 1473 067e 8C93      		st X,r24
+ 148:../../src/kernel/source/nrk_stats.c **** 
+ 149:../../src/kernel/source/nrk_stats.c ****     return NRK_OK;
+ 1475               	.LM96:
+ 1476 0680 81E0      		ldi r24,lo8(1)
+ 1477 0682 0895      		ret
+ 1478               	.L35:
+ 137:../../src/kernel/source/nrk_stats.c **** 
+ 1480               	.LM97:
+ 1481 0684 8FEF      		ldi r24,lo8(-1)
+ 150:../../src/kernel/source/nrk_stats.c **** }
+ 1483               	.LM98:
+ 1484 0686 0895      		ret
+ 1486               	.Lscope10:
+ 1488               		.stabd	78,0,0
+ 1489               		.section	.progmem.data,"a",@progbits
+ 1492               	__c.3341:
+ 1493 0000 0D0A 4E61 		.string	"\r\nNano-RK Task Statistics:\r\n"
+ 1493      6E6F 2D52 
+ 1493      4B20 5461 
+ 1493      736B 2053 
+ 1493      7461 7469 
+ 1496               	__c.3336:
+ 1497 001d 0D0A 00   		.string	"\r\n"
+ 1500               	__c.3334:
+ 1501 0020 0D0A 2020 		.string	"\r\n   Overflow Error Status: "
+ 1501      204F 7665 
+ 1501      7266 6C6F 
+ 1501      7720 4572 
+ 1501      726F 7220 
+ 1504               	__c.3332:
+ 1505 003d 0D0A 2020 		.string	"\r\n   Kernel Violations: "
+ 1505      204B 6572 
+ 1505      6E65 6C20 
+ 1505      5669 6F6C 
+ 1505      6174 696F 
+ 1508               	__c.3330:
+ 1509 0056 0D0A 2020 		.string	"\r\n   Preemptions: "
+ 1509      2050 7265 
+ 1509      656D 7074 
+ 1509      696F 6E73 
+ 1509      3A20 00
+ 1512               	__c.3328:
+ 1513 0069 0D0A 2020 		.string	"\r\n   Swap-ins: "
+ 1513      2053 7761 
+ 1513      702D 696E 
+ 1513      733A 2000 
+ 1516               	__c.3326:
+ 1517 0079 0D0A 2020 		.string	"\r\n   Time [Min,Last,Max]: "
+ 1517      2054 696D 
+ 1517      6520 5B4D 
+ 1517      696E 2C4C 
+ 1517      6173 742C 
+ 1520               	__c.3324:
+ 1521 0094 0D0A 2020 		.string	"\r\n   Total CPU: "
+ 1521      2054 6F74 
+ 1521      616C 2043 
+ 1521      5055 3A20 
+ 1521      00
+ 1524               	__c.3322:
+ 1525 00a5 0D0A 2020 		.string	"\r\n   Idle Task Deep Sleep Time: "
+ 1525      2049 646C 
+ 1525      6520 5461 
+ 1525      736B 2044 
+ 1525      6565 7020 
+ 1528               	__c.3320:
+ 1529 00c6 0D0A 2020 		.string	"\r\n   Total System Uptime: "
+ 1529      2054 6F74 
+ 1529      616C 2053 
+ 1529      7973 7465 
+ 1529      6D20 5570 
+ 1532               	__c.3318:
+ 1533 00e1 2054 6173 		.string	" Task ID: "
+ 1533      6B20 4944 
+ 1533      3A20 00
+ 1534               		.comm	error_num,1,1
+ 1535               		.comm	error_task,1,1
+ 1536               		.comm	nrk_system_time,8,1
+ 1537               		.comm	nrk_sem_list,3,1
+ 1538               		.comm	_nrk_resource_cnt,1,1
+ 1539               		.comm	nrk_high_ready_TCB,2,1
+ 1540               		.comm	nrk_high_ready_prio,1,1
+ 1541               		.comm	nrk_cur_task_TCB,2,1
+ 1542               		.comm	nrk_cur_task_prio,1,1
+ 1543               		.comm	nrk_wakeup_signal,1,1
+ 1544               		.comm	_head_node,2,1
+ 1545               		.comm	_free_node,2,1
+ 1546               		.comm	_nrk_readyQ,30,1
+ 1547               		.comm	nrk_task_TCB,215,1
+ 1548               		.comm	_nrk_stats_sleep_time,8,1
+ 1549               		.comm	cur_task_stats,150,1
+ 1550               		.comm	nrk_kernel_stk_ptr,2,1
+ 1551               		.comm	nrk_idle_task_stk,128,1
+ 1552               		.comm	_nrk_signal_list,4,1
+ 1572               		.text
+ 1574               	.Letext0:
+ 1575               		.ident	"GCC: (GNU) 4.9.1"
+ 1576               	.global __do_copy_data
+ 1577               	.global __do_clear_bss
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 nrk_stats.c
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYtAwAg.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYtAwAg.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYtAwAg.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYtAwAg.s:5      *ABS*:000000000000003b __RAMPZ__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYtAwAg.s:6      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYtAwAg.s:7      *ABS*:0000000000000001 __zero_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYtAwAg.s:325    .text:0000000000000000 nrk_stats_reset
+                            *COM*:0000000000000008 _nrk_stats_sleep_time
+                            *COM*:0000000000000096 cur_task_stats
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYtAwAg.s:418    .text:0000000000000074 _nrk_stats_sleep
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYtAwAg.s:473    .text:00000000000000b2 nrk_stats_get_deep_sleep
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYtAwAg.s:516    .text:00000000000000de _nrk_stats_add_violation
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYtAwAg.s:560    .text:0000000000000102 _nrk_stats_task_start
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYtAwAg.s:622    .text:0000000000000144 _nrk_stats_task_preempted
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYtAwAg.s:717    .text:00000000000001be _nrk_stats_task_suspend
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYtAwAg.s:864    .text:000000000000027e nrk_stats_display_pid
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYtAwAg.s:1532   .progmem.data:00000000000000e1 __c.3318
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYtAwAg.s:1528   .progmem.data:00000000000000c6 __c.3320
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYtAwAg.s:1524   .progmem.data:00000000000000a5 __c.3322
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYtAwAg.s:1520   .progmem.data:0000000000000094 __c.3324
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYtAwAg.s:1516   .progmem.data:0000000000000079 __c.3326
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYtAwAg.s:1512   .progmem.data:0000000000000069 __c.3328
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYtAwAg.s:1508   .progmem.data:0000000000000056 __c.3330
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYtAwAg.s:1504   .progmem.data:000000000000003d __c.3332
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYtAwAg.s:1500   .progmem.data:0000000000000020 __c.3334
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYtAwAg.s:1496   .progmem.data:000000000000001d __c.3336
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYtAwAg.s:1314   .text:00000000000005b8 nrk_stats_display_all
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYtAwAg.s:1492   .progmem.data:0000000000000000 __c.3341
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYtAwAg.s:1359   .text:00000000000005d4 nrk_stats_get
+                            *COM*:0000000000000001 error_num
+                            *COM*:0000000000000001 error_task
+                            *COM*:0000000000000008 nrk_system_time
+                            *COM*:0000000000000003 nrk_sem_list
+                            *COM*:0000000000000001 _nrk_resource_cnt
+                            *COM*:0000000000000002 nrk_high_ready_TCB
+                            *COM*:0000000000000001 nrk_high_ready_prio
+                            *COM*:0000000000000002 nrk_cur_task_TCB
+                            *COM*:0000000000000001 nrk_cur_task_prio
+                            *COM*:0000000000000001 nrk_wakeup_signal
+                            *COM*:0000000000000002 _head_node
+                            *COM*:0000000000000002 _free_node
+                            *COM*:000000000000001e _nrk_readyQ
+                            *COM*:00000000000000d7 nrk_task_TCB
+                            *COM*:0000000000000002 nrk_kernel_stk_ptr
+                            *COM*:0000000000000080 nrk_idle_task_stk
+                            *COM*:0000000000000004 _nrk_signal_list
+
+UNDEFINED SYMBOLS
+__muluhisi3
+nrk_time_compact_nanos
+nrk_kprintf
+printf
+nrk_time_get
+__udivmodsi4
+_nrk_ticks_to_time
+__do_copy_data
+__do_clear_bss

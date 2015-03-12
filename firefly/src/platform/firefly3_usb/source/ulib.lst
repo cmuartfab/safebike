@@ -1,0 +1,3030 @@
+   1               		.file	"ulib.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__RAMPZ__ = 0x3b
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+  10               		.text
+  11               	.Ltext0:
+ 305               	.global	putc0
+ 307               	putc0:
+ 308               		.stabd	46,0,0
+   1:../../../src/platform/firefly3_usb/source/ulib.c **** /******************************************************************************
+   2:../../../src/platform/firefly3_usb/source/ulib.c **** *  Nano-RK, a real-time operating system for sensor networks.
+   3:../../../src/platform/firefly3_usb/source/ulib.c **** *  Copyright (C) 2007, Real-Time and Multimedia Lab, Carnegie Mellon University
+   4:../../../src/platform/firefly3_usb/source/ulib.c **** *  All rights reserved.
+   5:../../../src/platform/firefly3_usb/source/ulib.c **** *
+   6:../../../src/platform/firefly3_usb/source/ulib.c **** *  This is the Open Source Version of Nano-RK included as part of a Dual
+   7:../../../src/platform/firefly3_usb/source/ulib.c **** *  Licensing Model. If you are unsure which license to use please refer to:
+   8:../../../src/platform/firefly3_usb/source/ulib.c **** *  http://www.nanork.org/nano-RK/wiki/Licensing
+   9:../../../src/platform/firefly3_usb/source/ulib.c **** *
+  10:../../../src/platform/firefly3_usb/source/ulib.c **** *  This program is free software: you can redistribute it and/or modify
+  11:../../../src/platform/firefly3_usb/source/ulib.c **** *  it under the terms of the GNU General Public License as published by
+  12:../../../src/platform/firefly3_usb/source/ulib.c **** *  the Free Software Foundation, version 2.0 of the License.
+  13:../../../src/platform/firefly3_usb/source/ulib.c **** *
+  14:../../../src/platform/firefly3_usb/source/ulib.c **** *  This program is distributed in the hope that it will be useful,
+  15:../../../src/platform/firefly3_usb/source/ulib.c **** *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  16:../../../src/platform/firefly3_usb/source/ulib.c **** *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  17:../../../src/platform/firefly3_usb/source/ulib.c **** *  GNU General Public License for more details.
+  18:../../../src/platform/firefly3_usb/source/ulib.c **** *
+  19:../../../src/platform/firefly3_usb/source/ulib.c **** *  You should have received a copy of the GNU General Public License
+  20:../../../src/platform/firefly3_usb/source/ulib.c **** *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  21:../../../src/platform/firefly3_usb/source/ulib.c **** *
+  22:../../../src/platform/firefly3_usb/source/ulib.c **** *  Contributing Authors (specific to this file):
+  23:../../../src/platform/firefly3_usb/source/ulib.c **** *  Anthony Rowe
+  24:../../../src/platform/firefly3_usb/source/ulib.c **** *  Nuno Pereira
+  25:../../../src/platform/firefly3_usb/source/ulib.c **** *  Zane Starr
+  26:../../../src/platform/firefly3_usb/source/ulib.c **** *******************************************************************************/
+  27:../../../src/platform/firefly3_usb/source/ulib.c **** 
+  28:../../../src/platform/firefly3_usb/source/ulib.c **** #include <include.h>
+  29:../../../src/platform/firefly3_usb/source/ulib.c **** #include <ulib.h>
+  30:../../../src/platform/firefly3_usb/source/ulib.c **** #include <stdio.h>
+  31:../../../src/platform/firefly3_usb/source/ulib.c **** #include <hal.h>
+  32:../../../src/platform/firefly3_usb/source/ulib.c **** #include <hal_firefly3.h>
+  33:../../../src/platform/firefly3_usb/source/ulib.c **** #include <avr/interrupt.h>
+  34:../../../src/platform/firefly3_usb/source/ulib.c **** #include <nrk_pin_define.h>
+  35:../../../src/platform/firefly3_usb/source/ulib.c **** #include <nrk_error.h>
+  36:../../../src/platform/firefly3_usb/source/ulib.c **** #include <nrk_events.h>
+  37:../../../src/platform/firefly3_usb/source/ulib.c **** 
+  38:../../../src/platform/firefly3_usb/source/ulib.c **** #ifdef NANORK
+  39:../../../src/platform/firefly3_usb/source/ulib.c **** #include <nrk_cfg.h>
+  40:../../../src/platform/firefly3_usb/source/ulib.c **** #endif
+  41:../../../src/platform/firefly3_usb/source/ulib.c **** 
+  42:../../../src/platform/firefly3_usb/source/ulib.c **** #ifdef NRK_UART_BUF
+  43:../../../src/platform/firefly3_usb/source/ulib.c **** #include <nrk_events.h>
+  44:../../../src/platform/firefly3_usb/source/ulib.c **** 
+  45:../../../src/platform/firefly3_usb/source/ulib.c **** #ifndef MAX_RX_UART_BUF
+  46:../../../src/platform/firefly3_usb/source/ulib.c **** #define MAX_RX_UART_BUF    16
+  47:../../../src/platform/firefly3_usb/source/ulib.c **** #endif
+  48:../../../src/platform/firefly3_usb/source/ulib.c **** 
+  49:../../../src/platform/firefly3_usb/source/ulib.c **** 
+  50:../../../src/platform/firefly3_usb/source/ulib.c **** static uint16_t uart_rx_buf_start,uart_rx_buf_end;
+  51:../../../src/platform/firefly3_usb/source/ulib.c **** static char uart_rx_buf[MAX_RX_UART_BUF];
+  52:../../../src/platform/firefly3_usb/source/ulib.c **** static nrk_sig_t uart_rx_signal;
+  53:../../../src/platform/firefly3_usb/source/ulib.c **** 
+  54:../../../src/platform/firefly3_usb/source/ulib.c **** SIGNAL(USART0_RX_vect)
+  55:../../../src/platform/firefly3_usb/source/ulib.c **** {
+  56:../../../src/platform/firefly3_usb/source/ulib.c **** char c;
+  57:../../../src/platform/firefly3_usb/source/ulib.c **** uint8_t sig;
+  58:../../../src/platform/firefly3_usb/source/ulib.c **** // cli();
+  59:../../../src/platform/firefly3_usb/source/ulib.c **** nrk_int_disable();
+  60:../../../src/platform/firefly3_usb/source/ulib.c **** //DISABLE_UART0_RX_INT(); //this will enable nrk int
+  61:../../../src/platform/firefly3_usb/source/ulib.c ****    UART0_WAIT_AND_RECEIVE(c);
+  62:../../../src/platform/firefly3_usb/source/ulib.c ****    uart_rx_buf[uart_rx_buf_end]=c;
+  63:../../../src/platform/firefly3_usb/source/ulib.c ****    //if(uart_rx_buf_end==uart_rx_buf_start) sig=1; else sig=0;
+  64:../../../src/platform/firefly3_usb/source/ulib.c ****    uart_rx_buf_end++;
+  65:../../../src/platform/firefly3_usb/source/ulib.c ****    if(uart_rx_buf_end==MAX_RX_UART_BUF) {
+  66:../../../src/platform/firefly3_usb/source/ulib.c **** 	   uart_rx_buf_end=0;
+  67:../../../src/platform/firefly3_usb/source/ulib.c **** 		   }
+  68:../../../src/platform/firefly3_usb/source/ulib.c ****    //if(uart_rx_buf_end==uart_rx_buf_start) nrk_kprintf(PSTR("Buf overflow!\r\n" ));
+  69:../../../src/platform/firefly3_usb/source/ulib.c ****    nrk_event_signal(uart_rx_signal);
+  70:../../../src/platform/firefly3_usb/source/ulib.c **** CLEAR_UART0_RX_INT();
+  71:../../../src/platform/firefly3_usb/source/ulib.c **** //ENABLE_UART0_RX_INT();
+  72:../../../src/platform/firefly3_usb/source/ulib.c **** // sei();
+  73:../../../src/platform/firefly3_usb/source/ulib.c **** nrk_int_enable();
+  74:../../../src/platform/firefly3_usb/source/ulib.c **** }
+  75:../../../src/platform/firefly3_usb/source/ulib.c **** 
+  76:../../../src/platform/firefly3_usb/source/ulib.c **** char getc0()
+  77:../../../src/platform/firefly3_usb/source/ulib.c **** {
+  78:../../../src/platform/firefly3_usb/source/ulib.c **** char tmp;
+  79:../../../src/platform/firefly3_usb/source/ulib.c **** int8_t v;
+  80:../../../src/platform/firefly3_usb/source/ulib.c **** 
+  81:../../../src/platform/firefly3_usb/source/ulib.c **** if(uart_rx_buf_start==uart_rx_buf_end) { nrk_signal_register(uart_rx_signal); v=nrk_event_wait(SIG(
+  82:../../../src/platform/firefly3_usb/source/ulib.c **** if(v==NRK_ERROR ) nrk_kprintf(PSTR("uart rx sig failed\r\n" ));
+  83:../../../src/platform/firefly3_usb/source/ulib.c ****    tmp=uart_rx_buf[uart_rx_buf_start];
+  84:../../../src/platform/firefly3_usb/source/ulib.c ****    uart_rx_buf_start++;
+  85:../../../src/platform/firefly3_usb/source/ulib.c ****    if(uart_rx_buf_start>=MAX_RX_UART_BUF) { uart_rx_buf_start=0; }
+  86:../../../src/platform/firefly3_usb/source/ulib.c **** 
+  87:../../../src/platform/firefly3_usb/source/ulib.c ****    return tmp;
+  88:../../../src/platform/firefly3_usb/source/ulib.c **** }
+  89:../../../src/platform/firefly3_usb/source/ulib.c **** 
+  90:../../../src/platform/firefly3_usb/source/ulib.c **** uint8_t nrk_uart_data_ready(uint8_t uart_num)
+  91:../../../src/platform/firefly3_usb/source/ulib.c **** {
+  92:../../../src/platform/firefly3_usb/source/ulib.c **** if(uart_num==0)
+  93:../../../src/platform/firefly3_usb/source/ulib.c ****         {
+  94:../../../src/platform/firefly3_usb/source/ulib.c ****         //if( UCSR0A & BM(RXC0) ) return 1;
+  95:../../../src/platform/firefly3_usb/source/ulib.c **** 	if(uart_rx_buf_start!=uart_rx_buf_end) return 1;
+  96:../../../src/platform/firefly3_usb/source/ulib.c ****         }
+  97:../../../src/platform/firefly3_usb/source/ulib.c **** if(uart_num==1)
+  98:../../../src/platform/firefly3_usb/source/ulib.c **** 	{
+  99:../../../src/platform/firefly3_usb/source/ulib.c ****         if( UCSR1A & BM(RXC1) ) return 1;
+ 100:../../../src/platform/firefly3_usb/source/ulib.c **** 	//if(uart_rx_buf_start!=uart_rx_buf_end) return 1;
+ 101:../../../src/platform/firefly3_usb/source/ulib.c **** 	}
+ 102:../../../src/platform/firefly3_usb/source/ulib.c **** return 0;
+ 103:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 104:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 105:../../../src/platform/firefly3_usb/source/ulib.c **** nrk_sig_t nrk_uart_rx_signal_get()
+ 106:../../../src/platform/firefly3_usb/source/ulib.c **** {
+ 107:../../../src/platform/firefly3_usb/source/ulib.c ****    if(uart_rx_signal==NRK_ERROR) nrk_error_add(NRK_SIGNAL_CREATE_ERROR);
+ 108:../../../src/platform/firefly3_usb/source/ulib.c ****    return uart_rx_signal;
+ 109:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 110:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 111:../../../src/platform/firefly3_usb/source/ulib.c **** #else
+ 112:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 113:../../../src/platform/firefly3_usb/source/ulib.c **** nrk_sig_t nrk_uart_rx_signal_get()
+ 114:../../../src/platform/firefly3_usb/source/ulib.c **** {
+ 115:../../../src/platform/firefly3_usb/source/ulib.c ****    return NRK_ERROR;
+ 116:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 117:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 118:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 119:../../../src/platform/firefly3_usb/source/ulib.c **** uint8_t nrk_uart_data_ready(uint8_t uart_num)
+ 120:../../../src/platform/firefly3_usb/source/ulib.c **** {
+ 121:../../../src/platform/firefly3_usb/source/ulib.c **** if(uart_num==1)
+ 122:../../../src/platform/firefly3_usb/source/ulib.c ****         {
+ 123:../../../src/platform/firefly3_usb/source/ulib.c ****         if( UCSR1A & BM(RXC1) ) return 1;
+ 124:../../../src/platform/firefly3_usb/source/ulib.c ****         }
+ 125:../../../src/platform/firefly3_usb/source/ulib.c **** if(uart_num==0)
+ 126:../../../src/platform/firefly3_usb/source/ulib.c ****         {
+ 127:../../../src/platform/firefly3_usb/source/ulib.c ****         if( UCSR0A & BM(RXC0) ) return 1;
+ 128:../../../src/platform/firefly3_usb/source/ulib.c ****         }
+ 129:../../../src/platform/firefly3_usb/source/ulib.c **** return 0;
+ 130:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 131:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 132:../../../src/platform/firefly3_usb/source/ulib.c **** char getc0(void){
+ 133:../../../src/platform/firefly3_usb/source/ulib.c ****         unsigned char tmp;
+ 134:../../../src/platform/firefly3_usb/source/ulib.c ****         UART0_WAIT_AND_RECEIVE(tmp);
+ 135:../../../src/platform/firefly3_usb/source/ulib.c ****         return tmp;
+ 136:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 137:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 138:../../../src/platform/firefly3_usb/source/ulib.c **** #endif
+ 139:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 140:../../../src/platform/firefly3_usb/source/ulib.c **** void nrk_kprintf( const char *addr)
+ 141:../../../src/platform/firefly3_usb/source/ulib.c **** {
+ 142:../../../src/platform/firefly3_usb/source/ulib.c ****  char c;
+ 143:../../../src/platform/firefly3_usb/source/ulib.c ****    while((c=pgm_read_byte(addr++)))
+ 144:../../../src/platform/firefly3_usb/source/ulib.c ****         putchar(c);
+ 145:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 146:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 147:../../../src/platform/firefly3_usb/source/ulib.c **** void nrk_setup_ports()
+ 148:../../../src/platform/firefly3_usb/source/ulib.c **** {
+ 149:../../../src/platform/firefly3_usb/source/ulib.c **** PORT_INIT();
+ 150:../../../src/platform/firefly3_usb/source/ulib.c **** //SPI_INIT();
+ 151:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 152:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 153:../../../src/platform/firefly3_usb/source/ulib.c **** //---------------------------------------------------------------------------------------------
+ 154:../../../src/platform/firefly3_usb/source/ulib.c **** // GPIO related definitions
+ 155:../../../src/platform/firefly3_usb/source/ulib.c **** //---------------------------------------------------------------------------------------------
+ 156:../../../src/platform/firefly3_usb/source/ulib.c **** // Define high-level nrk pins mappings to hardware pins and ports
+ 157:../../../src/platform/firefly3_usb/source/ulib.c **** // This is used for nrk_gpio_... functions.
+ 158:../../../src/platform/firefly3_usb/source/ulib.c **** // Raw GPIO mapping can be found in the nrk_pin_define.h file.
+ 159:../../../src/platform/firefly3_usb/source/ulib.c **** //---------------------------------------------------------------------------------------------
+ 160:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 161:../../../src/platform/firefly3_usb/source/ulib.c **** //-------------------------------
+ 162:../../../src/platform/firefly3_usb/source/ulib.c **** // Port A
+ 163:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_INVALID_PIN(PORTA_0);
+ 164:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_INVALID_PIN(PORTA_1);
+ 165:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_INVALID_PIN(PORTA_2);
+ 166:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_INVALID_PIN(PORTA_3);
+ 167:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_INVALID_PIN(PORTA_4);
+ 168:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_INVALID_PIN(PORTA_5);
+ 169:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_INVALID_PIN(PORTA_6);
+ 170:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_INVALID_PIN(PORTA_7);
+ 171:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_INVALID_PIN(DEBUG_0);
+ 172:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_INVALID_PIN(DEBUG_1);
+ 173:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_INVALID_PIN(DEBUG_2);
+ 174:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_INVALID_PIN(DEBUG_3);
+ 175:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 176:../../../src/platform/firefly3_usb/source/ulib.c **** //-------------------------------
+ 177:../../../src/platform/firefly3_usb/source/ulib.c **** // Port B
+ 178:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( SPI_SS,SPI_SS, NRK_PORTB )
+ 179:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( SCK,SCK, NRK_PORTB )
+ 180:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( MOSI,MOSI, NRK_PORTB )
+ 181:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( MISO,MISO, NRK_PORTB )
+ 182:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 183:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTB_0,PORTB_0, NRK_PORTB )
+ 184:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTB_1,PORTB_1, NRK_PORTB )
+ 185:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTB_2,PORTB_2, NRK_PORTB )
+ 186:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTB_3,PORTB_3, NRK_PORTB )
+ 187:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTB_4,PORTB_4, NRK_PORTB )
+ 188:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTB_5,PORTB_5, NRK_PORTB )
+ 189:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTB_6,PORTB_6, NRK_PORTB )
+ 190:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTB_7,PORTB_7, NRK_PORTB )
+ 191:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 192:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 193:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_INVALID_PIN(PORTC_0);
+ 194:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_INVALID_PIN(PORTC_1);
+ 195:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_INVALID_PIN(PORTC_2);
+ 196:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_INVALID_PIN(PORTC_3);
+ 197:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_INVALID_PIN(PORTC_4);
+ 198:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_INVALID_PIN(PORTC_5);
+ 199:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_INVALID_PIN(PORTC_6);
+ 200:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_INVALID_PIN(PORTC_7);
+ 201:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 202:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 203:../../../src/platform/firefly3_usb/source/ulib.c **** //-------------------------------
+ 204:../../../src/platform/firefly3_usb/source/ulib.c **** // Port D
+ 205:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 206:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTD_0,PORTD_0, NRK_PORTD )
+ 207:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTD_1,PORTD_1, NRK_PORTD )
+ 208:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTD_2,PORTD_2, NRK_PORTD )
+ 209:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTD_3,PORTD_3, NRK_PORTD )
+ 210:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTD_4,PORTD_4, NRK_PORTD )
+ 211:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTD_5,PORTD_5, NRK_PORTD )
+ 212:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTD_6,PORTD_6, NRK_PORTD )
+ 213:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTD_7,PORTD_7, NRK_PORTD )
+ 214:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 215:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 216:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( BUTTON,BUTTON, NRK_PORTD )
+ 217:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( UART1_RXD,UART1_RXD, NRK_PORTD )
+ 218:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( UART1_TXD,UART1_TXD, NRK_PORTD )
+ 219:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( LED_0,LED_0, NRK_PORTD )
+ 220:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( LED_1,LED_1, NRK_PORTD )
+ 221:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( LED_2,LED_2, NRK_PORTD )
+ 222:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( LED_3,LED_3, NRK_PORTD )
+ 223:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 224:../../../src/platform/firefly3_usb/source/ulib.c **** //-------------------------------
+ 225:../../../src/platform/firefly3_usb/source/ulib.c **** // Port E
+ 226:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTE_0,PORTE_0, NRK_PORTE )
+ 227:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTE_1,PORTE_1, NRK_PORTE )
+ 228:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTE_2,PORTE_2, NRK_PORTE )
+ 229:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTE_3,PORTE_3, NRK_PORTE )
+ 230:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTE_4,PORTE_4, NRK_PORTE )
+ 231:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTE_5,PORTE_5, NRK_PORTE )
+ 232:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTE_6,PORTE_6, NRK_PORTE )
+ 233:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTE_7,PORTE_7, NRK_PORTE )
+ 234:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 235:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( UART0_RXD,UART0_RXD, NRK_PORTE )
+ 236:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( UART0_TXD,UART0_TXD, NRK_PORTE )
+ 237:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 238:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_INVALID_PIN( ANT_0 )
+ 239:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_INVALID_PIN( ANT_1 )
+ 240:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 241:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTG_0,PORTG_0, NRK_PORTG )
+ 242:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTG_1,PORTG_1, NRK_PORTG )
+ 243:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTG_2,PORTG_2, NRK_PORTG )
+ 244:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTG_3,PORTG_3, NRK_PORTG )
+ 245:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTG_4,PORTG_4, NRK_PORTG )
+ 246:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTG_5,PORTG_5, NRK_PORTG )
+ 247:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 248:../../../src/platform/firefly3_usb/source/ulib.c **** //-------------------------------
+ 249:../../../src/platform/firefly3_usb/source/ulib.c **** // Port F
+ 250:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTF_0, PORTF_0, NRK_PORTF )
+ 251:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTF_1, PORTF_1, NRK_PORTF )
+ 252:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTF_2, PORTF_2, NRK_PORTF )
+ 253:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTF_3, PORTF_3, NRK_PORTF )
+ 254:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTF_4, PORTF_4, NRK_PORTF )
+ 255:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTF_5, PORTF_5, NRK_PORTF )
+ 256:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTF_6, PORTF_6, NRK_PORTF )
+ 257:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( PORTF_7, PORTF_7, NRK_PORTF )
+ 258:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( ADC_INPUT_0, ADC_INPUT_0, NRK_PORTF )
+ 259:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( ADC_INPUT_1, ADC_INPUT_1, NRK_PORTF )
+ 260:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( ADC_INPUT_2, ADC_INPUT_2, NRK_PORTF )
+ 261:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( ADC_INPUT_3, ADC_INPUT_3, NRK_PORTF )
+ 262:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( ADC_INPUT_4, ADC_INPUT_4, NRK_PORTF )
+ 263:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( ADC_INPUT_5, ADC_INPUT_5, NRK_PORTF )
+ 264:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( ADC_INPUT_6, ADC_INPUT_6, NRK_PORTF )
+ 265:../../../src/platform/firefly3_usb/source/ulib.c **** NRK_PIN( ADC_INPUT_7, ADC_INPUT_7, NRK_PORTF )
+ 266:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 267:../../../src/platform/firefly3_usb/source/ulib.c **** void PORT_INIT(void) 
+ 268:../../../src/platform/firefly3_usb/source/ulib.c **** {
+ 269:../../../src/platform/firefly3_usb/source/ulib.c **** 	// Pull-up disable
+ 270:../../../src/platform/firefly3_usb/source/ulib.c **** //        MCUCR |= BM(PUD); 
+ 271:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 272:../../../src/platform/firefly3_usb/source/ulib.c **** #ifdef SPI_SS_PULLUP
+ 273:../../../src/platform/firefly3_usb/source/ulib.c ****         DDRB  = BM(MOSI) | BM(SCK) | BM(SPI_SS);  
+ 274:../../../src/platform/firefly3_usb/source/ulib.c ****         PORTB = BM(MOSI) | BM(SCK) | BM(SPI_SS); 
+ 275:../../../src/platform/firefly3_usb/source/ulib.c **** #else
+ 276:../../../src/platform/firefly3_usb/source/ulib.c ****         DDRB  = BM(MOSI) | BM(SCK);  
+ 277:../../../src/platform/firefly3_usb/source/ulib.c ****         PORTB = BM(MOSI) | BM(SCK); 
+ 278:../../../src/platform/firefly3_usb/source/ulib.c **** #endif
+ 279:../../../src/platform/firefly3_usb/source/ulib.c ****         DDRD  = BM(LED_0) | BM(LED_1) | BM(LED_2) | BM(LED_3) |  BM(UART1_TXD) ; 
+ 280:../../../src/platform/firefly3_usb/source/ulib.c **** 	PORTD = BM(LED_0)|BM(LED_1)|BM(LED_2)|BM(LED_3);
+ 281:../../../src/platform/firefly3_usb/source/ulib.c ****         DDRE = BM(UART0_TXD); 
+ 282:../../../src/platform/firefly3_usb/source/ulib.c **** } 
+ 283:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 284:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 285:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 286:../../../src/platform/firefly3_usb/source/ulib.c **** //-------------------------------
+ 287:../../../src/platform/firefly3_usb/source/ulib.c **** // GPIO handling functions
+ 288:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 289:../../../src/platform/firefly3_usb/source/ulib.c **** int8_t nrk_gpio_set(uint8_t pin)
+ 290:../../../src/platform/firefly3_usb/source/ulib.c **** {
+ 291:../../../src/platform/firefly3_usb/source/ulib.c ****         if (pin == NRK_INVALID_PIN_VAL) return -1;
+ 292:../../../src/platform/firefly3_usb/source/ulib.c ****         switch (pin & 0x07) {
+ 293:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTA:
+ 294:../../../src/platform/firefly3_usb/source/ulib.c ****                         do { PORTA |= BM((pin & 0xF8) >> 3); } while(0); break; 
+ 295:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTB:
+ 296:../../../src/platform/firefly3_usb/source/ulib.c ****                         do { PORTB |= BM((pin & 0xF8) >> 3); } while(0); break; 
+ 297:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTC:
+ 298:../../../src/platform/firefly3_usb/source/ulib.c ****                         do { PORTC |= BM((pin & 0xF8) >> 3); } while(0); break; 
+ 299:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTD:
+ 300:../../../src/platform/firefly3_usb/source/ulib.c ****                         do { PORTD |= BM((pin & 0xF8) >> 3); } while(0); break; 
+ 301:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTE:
+ 302:../../../src/platform/firefly3_usb/source/ulib.c ****                         do { PORTE |= BM((pin & 0xF8) >> 3); } while(0); break; 
+ 303:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTF:
+ 304:../../../src/platform/firefly3_usb/source/ulib.c ****                         do { PORTF |= BM((pin & 0xF8) >> 3); } while(0); break; 
+ 305:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTG:
+ 306:../../../src/platform/firefly3_usb/source/ulib.c ****                         do { PORTG |= BM((pin & 0xF8) >> 3); } while(0); break; 
+ 307:../../../src/platform/firefly3_usb/source/ulib.c ****                 default: return -1;
+ 308:../../../src/platform/firefly3_usb/source/ulib.c ****         }
+ 309:../../../src/platform/firefly3_usb/source/ulib.c ****         return 1;
+ 310:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 311:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 312:../../../src/platform/firefly3_usb/source/ulib.c **** int8_t nrk_gpio_clr(uint8_t pin)
+ 313:../../../src/platform/firefly3_usb/source/ulib.c **** {
+ 314:../../../src/platform/firefly3_usb/source/ulib.c ****         if (pin == NRK_INVALID_PIN_VAL) return -1;
+ 315:../../../src/platform/firefly3_usb/source/ulib.c ****         switch (pin & 0x07) {
+ 316:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTA:
+ 317:../../../src/platform/firefly3_usb/source/ulib.c ****                         do { PORTA &= ~BM((pin & 0xF8) >> 3); } while(0); break;
+ 318:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTB:
+ 319:../../../src/platform/firefly3_usb/source/ulib.c ****                         do { PORTB &= ~BM((pin & 0xF8) >> 3); } while(0); break;
+ 320:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTC:
+ 321:../../../src/platform/firefly3_usb/source/ulib.c ****                         do { PORTC &= ~BM((pin & 0xF8) >> 3); } while(0); break; 
+ 322:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTD:
+ 323:../../../src/platform/firefly3_usb/source/ulib.c ****                         do { PORTD &= ~BM((pin & 0xF8) >> 3); } while(0); break; 
+ 324:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTE:
+ 325:../../../src/platform/firefly3_usb/source/ulib.c ****                         do { PORTE &= ~BM((pin & 0xF8) >> 3); } while(0); break; 
+ 326:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTF:
+ 327:../../../src/platform/firefly3_usb/source/ulib.c ****                         do { PORTF &= ~BM((pin & 0xF8) >> 3); } while(0); break; 
+ 328:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTG:
+ 329:../../../src/platform/firefly3_usb/source/ulib.c ****                         do { PORTF &= ~BM((pin & 0xF8) >> 3); } while(0); break; 
+ 330:../../../src/platform/firefly3_usb/source/ulib.c ****                 default: return -1;
+ 331:../../../src/platform/firefly3_usb/source/ulib.c ****         }
+ 332:../../../src/platform/firefly3_usb/source/ulib.c ****         return 1;
+ 333:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 334:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 335:../../../src/platform/firefly3_usb/source/ulib.c **** int8_t nrk_gpio_get(uint8_t pin)
+ 336:../../../src/platform/firefly3_usb/source/ulib.c **** {
+ 337:../../../src/platform/firefly3_usb/source/ulib.c ****     if (pin == NRK_INVALID_PIN_VAL) return -1;
+ 338:../../../src/platform/firefly3_usb/source/ulib.c ****         switch (pin & 0x07) {
+ 339:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTA:
+ 340:../../../src/platform/firefly3_usb/source/ulib.c ****                         return !!(PINA & BM((pin & 0xF8) >> 3));
+ 341:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTB:
+ 342:../../../src/platform/firefly3_usb/source/ulib.c ****                         return !!(PINB & BM((pin & 0xF8) >> 3));
+ 343:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTC:
+ 344:../../../src/platform/firefly3_usb/source/ulib.c ****                         return !!(PINC & BM((pin & 0xF8) >> 3));
+ 345:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTD:
+ 346:../../../src/platform/firefly3_usb/source/ulib.c ****                         return !!(PIND & BM((pin & 0xF8) >> 3));
+ 347:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTE:
+ 348:../../../src/platform/firefly3_usb/source/ulib.c ****                         return !!(PINE & BM((pin & 0xF8) >> 3));
+ 349:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTF:
+ 350:../../../src/platform/firefly3_usb/source/ulib.c ****                         return !!(PINF & BM((pin & 0xF8) >> 3));
+ 351:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTG:
+ 352:../../../src/platform/firefly3_usb/source/ulib.c ****                         return !!(PING & BM((pin & 0xF8) >> 3));
+ 353:../../../src/platform/firefly3_usb/source/ulib.c ****                 default: return -1;
+ 354:../../../src/platform/firefly3_usb/source/ulib.c ****         }
+ 355:../../../src/platform/firefly3_usb/source/ulib.c ****         return 1;
+ 356:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 357:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 358:../../../src/platform/firefly3_usb/source/ulib.c **** int8_t nrk_gpio_toggle(uint8_t pin)
+ 359:../../../src/platform/firefly3_usb/source/ulib.c **** {
+ 360:../../../src/platform/firefly3_usb/source/ulib.c ****     if (pin == NRK_INVALID_PIN_VAL) return -1;
+ 361:../../../src/platform/firefly3_usb/source/ulib.c ****         switch (pin & 0x07) {
+ 362:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTA:
+ 363:../../../src/platform/firefly3_usb/source/ulib.c ****                         if ((PINA & BM((pin & 0xF8) >> 3)) == 0) {
+ 364:../../../src/platform/firefly3_usb/source/ulib.c ****                                 do { PORTA |= BM((pin & 0xF8) >> 3); } while(0);
+ 365:../../../src/platform/firefly3_usb/source/ulib.c ****                         } else {
+ 366:../../../src/platform/firefly3_usb/source/ulib.c ****                                 do { PORTA &= ~BM((pin & 0xF8) >> 3); } while(0);
+ 367:../../../src/platform/firefly3_usb/source/ulib.c ****                         }
+ 368:../../../src/platform/firefly3_usb/source/ulib.c ****                         break;
+ 369:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTB:
+ 370:../../../src/platform/firefly3_usb/source/ulib.c ****                         if ((PINB & BM((pin & 0xF8) >> 3)) == 0) {
+ 371:../../../src/platform/firefly3_usb/source/ulib.c ****                                 do { PORTB |= BM((pin & 0xF8) >> 3); } while(0);
+ 372:../../../src/platform/firefly3_usb/source/ulib.c ****                         } else {
+ 373:../../../src/platform/firefly3_usb/source/ulib.c ****                                 do { PORTB &= ~BM((pin & 0xF8) >> 3); } while(0);
+ 374:../../../src/platform/firefly3_usb/source/ulib.c ****                         }
+ 375:../../../src/platform/firefly3_usb/source/ulib.c ****                         break;
+ 376:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTC:
+ 377:../../../src/platform/firefly3_usb/source/ulib.c ****                         if ((PINC & BM((pin & 0xF8) >> 3)) == 0) {
+ 378:../../../src/platform/firefly3_usb/source/ulib.c ****                                 do { PORTC |= BM((pin & 0xF8) >> 3); } while(0);
+ 379:../../../src/platform/firefly3_usb/source/ulib.c ****                         } else {
+ 380:../../../src/platform/firefly3_usb/source/ulib.c ****                                 do { PORTC &= ~BM((pin & 0xF8) >> 3); } while(0);
+ 381:../../../src/platform/firefly3_usb/source/ulib.c ****                         }
+ 382:../../../src/platform/firefly3_usb/source/ulib.c ****                         break;
+ 383:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTD:
+ 384:../../../src/platform/firefly3_usb/source/ulib.c ****                         if ((PIND & BM((pin & 0xF8) >> 3)) == 0) {
+ 385:../../../src/platform/firefly3_usb/source/ulib.c ****                                 do { PORTD |= BM((pin & 0xF8) >> 3); } while(0);
+ 386:../../../src/platform/firefly3_usb/source/ulib.c ****                         } else {
+ 387:../../../src/platform/firefly3_usb/source/ulib.c ****                                 do { PORTD &= ~BM((pin & 0xF8) >> 3); } while(0);
+ 388:../../../src/platform/firefly3_usb/source/ulib.c ****                         }
+ 389:../../../src/platform/firefly3_usb/source/ulib.c ****                         break;
+ 390:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTE:
+ 391:../../../src/platform/firefly3_usb/source/ulib.c ****                         if ((PINE & BM((pin & 0xF8) >> 3)) == 0) {
+ 392:../../../src/platform/firefly3_usb/source/ulib.c ****                                 do { PORTE |= BM((pin & 0xF8) >> 3); } while(0);
+ 393:../../../src/platform/firefly3_usb/source/ulib.c ****                         } else {
+ 394:../../../src/platform/firefly3_usb/source/ulib.c ****                                 do { PORTE &= ~BM((pin & 0xF8) >> 3); } while(0);
+ 395:../../../src/platform/firefly3_usb/source/ulib.c ****                         }
+ 396:../../../src/platform/firefly3_usb/source/ulib.c ****                         break;
+ 397:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTF:
+ 398:../../../src/platform/firefly3_usb/source/ulib.c ****                         if ((PINF & BM((pin & 0xF8) >> 3)) == 0) {
+ 399:../../../src/platform/firefly3_usb/source/ulib.c ****                                 do { PORTF |= BM((pin & 0xF8) >> 3); } while(0);
+ 400:../../../src/platform/firefly3_usb/source/ulib.c ****                         } else {
+ 401:../../../src/platform/firefly3_usb/source/ulib.c ****                                 do { PORTF &= ~BM((pin & 0xF8) >> 3); } while(0);
+ 402:../../../src/platform/firefly3_usb/source/ulib.c ****                         }
+ 403:../../../src/platform/firefly3_usb/source/ulib.c ****                         break;
+ 404:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTG:
+ 405:../../../src/platform/firefly3_usb/source/ulib.c ****                         if ((PING & BM((pin & 0xF8) >> 3)) == 0) {
+ 406:../../../src/platform/firefly3_usb/source/ulib.c ****                                 do { PORTG |= BM((pin & 0xF8) >> 3); } while(0);
+ 407:../../../src/platform/firefly3_usb/source/ulib.c ****                         } else {
+ 408:../../../src/platform/firefly3_usb/source/ulib.c ****                                 do { PORTG &= ~BM((pin & 0xF8) >> 3); } while(0);
+ 409:../../../src/platform/firefly3_usb/source/ulib.c ****                         }
+ 410:../../../src/platform/firefly3_usb/source/ulib.c ****                         break;
+ 411:../../../src/platform/firefly3_usb/source/ulib.c ****                  default: return -1;
+ 412:../../../src/platform/firefly3_usb/source/ulib.c ****         }
+ 413:../../../src/platform/firefly3_usb/source/ulib.c ****         return 1;
+ 414:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 415:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 416:../../../src/platform/firefly3_usb/source/ulib.c **** int8_t nrk_gpio_direction(uint8_t pin, uint8_t pin_direction)
+ 417:../../../src/platform/firefly3_usb/source/ulib.c **** {
+ 418:../../../src/platform/firefly3_usb/source/ulib.c ****         if (pin == NRK_INVALID_PIN_VAL) return -1;
+ 419:../../../src/platform/firefly3_usb/source/ulib.c ****         if (pin_direction == NRK_PIN_INPUT) {
+ 420:../../../src/platform/firefly3_usb/source/ulib.c ****                 switch (pin & 0x07) {
+ 421:../../../src/platform/firefly3_usb/source/ulib.c ****                         case NRK_PORTA:
+ 422:../../../src/platform/firefly3_usb/source/ulib.c ****                                 DDRA &= ~BM((pin & 0xF8) >> 3); 
+ 423:../../../src/platform/firefly3_usb/source/ulib.c ****                                 //PORTA |= BM((pin & 0xF8) >> 3); 
+ 424:../../../src/platform/firefly3_usb/source/ulib.c ****                                 break;
+ 425:../../../src/platform/firefly3_usb/source/ulib.c ****                         case NRK_PORTB:
+ 426:../../../src/platform/firefly3_usb/source/ulib.c ****                                 DDRB &= ~BM((pin & 0xF8) >> 3); 
+ 427:../../../src/platform/firefly3_usb/source/ulib.c ****                                 //PORTB |= BM((pin & 0xF8) >> 3); 
+ 428:../../../src/platform/firefly3_usb/source/ulib.c ****                                 break;
+ 429:../../../src/platform/firefly3_usb/source/ulib.c ****                         case NRK_PORTC:
+ 430:../../../src/platform/firefly3_usb/source/ulib.c ****                                 DDRC &= ~BM((pin & 0xF8) >> 3); 
+ 431:../../../src/platform/firefly3_usb/source/ulib.c ****                                 //PORTC |= BM((pin & 0xF8) >> 3); 
+ 432:../../../src/platform/firefly3_usb/source/ulib.c ****                                 break;
+ 433:../../../src/platform/firefly3_usb/source/ulib.c ****                         case NRK_PORTD:
+ 434:../../../src/platform/firefly3_usb/source/ulib.c ****                                 DDRD &= ~BM((pin & 0xF8) >> 3); 
+ 435:../../../src/platform/firefly3_usb/source/ulib.c ****                                 //PORTD |= BM((pin & 0xF8) >> 3); 
+ 436:../../../src/platform/firefly3_usb/source/ulib.c ****                                 break;
+ 437:../../../src/platform/firefly3_usb/source/ulib.c ****                         case NRK_PORTE:
+ 438:../../../src/platform/firefly3_usb/source/ulib.c ****                                 DDRE &= ~BM((pin & 0xF8) >> 3); 
+ 439:../../../src/platform/firefly3_usb/source/ulib.c ****                                 //PORTE |= BM((pin & 0xF8) >> 3); 
+ 440:../../../src/platform/firefly3_usb/source/ulib.c ****                                 break;
+ 441:../../../src/platform/firefly3_usb/source/ulib.c ****                         case NRK_PORTF:
+ 442:../../../src/platform/firefly3_usb/source/ulib.c ****                                 DDRF &= ~BM((pin & 0xF8) >> 3);
+ 443:../../../src/platform/firefly3_usb/source/ulib.c ****                                 //PORTF |= BM((pin & 0xF8) >> 3); 
+ 444:../../../src/platform/firefly3_usb/source/ulib.c ****                                 break;
+ 445:../../../src/platform/firefly3_usb/source/ulib.c ****                         case NRK_PORTG:
+ 446:../../../src/platform/firefly3_usb/source/ulib.c ****                                 DDRG &= ~BM((pin & 0xF8) >> 3);
+ 447:../../../src/platform/firefly3_usb/source/ulib.c ****                                 //PORTG |= BM((pin & 0xF8) >> 3); 
+ 448:../../../src/platform/firefly3_usb/source/ulib.c ****                                 break;
+ 449:../../../src/platform/firefly3_usb/source/ulib.c ****                         default: return -1;
+ 450:../../../src/platform/firefly3_usb/source/ulib.c ****                 }
+ 451:../../../src/platform/firefly3_usb/source/ulib.c ****         } else {
+ 452:../../../src/platform/firefly3_usb/source/ulib.c ****                 switch (pin & 0x07) {
+ 453:../../../src/platform/firefly3_usb/source/ulib.c ****                         case NRK_PORTA:
+ 454:../../../src/platform/firefly3_usb/source/ulib.c ****                                 DDRA |= BM((pin & 0xF8) >> 3); break;
+ 455:../../../src/platform/firefly3_usb/source/ulib.c ****                         case NRK_PORTB:
+ 456:../../../src/platform/firefly3_usb/source/ulib.c ****                                 DDRB |= BM((pin & 0xF8) >> 3); break;
+ 457:../../../src/platform/firefly3_usb/source/ulib.c ****                         case NRK_PORTC:
+ 458:../../../src/platform/firefly3_usb/source/ulib.c ****                                 DDRC |= BM((pin & 0xF8) >> 3); break;
+ 459:../../../src/platform/firefly3_usb/source/ulib.c ****                         case NRK_PORTD:
+ 460:../../../src/platform/firefly3_usb/source/ulib.c ****                                 DDRD |= BM((pin & 0xF8) >> 3); break;
+ 461:../../../src/platform/firefly3_usb/source/ulib.c ****                         case NRK_PORTE:
+ 462:../../../src/platform/firefly3_usb/source/ulib.c ****                                 DDRE |= BM((pin & 0xF8) >> 3); break;
+ 463:../../../src/platform/firefly3_usb/source/ulib.c ****                         case NRK_PORTF:
+ 464:../../../src/platform/firefly3_usb/source/ulib.c ****                                 DDRF |= BM((pin & 0xF8) >> 3); break;
+ 465:../../../src/platform/firefly3_usb/source/ulib.c ****                         case NRK_PORTG:
+ 466:../../../src/platform/firefly3_usb/source/ulib.c ****                                 DDRG |= BM((pin & 0xF8) >> 3); break;
+ 467:../../../src/platform/firefly3_usb/source/ulib.c ****                         default: return -1;
+ 468:../../../src/platform/firefly3_usb/source/ulib.c ****                 }
+ 469:../../../src/platform/firefly3_usb/source/ulib.c ****         }
+ 470:../../../src/platform/firefly3_usb/source/ulib.c ****         return 1;
+ 471:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 472:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 473:../../../src/platform/firefly3_usb/source/ulib.c **** int8_t nrk_get_button(uint8_t b)
+ 474:../../../src/platform/firefly3_usb/source/ulib.c **** {
+ 475:../../../src/platform/firefly3_usb/source/ulib.c **** if(b==0) {
+ 476:../../../src/platform/firefly3_usb/source/ulib.c **** 	 return( !(PINA & BM(BUTTON))); 
+ 477:../../../src/platform/firefly3_usb/source/ulib.c **** 	} 
+ 478:../../../src/platform/firefly3_usb/source/ulib.c **** return -1;
+ 479:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 480:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 481:../../../src/platform/firefly3_usb/source/ulib.c **** int8_t nrk_led_toggle( int led )
+ 482:../../../src/platform/firefly3_usb/source/ulib.c **** {
+ 483:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==0) { nrk_gpio_toggle(NRK_LED_0); return 1; }
+ 484:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==1) { nrk_gpio_toggle(NRK_LED_1); return 1; }
+ 485:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==2) { nrk_gpio_toggle(NRK_LED_2); return 1; }
+ 486:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==3) { nrk_gpio_toggle(NRK_LED_3); return 1; }
+ 487:../../../src/platform/firefly3_usb/source/ulib.c **** return -1;
+ 488:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 489:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 490:../../../src/platform/firefly3_usb/source/ulib.c **** int8_t nrk_led_clr( int led )
+ 491:../../../src/platform/firefly3_usb/source/ulib.c **** {
+ 492:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==0) { nrk_gpio_set(NRK_LED_0); return 1; }
+ 493:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==1) { nrk_gpio_set(NRK_LED_1); return 1; }
+ 494:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==2) { nrk_gpio_set(NRK_LED_2); return 1; }
+ 495:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==3) { nrk_gpio_set(NRK_LED_3); return 1; }
+ 496:../../../src/platform/firefly3_usb/source/ulib.c **** return -1;
+ 497:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 498:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 499:../../../src/platform/firefly3_usb/source/ulib.c **** int8_t nrk_led_set( int led )
+ 500:../../../src/platform/firefly3_usb/source/ulib.c **** {
+ 501:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==0) { nrk_gpio_clr(NRK_LED_0); return 1; }
+ 502:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==1) { nrk_gpio_clr(NRK_LED_1); return 1; }
+ 503:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==2) { nrk_gpio_clr(NRK_LED_2); return 1; }
+ 504:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==3) { nrk_gpio_clr(NRK_LED_3); return 1; }
+ 505:../../../src/platform/firefly3_usb/source/ulib.c **** return -1;
+ 506:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 507:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 508:../../../src/platform/firefly3_usb/source/ulib.c **** int8_t nrk_gpio_pullups(uint8_t enable)
+ 509:../../../src/platform/firefly3_usb/source/ulib.c **** {
+ 510:../../../src/platform/firefly3_usb/source/ulib.c **** if(enable) MCUCR &= ~BM(PUD);
+ 511:../../../src/platform/firefly3_usb/source/ulib.c **** else MCUCR |= BM(PUD);
+ 512:../../../src/platform/firefly3_usb/source/ulib.c **** return NRK_OK;
+ 513:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 514:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 515:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 516:../../../src/platform/firefly3_usb/source/ulib.c **** /*
+ 517:../../../src/platform/firefly3_usb/source/ulib.c **** void IO_SET_E(uint8_t pin)
+ 518:../../../src/platform/firefly3_usb/source/ulib.c **** {
+ 519:../../../src/platform/firefly3_usb/source/ulib.c **** PORTE |= BM(pin);
+ 520:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 521:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 522:../../../src/platform/firefly3_usb/source/ulib.c **** void IO_CLR_E(uint8_t pin)
+ 523:../../../src/platform/firefly3_usb/source/ulib.c **** {
+ 524:../../../src/platform/firefly3_usb/source/ulib.c **** PORTE &= ~BM(pin);
+ 525:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 526:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 527:../../../src/platform/firefly3_usb/source/ulib.c **** void IO_SET_F(uint8_t pin)
+ 528:../../../src/platform/firefly3_usb/source/ulib.c **** {
+ 529:../../../src/platform/firefly3_usb/source/ulib.c **** PORTF |= BM(pin);
+ 530:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 531:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 532:../../../src/platform/firefly3_usb/source/ulib.c **** void IO_CLR_F(uint8_t pin)
+ 533:../../../src/platform/firefly3_usb/source/ulib.c **** {
+ 534:../../../src/platform/firefly3_usb/source/ulib.c **** PORTF &= ~BM(pin);
+ 535:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 536:../../../src/platform/firefly3_usb/source/ulib.c **** */
+ 537:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 538:../../../src/platform/firefly3_usb/source/ulib.c **** void putc0(char x)
+ 539:../../../src/platform/firefly3_usb/source/ulib.c **** {
+ 310               	.LM0:
+ 311               	.LFBB1:
+ 312               	/* prologue: function */
+ 313               	/* frame size = 0 */
+ 314               	/* stack size = 0 */
+ 315               	.L__stack_usage = 0
+ 316               	.L2:
+ 540:../../../src/platform/firefly3_usb/source/ulib.c ****      UART0_WAIT_AND_SEND(x);
+ 318               	.LM1:
+ 319 0000 9091 C000 		lds r25,192
+ 320 0004 95FF      		sbrs r25,5
+ 321 0006 00C0      		rjmp .L2
+ 323               	.LM2:
+ 324 0008 9091 C000 		lds r25,192
+ 325 000c 9F7D      		andi r25,lo8(-33)
+ 326 000e 9093 C000 		sts 192,r25
+ 327 0012 8093 C600 		sts 198,r24
+ 328 0016 0895      		ret
+ 330               	.Lscope1:
+ 332               		.stabd	78,0,0
+ 334               	.global	__vector_25
+ 336               	__vector_25:
+ 337               		.stabd	46,0,0
+  55:../../../src/platform/firefly3_usb/source/ulib.c **** char c;
+ 339               	.LM3:
+ 340               	.LFBB2:
+ 341 0018 1F92      		push r1
+ 342 001a 0F92      		push r0
+ 343 001c 0FB6      		in r0,__SREG__
+ 344 001e 0F92      		push r0
+ 345 0020 1124      		clr __zero_reg__
+ 346 0022 0BB6      		in r0,__RAMPZ__
+ 347 0024 0F92      		push r0
+ 348 0026 2F93      		push r18
+ 349 0028 3F93      		push r19
+ 350 002a 4F93      		push r20
+ 351 002c 5F93      		push r21
+ 352 002e 6F93      		push r22
+ 353 0030 7F93      		push r23
+ 354 0032 8F93      		push r24
+ 355 0034 9F93      		push r25
+ 356 0036 AF93      		push r26
+ 357 0038 BF93      		push r27
+ 358 003a EF93      		push r30
+ 359 003c FF93      		push r31
+ 360               	/* prologue: Signal */
+ 361               	/* frame size = 0 */
+ 362               	/* stack size = 16 */
+ 363               	.L__stack_usage = 16
+  59:../../../src/platform/firefly3_usb/source/ulib.c **** //DISABLE_UART0_RX_INT(); //this will enable nrk int
+ 365               	.LM4:
+ 366 003e 0E94 0000 		call nrk_int_disable
+ 367               	.L7:
+  61:../../../src/platform/firefly3_usb/source/ulib.c ****    uart_rx_buf[uart_rx_buf_end]=c;
+ 369               	.LM5:
+ 370 0042 8091 C000 		lds r24,192
+ 371 0046 87FF      		sbrs r24,7
+ 372 0048 00C0      		rjmp .L7
+  61:../../../src/platform/firefly3_usb/source/ulib.c ****    uart_rx_buf[uart_rx_buf_end]=c;
+ 374               	.LM6:
+ 375 004a 8091 C000 		lds r24,192
+ 376 004e 8F77      		andi r24,lo8(127)
+ 377 0050 8093 C000 		sts 192,r24
+ 378 0054 2091 C600 		lds r18,198
+  62:../../../src/platform/firefly3_usb/source/ulib.c ****    //if(uart_rx_buf_end==uart_rx_buf_start) sig=1; else sig=0;
+ 380               	.LM7:
+ 381 0058 8091 0000 		lds r24,uart_rx_buf_end
+ 382 005c 9091 0000 		lds r25,uart_rx_buf_end+1
+ 383 0060 FC01      		movw r30,r24
+ 384 0062 E050      		subi r30,lo8(-(uart_rx_buf))
+ 385 0064 F040      		sbci r31,hi8(-(uart_rx_buf))
+ 386 0066 2083      		st Z,r18
+  64:../../../src/platform/firefly3_usb/source/ulib.c ****    if(uart_rx_buf_end==MAX_RX_UART_BUF) {
+ 388               	.LM8:
+ 389 0068 0196      		adiw r24,1
+  65:../../../src/platform/firefly3_usb/source/ulib.c **** 	   uart_rx_buf_end=0;
+ 391               	.LM9:
+ 392 006a 8038      		cpi r24,-128
+ 393 006c 9105      		cpc r25,__zero_reg__
+ 394 006e 01F0      		breq .L8
+  64:../../../src/platform/firefly3_usb/source/ulib.c ****    if(uart_rx_buf_end==MAX_RX_UART_BUF) {
+ 396               	.LM10:
+ 397 0070 9093 0000 		sts uart_rx_buf_end+1,r25
+ 398 0074 8093 0000 		sts uart_rx_buf_end,r24
+ 399 0078 00C0      		rjmp .L9
+ 400               	.L8:
+  66:../../../src/platform/firefly3_usb/source/ulib.c **** 		   }
+ 402               	.LM11:
+ 403 007a 1092 0000 		sts uart_rx_buf_end+1,__zero_reg__
+ 404 007e 1092 0000 		sts uart_rx_buf_end,__zero_reg__
+ 405               	.L9:
+  69:../../../src/platform/firefly3_usb/source/ulib.c **** CLEAR_UART0_RX_INT();
+ 407               	.LM12:
+ 408 0082 8091 0000 		lds r24,uart_rx_signal
+ 409 0086 0E94 0000 		call nrk_event_signal
+  70:../../../src/platform/firefly3_usb/source/ulib.c **** //ENABLE_UART0_RX_INT();
+ 411               	.LM13:
+ 412 008a 8091 C000 		lds r24,192
+ 413 008e 8F77      		andi r24,lo8(127)
+ 414 0090 8093 C000 		sts 192,r24
+  73:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 416               	.LM14:
+ 417 0094 0E94 0000 		call nrk_int_enable
+ 418               	/* epilogue start */
+  74:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 420               	.LM15:
+ 421 0098 FF91      		pop r31
+ 422 009a EF91      		pop r30
+ 423 009c BF91      		pop r27
+ 424 009e AF91      		pop r26
+ 425 00a0 9F91      		pop r25
+ 426 00a2 8F91      		pop r24
+ 427 00a4 7F91      		pop r23
+ 428 00a6 6F91      		pop r22
+ 429 00a8 5F91      		pop r21
+ 430 00aa 4F91      		pop r20
+ 431 00ac 3F91      		pop r19
+ 432 00ae 2F91      		pop r18
+ 433 00b0 0F90      		pop r0
+ 434 00b2 0BBE      		out __RAMPZ__,r0
+ 435 00b4 0F90      		pop r0
+ 436 00b6 0FBE      		out __SREG__,r0
+ 437 00b8 0F90      		pop r0
+ 438 00ba 1F90      		pop r1
+ 439 00bc 1895      		reti
+ 444               	.Lscope2:
+ 446               		.stabd	78,0,0
+ 449               	.global	nrk_uart_data_ready
+ 451               	nrk_uart_data_ready:
+ 452               		.stabd	46,0,0
+  91:../../../src/platform/firefly3_usb/source/ulib.c **** if(uart_num==0)
+ 454               	.LM16:
+ 455               	.LFBB3:
+ 456               	/* prologue: function */
+ 457               	/* frame size = 0 */
+ 458               	/* stack size = 0 */
+ 459               	.L__stack_usage = 0
+  92:../../../src/platform/firefly3_usb/source/ulib.c ****         {
+ 461               	.LM17:
+ 462 00be 8111      		cpse r24,__zero_reg__
+ 463 00c0 00C0      		rjmp .L12
+  95:../../../src/platform/firefly3_usb/source/ulib.c ****         }
+ 465               	.LM18:
+ 466 00c2 81E0      		ldi r24,lo8(1)
+ 467 00c4 4091 0000 		lds r20,uart_rx_buf_start
+ 468 00c8 5091 0000 		lds r21,uart_rx_buf_start+1
+ 469 00cc 2091 0000 		lds r18,uart_rx_buf_end
+ 470 00d0 3091 0000 		lds r19,uart_rx_buf_end+1
+ 471 00d4 4217      		cp r20,r18
+ 472 00d6 5307      		cpc r21,r19
+ 473 00d8 01F4      		brne .L14
+ 474 00da 00C0      		rjmp .L15
+ 475               	.L12:
+  97:../../../src/platform/firefly3_usb/source/ulib.c **** 	{
+ 477               	.LM19:
+ 478 00dc 8130      		cpi r24,lo8(1)
+ 479 00de 01F4      		brne .L15
+  99:../../../src/platform/firefly3_usb/source/ulib.c **** 	//if(uart_rx_buf_start!=uart_rx_buf_end) return 1;
+ 481               	.LM20:
+ 482 00e0 8091 C800 		lds r24,200
+ 483 00e4 881F      		rol r24
+ 484 00e6 8827      		clr r24
+ 485 00e8 881F      		rol r24
+ 486 00ea 0895      		ret
+ 487               	.L15:
+ 102:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 489               	.LM21:
+ 490 00ec 80E0      		ldi r24,0
+ 491               	.L14:
+ 103:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 493               	.LM22:
+ 494 00ee 0895      		ret
+ 496               	.Lscope3:
+ 498               		.stabd	78,0,0
+ 500               	.global	nrk_uart_rx_signal_get
+ 502               	nrk_uart_rx_signal_get:
+ 503               		.stabd	46,0,0
+ 106:../../../src/platform/firefly3_usb/source/ulib.c ****    if(uart_rx_signal==NRK_ERROR) nrk_error_add(NRK_SIGNAL_CREATE_ERROR);
+ 505               	.LM23:
+ 506               	.LFBB4:
+ 507               	/* prologue: function */
+ 508               	/* frame size = 0 */
+ 509               	/* stack size = 0 */
+ 510               	.L__stack_usage = 0
+ 107:../../../src/platform/firefly3_usb/source/ulib.c ****    return uart_rx_signal;
+ 512               	.LM24:
+ 513 00f0 8091 0000 		lds r24,uart_rx_signal
+ 514 00f4 8F3F      		cpi r24,lo8(-1)
+ 515 00f6 01F4      		brne .L17
+ 107:../../../src/platform/firefly3_usb/source/ulib.c ****    return uart_rx_signal;
+ 517               	.LM25:
+ 518 00f8 8EE0      		ldi r24,lo8(14)
+ 519 00fa 0E94 0000 		call nrk_error_add
+ 520               	.L17:
+ 109:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 522               	.LM26:
+ 523 00fe 8091 0000 		lds r24,uart_rx_signal
+ 524 0102 0895      		ret
+ 526               	.Lscope4:
+ 528               		.stabd	78,0,0
+ 531               	.global	nrk_kprintf
+ 533               	nrk_kprintf:
+ 534               		.stabd	46,0,0
+ 141:../../../src/platform/firefly3_usb/source/ulib.c ****  char c;
+ 536               	.LM27:
+ 537               	.LFBB5:
+ 538 0104 CF93      		push r28
+ 539 0106 DF93      		push r29
+ 540               	/* prologue: function */
+ 541               	/* frame size = 0 */
+ 542               	/* stack size = 2 */
+ 543               	.L__stack_usage = 2
+ 544               	.L19:
+ 545               	.LBB2:
+ 143:../../../src/platform/firefly3_usb/source/ulib.c ****         putchar(c);
+ 547               	.LM28:
+ 548 0108 FC01      		movw r30,r24
+ 549               	/* #APP */
+ 550               	 ;  143 "../../../src/platform/firefly3_usb/source/ulib.c" 1
+ 551 010a 2491      		lpm r18, Z
+ 552               		
+ 553               	 ;  0 "" 2
+ 554               	/* #NOAPP */
+ 555 010c EC01      		movw r28,r24
+ 556 010e 2196      		adiw r28,1
+ 557               	.LBE2:
+ 558 0110 2223      		tst r18
+ 559 0112 01F0      		breq .L21
+ 144:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 561               	.LM29:
+ 562 0114 6091 0000 		lds r22,__iob+2
+ 563 0118 7091 0000 		lds r23,__iob+2+1
+ 564 011c 822F      		mov r24,r18
+ 565 011e 90E0      		ldi r25,0
+ 566 0120 0E94 0000 		call fputc
+ 567 0124 CE01      		movw r24,r28
+ 568 0126 00C0      		rjmp .L19
+ 569               	.L21:
+ 570               	/* epilogue start */
+ 145:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 572               	.LM30:
+ 573 0128 DF91      		pop r29
+ 574 012a CF91      		pop r28
+ 575 012c 0895      		ret
+ 580               	.Lscope5:
+ 582               		.stabd	78,0,0
+ 584               	.global	getc0
+ 586               	getc0:
+ 587               		.stabd	46,0,0
+  77:../../../src/platform/firefly3_usb/source/ulib.c **** char tmp;
+ 589               	.LM31:
+ 590               	.LFBB6:
+ 591               	/* prologue: function */
+ 592               	/* frame size = 0 */
+ 593               	/* stack size = 0 */
+ 594               	.L__stack_usage = 0
+  81:../../../src/platform/firefly3_usb/source/ulib.c **** if(v==NRK_ERROR ) nrk_kprintf(PSTR("uart rx sig failed\r\n" ));
+ 596               	.LM32:
+ 597 012e 2091 0000 		lds r18,uart_rx_buf_start
+ 598 0132 3091 0000 		lds r19,uart_rx_buf_start+1
+ 599 0136 8091 0000 		lds r24,uart_rx_buf_end
+ 600 013a 9091 0000 		lds r25,uart_rx_buf_end+1
+ 601 013e 2817      		cp r18,r24
+ 602 0140 3907      		cpc r19,r25
+ 603 0142 01F4      		brne .L23
+  81:../../../src/platform/firefly3_usb/source/ulib.c **** if(v==NRK_ERROR ) nrk_kprintf(PSTR("uart rx sig failed\r\n" ));
+ 605               	.LM33:
+ 606 0144 8091 0000 		lds r24,uart_rx_signal
+ 607 0148 0E94 0000 		call nrk_signal_register
+ 608 014c 81E0      		ldi r24,lo8(1)
+ 609 014e 90E0      		ldi r25,0
+ 610 0150 A0E0      		ldi r26,0
+ 611 0152 B0E0      		ldi r27,0
+ 612 0154 BC01      		movw r22,r24
+ 613 0156 CD01      		movw r24,r26
+ 614 0158 0090 0000 		lds r0,uart_rx_signal
+ 615 015c 00C0      		rjmp 2f
+ 616               		1:
+ 617 015e 660F      		lsl r22
+ 618 0160 771F      		rol r23
+ 619 0162 881F      		rol r24
+ 620 0164 991F      		rol r25
+ 621               		2:
+ 622 0166 0A94      		dec r0
+ 623 0168 02F4      		brpl 1b
+ 624 016a 0E94 0000 		call nrk_event_wait
+ 625               	.L23:
+  82:../../../src/platform/firefly3_usb/source/ulib.c ****    tmp=uart_rx_buf[uart_rx_buf_start];
+ 627               	.LM34:
+ 628 016e 6F3F      		cpi r22,lo8(-1)
+ 629 0170 01F4      		brne .L24
+  82:../../../src/platform/firefly3_usb/source/ulib.c ****    tmp=uart_rx_buf[uart_rx_buf_start];
+ 631               	.LM35:
+ 632 0172 80E0      		ldi r24,lo8(__c.3125)
+ 633 0174 90E0      		ldi r25,hi8(__c.3125)
+ 634 0176 0E94 0000 		call nrk_kprintf
+ 635               	.L24:
+  83:../../../src/platform/firefly3_usb/source/ulib.c ****    uart_rx_buf_start++;
+ 637               	.LM36:
+ 638 017a 2091 0000 		lds r18,uart_rx_buf_start
+ 639 017e 3091 0000 		lds r19,uart_rx_buf_start+1
+ 640 0182 F901      		movw r30,r18
+ 641 0184 E050      		subi r30,lo8(-(uart_rx_buf))
+ 642 0186 F040      		sbci r31,hi8(-(uart_rx_buf))
+ 643 0188 8081      		ld r24,Z
+  84:../../../src/platform/firefly3_usb/source/ulib.c ****    if(uart_rx_buf_start>=MAX_RX_UART_BUF) { uart_rx_buf_start=0; }
+ 645               	.LM37:
+ 646 018a 2F5F      		subi r18,-1
+ 647 018c 3F4F      		sbci r19,-1
+  85:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 649               	.LM38:
+ 650 018e 2038      		cpi r18,-128
+ 651 0190 3105      		cpc r19,__zero_reg__
+ 652 0192 00F4      		brsh .L25
+  84:../../../src/platform/firefly3_usb/source/ulib.c ****    if(uart_rx_buf_start>=MAX_RX_UART_BUF) { uart_rx_buf_start=0; }
+ 654               	.LM39:
+ 655 0194 3093 0000 		sts uart_rx_buf_start+1,r19
+ 656 0198 2093 0000 		sts uart_rx_buf_start,r18
+ 657 019c 0895      		ret
+ 658               	.L25:
+  85:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 660               	.LM40:
+ 661 019e 1092 0000 		sts uart_rx_buf_start+1,__zero_reg__
+ 662 01a2 1092 0000 		sts uart_rx_buf_start,__zero_reg__
+  88:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 664               	.LM41:
+ 665 01a6 0895      		ret
+ 671               	.Lscope6:
+ 673               		.stabd	78,0,0
+ 675               	.global	PORT_INIT
+ 677               	PORT_INIT:
+ 678               		.stabd	46,0,0
+ 268:../../../src/platform/firefly3_usb/source/ulib.c **** 	// Pull-up disable
+ 680               	.LM42:
+ 681               	.LFBB7:
+ 682               	/* prologue: function */
+ 683               	/* frame size = 0 */
+ 684               	/* stack size = 0 */
+ 685               	.L__stack_usage = 0
+ 276:../../../src/platform/firefly3_usb/source/ulib.c ****         PORTB = BM(MOSI) | BM(SCK); 
+ 687               	.LM43:
+ 688 01a8 86E0      		ldi r24,lo8(6)
+ 689 01aa 84B9      		out 0x4,r24
+ 277:../../../src/platform/firefly3_usb/source/ulib.c **** #endif
+ 691               	.LM44:
+ 692 01ac 85B9      		out 0x5,r24
+ 279:../../../src/platform/firefly3_usb/source/ulib.c **** 	PORTD = BM(LED_0)|BM(LED_1)|BM(LED_2)|BM(LED_3);
+ 694               	.LM45:
+ 695 01ae 88EF      		ldi r24,lo8(-8)
+ 696 01b0 8AB9      		out 0xa,r24
+ 280:../../../src/platform/firefly3_usb/source/ulib.c ****         DDRE = BM(UART0_TXD); 
+ 698               	.LM46:
+ 699 01b2 80EF      		ldi r24,lo8(-16)
+ 700 01b4 8BB9      		out 0xb,r24
+ 281:../../../src/platform/firefly3_usb/source/ulib.c **** } 
+ 702               	.LM47:
+ 703 01b6 82E0      		ldi r24,lo8(2)
+ 704 01b8 8DB9      		out 0xd,r24
+ 705 01ba 0895      		ret
+ 707               	.Lscope7:
+ 709               		.stabd	78,0,0
+ 711               	.global	nrk_setup_ports
+ 713               	nrk_setup_ports:
+ 714               		.stabd	46,0,0
+ 148:../../../src/platform/firefly3_usb/source/ulib.c **** PORT_INIT();
+ 716               	.LM48:
+ 717               	.LFBB8:
+ 718               	/* prologue: function */
+ 719               	/* frame size = 0 */
+ 720               	/* stack size = 0 */
+ 721               	.L__stack_usage = 0
+ 149:../../../src/platform/firefly3_usb/source/ulib.c **** //SPI_INIT();
+ 723               	.LM49:
+ 724 01bc 0C94 0000 		jmp PORT_INIT
+ 726               	.Lscope8:
+ 728               		.stabd	78,0,0
+ 731               	.global	nrk_gpio_set
+ 733               	nrk_gpio_set:
+ 734               		.stabd	46,0,0
+ 290:../../../src/platform/firefly3_usb/source/ulib.c ****         if (pin == NRK_INVALID_PIN_VAL) return -1;
+ 736               	.LM50:
+ 737               	.LFBB9:
+ 738               	/* prologue: function */
+ 739               	/* frame size = 0 */
+ 740               	/* stack size = 0 */
+ 741               	.L__stack_usage = 0
+ 291:../../../src/platform/firefly3_usb/source/ulib.c ****         switch (pin & 0x07) {
+ 743               	.LM51:
+ 744 01c0 8F3F      		cpi r24,lo8(-1)
+ 745 01c2 01F4      		brne .+2
+ 746 01c4 00C0      		rjmp .L40
+ 292:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTA:
+ 748               	.LM52:
+ 749 01c6 E82F      		mov r30,r24
+ 750 01c8 E770      		andi r30,lo8(7)
+ 751 01ca 4E2F      		mov r20,r30
+ 752 01cc 50E0      		ldi r21,0
+ 753 01ce 4730      		cpi r20,7
+ 754 01d0 5105      		cpc r21,__zero_reg__
+ 755 01d2 00F0      		brlo .+2
+ 756 01d4 00C0      		rjmp .L40
+ 757 01d6 FA01      		movw r30,r20
+ 758 01d8 E050      		subi r30,lo8(-(gs(.L32)))
+ 759 01da F040      		sbci r31,hi8(-(gs(.L32)))
+ 760 01dc 8695      		lsr r24
+ 761 01de 8695      		lsr r24
+ 762 01e0 8695      		lsr r24
+ 763 01e2 0C94 0000 		jmp __tablejump2__
+ 764               		.section	.progmem.gcc_sw_table,"a",@progbits
+ 765               		.p2align	1
+ 766               	.L32:
+ 767 0000 0000      		.word gs(.L31)
+ 768 0002 0000      		.word gs(.L33)
+ 769 0004 0000      		.word gs(.L34)
+ 770 0006 0000      		.word gs(.L35)
+ 771 0008 0000      		.word gs(.L36)
+ 772 000a 0000      		.word gs(.L37)
+ 773 000c 0000      		.word gs(.L38)
+ 774               		.text
+ 775               	.L31:
+ 294:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTB:
+ 777               	.LM53:
+ 778 01e6 42B1      		in r20,0x2
+ 779 01e8 21E0      		ldi r18,lo8(1)
+ 780 01ea 30E0      		ldi r19,0
+ 781 01ec B901      		movw r22,r18
+ 782 01ee 00C0      		rjmp 2f
+ 783               		1:
+ 784 01f0 660F      		lsl r22
+ 785 01f2 771F      		rol r23
+ 786               		2:
+ 787 01f4 8A95      		dec r24
+ 788 01f6 02F4      		brpl 1b
+ 789 01f8 CB01      		movw r24,r22
+ 790 01fa 842B      		or r24,r20
+ 791 01fc 82B9      		out 0x2,r24
+ 792 01fe 00C0      		rjmp .L41
+ 793               	.L33:
+ 296:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTC:
+ 795               	.LM54:
+ 796 0200 45B1      		in r20,0x5
+ 797 0202 21E0      		ldi r18,lo8(1)
+ 798 0204 30E0      		ldi r19,0
+ 799 0206 B901      		movw r22,r18
+ 800 0208 00C0      		rjmp 2f
+ 801               		1:
+ 802 020a 660F      		lsl r22
+ 803 020c 771F      		rol r23
+ 804               		2:
+ 805 020e 8A95      		dec r24
+ 806 0210 02F4      		brpl 1b
+ 807 0212 CB01      		movw r24,r22
+ 808 0214 842B      		or r24,r20
+ 809 0216 85B9      		out 0x5,r24
+ 810 0218 00C0      		rjmp .L41
+ 811               	.L34:
+ 298:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTD:
+ 813               	.LM55:
+ 814 021a 48B1      		in r20,0x8
+ 815 021c 21E0      		ldi r18,lo8(1)
+ 816 021e 30E0      		ldi r19,0
+ 817 0220 B901      		movw r22,r18
+ 818 0222 00C0      		rjmp 2f
+ 819               		1:
+ 820 0224 660F      		lsl r22
+ 821 0226 771F      		rol r23
+ 822               		2:
+ 823 0228 8A95      		dec r24
+ 824 022a 02F4      		brpl 1b
+ 825 022c CB01      		movw r24,r22
+ 826 022e 842B      		or r24,r20
+ 827 0230 88B9      		out 0x8,r24
+ 828 0232 00C0      		rjmp .L41
+ 829               	.L35:
+ 300:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTE:
+ 831               	.LM56:
+ 832 0234 4BB1      		in r20,0xb
+ 833 0236 21E0      		ldi r18,lo8(1)
+ 834 0238 30E0      		ldi r19,0
+ 835 023a B901      		movw r22,r18
+ 836 023c 00C0      		rjmp 2f
+ 837               		1:
+ 838 023e 660F      		lsl r22
+ 839 0240 771F      		rol r23
+ 840               		2:
+ 841 0242 8A95      		dec r24
+ 842 0244 02F4      		brpl 1b
+ 843 0246 CB01      		movw r24,r22
+ 844 0248 842B      		or r24,r20
+ 845 024a 8BB9      		out 0xb,r24
+ 846 024c 00C0      		rjmp .L41
+ 847               	.L36:
+ 302:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTF:
+ 849               	.LM57:
+ 850 024e 4EB1      		in r20,0xe
+ 851 0250 21E0      		ldi r18,lo8(1)
+ 852 0252 30E0      		ldi r19,0
+ 853 0254 B901      		movw r22,r18
+ 854 0256 00C0      		rjmp 2f
+ 855               		1:
+ 856 0258 660F      		lsl r22
+ 857 025a 771F      		rol r23
+ 858               		2:
+ 859 025c 8A95      		dec r24
+ 860 025e 02F4      		brpl 1b
+ 861 0260 CB01      		movw r24,r22
+ 862 0262 842B      		or r24,r20
+ 863 0264 8EB9      		out 0xe,r24
+ 864 0266 00C0      		rjmp .L41
+ 865               	.L37:
+ 304:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTG:
+ 867               	.LM58:
+ 868 0268 41B3      		in r20,0x11
+ 869 026a 21E0      		ldi r18,lo8(1)
+ 870 026c 30E0      		ldi r19,0
+ 871 026e B901      		movw r22,r18
+ 872 0270 00C0      		rjmp 2f
+ 873               		1:
+ 874 0272 660F      		lsl r22
+ 875 0274 771F      		rol r23
+ 876               		2:
+ 877 0276 8A95      		dec r24
+ 878 0278 02F4      		brpl 1b
+ 879 027a CB01      		movw r24,r22
+ 880 027c 842B      		or r24,r20
+ 881 027e 81BB      		out 0x11,r24
+ 882 0280 00C0      		rjmp .L41
+ 883               	.L38:
+ 306:../../../src/platform/firefly3_usb/source/ulib.c ****                 default: return -1;
+ 885               	.LM59:
+ 886 0282 44B3      		in r20,0x14
+ 887 0284 21E0      		ldi r18,lo8(1)
+ 888 0286 30E0      		ldi r19,0
+ 889 0288 B901      		movw r22,r18
+ 890 028a 00C0      		rjmp 2f
+ 891               		1:
+ 892 028c 660F      		lsl r22
+ 893 028e 771F      		rol r23
+ 894               		2:
+ 895 0290 8A95      		dec r24
+ 896 0292 02F4      		brpl 1b
+ 897 0294 CB01      		movw r24,r22
+ 898 0296 842B      		or r24,r20
+ 899 0298 84BB      		out 0x14,r24
+ 900               	.L41:
+ 309:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 902               	.LM60:
+ 903 029a 81E0      		ldi r24,lo8(1)
+ 306:../../../src/platform/firefly3_usb/source/ulib.c ****                 default: return -1;
+ 905               	.LM61:
+ 906 029c 0895      		ret
+ 907               	.L40:
+ 307:../../../src/platform/firefly3_usb/source/ulib.c ****         }
+ 909               	.LM62:
+ 910 029e 8FEF      		ldi r24,lo8(-1)
+ 310:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 912               	.LM63:
+ 913 02a0 0895      		ret
+ 915               	.Lscope9:
+ 917               		.stabd	78,0,0
+ 920               	.global	nrk_gpio_clr
+ 922               	nrk_gpio_clr:
+ 923               		.stabd	46,0,0
+ 313:../../../src/platform/firefly3_usb/source/ulib.c ****         if (pin == NRK_INVALID_PIN_VAL) return -1;
+ 925               	.LM64:
+ 926               	.LFBB10:
+ 927               	/* prologue: function */
+ 928               	/* frame size = 0 */
+ 929               	/* stack size = 0 */
+ 930               	.L__stack_usage = 0
+ 314:../../../src/platform/firefly3_usb/source/ulib.c ****         switch (pin & 0x07) {
+ 932               	.LM65:
+ 933 02a2 8F3F      		cpi r24,lo8(-1)
+ 934 02a4 01F4      		brne .+2
+ 935 02a6 00C0      		rjmp .L53
+ 315:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTA:
+ 937               	.LM66:
+ 938 02a8 E82F      		mov r30,r24
+ 939 02aa E770      		andi r30,lo8(7)
+ 940 02ac 4E2F      		mov r20,r30
+ 941 02ae 50E0      		ldi r21,0
+ 942 02b0 4730      		cpi r20,7
+ 943 02b2 5105      		cpc r21,__zero_reg__
+ 944 02b4 00F0      		brlo .+2
+ 945 02b6 00C0      		rjmp .L53
+ 946 02b8 FA01      		movw r30,r20
+ 947 02ba E050      		subi r30,lo8(-(gs(.L45)))
+ 948 02bc F040      		sbci r31,hi8(-(gs(.L45)))
+ 949 02be 8695      		lsr r24
+ 950 02c0 8695      		lsr r24
+ 951 02c2 8695      		lsr r24
+ 952 02c4 0C94 0000 		jmp __tablejump2__
+ 953               		.section	.progmem.gcc_sw_table,"a",@progbits
+ 954               		.p2align	1
+ 955               	.L45:
+ 956 000e 0000      		.word gs(.L44)
+ 957 0010 0000      		.word gs(.L46)
+ 958 0012 0000      		.word gs(.L47)
+ 959 0014 0000      		.word gs(.L48)
+ 960 0016 0000      		.word gs(.L49)
+ 961 0018 0000      		.word gs(.L51)
+ 962 001a 0000      		.word gs(.L51)
+ 963               		.text
+ 964               	.L44:
+ 317:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTB:
+ 966               	.LM67:
+ 967 02c8 42B1      		in r20,0x2
+ 968 02ca 21E0      		ldi r18,lo8(1)
+ 969 02cc 30E0      		ldi r19,0
+ 970 02ce B901      		movw r22,r18
+ 971 02d0 00C0      		rjmp 2f
+ 972               		1:
+ 973 02d2 660F      		lsl r22
+ 974 02d4 771F      		rol r23
+ 975               		2:
+ 976 02d6 8A95      		dec r24
+ 977 02d8 02F4      		brpl 1b
+ 978 02da CB01      		movw r24,r22
+ 979 02dc 8095      		com r24
+ 980 02de 8423      		and r24,r20
+ 981 02e0 82B9      		out 0x2,r24
+ 982 02e2 00C0      		rjmp .L54
+ 983               	.L46:
+ 319:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTC:
+ 985               	.LM68:
+ 986 02e4 45B1      		in r20,0x5
+ 987 02e6 21E0      		ldi r18,lo8(1)
+ 988 02e8 30E0      		ldi r19,0
+ 989 02ea B901      		movw r22,r18
+ 990 02ec 00C0      		rjmp 2f
+ 991               		1:
+ 992 02ee 660F      		lsl r22
+ 993 02f0 771F      		rol r23
+ 994               		2:
+ 995 02f2 8A95      		dec r24
+ 996 02f4 02F4      		brpl 1b
+ 997 02f6 CB01      		movw r24,r22
+ 998 02f8 8095      		com r24
+ 999 02fa 8423      		and r24,r20
+ 1000 02fc 85B9      		out 0x5,r24
+ 1001 02fe 00C0      		rjmp .L54
+ 1002               	.L47:
+ 321:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTD:
+ 1004               	.LM69:
+ 1005 0300 48B1      		in r20,0x8
+ 1006 0302 21E0      		ldi r18,lo8(1)
+ 1007 0304 30E0      		ldi r19,0
+ 1008 0306 B901      		movw r22,r18
+ 1009 0308 00C0      		rjmp 2f
+ 1010               		1:
+ 1011 030a 660F      		lsl r22
+ 1012 030c 771F      		rol r23
+ 1013               		2:
+ 1014 030e 8A95      		dec r24
+ 1015 0310 02F4      		brpl 1b
+ 1016 0312 CB01      		movw r24,r22
+ 1017 0314 8095      		com r24
+ 1018 0316 8423      		and r24,r20
+ 1019 0318 88B9      		out 0x8,r24
+ 1020 031a 00C0      		rjmp .L54
+ 1021               	.L48:
+ 323:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTE:
+ 1023               	.LM70:
+ 1024 031c 4BB1      		in r20,0xb
+ 1025 031e 21E0      		ldi r18,lo8(1)
+ 1026 0320 30E0      		ldi r19,0
+ 1027 0322 B901      		movw r22,r18
+ 1028 0324 00C0      		rjmp 2f
+ 1029               		1:
+ 1030 0326 660F      		lsl r22
+ 1031 0328 771F      		rol r23
+ 1032               		2:
+ 1033 032a 8A95      		dec r24
+ 1034 032c 02F4      		brpl 1b
+ 1035 032e CB01      		movw r24,r22
+ 1036 0330 8095      		com r24
+ 1037 0332 8423      		and r24,r20
+ 1038 0334 8BB9      		out 0xb,r24
+ 1039 0336 00C0      		rjmp .L54
+ 1040               	.L49:
+ 325:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTF:
+ 1042               	.LM71:
+ 1043 0338 4EB1      		in r20,0xe
+ 1044 033a 21E0      		ldi r18,lo8(1)
+ 1045 033c 30E0      		ldi r19,0
+ 1046 033e B901      		movw r22,r18
+ 1047 0340 00C0      		rjmp 2f
+ 1048               		1:
+ 1049 0342 660F      		lsl r22
+ 1050 0344 771F      		rol r23
+ 1051               		2:
+ 1052 0346 8A95      		dec r24
+ 1053 0348 02F4      		brpl 1b
+ 1054 034a CB01      		movw r24,r22
+ 1055 034c 8095      		com r24
+ 1056 034e 8423      		and r24,r20
+ 1057 0350 8EB9      		out 0xe,r24
+ 1058 0352 00C0      		rjmp .L54
+ 1059               	.L51:
+ 329:../../../src/platform/firefly3_usb/source/ulib.c ****                 default: return -1;
+ 1061               	.LM72:
+ 1062 0354 41B3      		in r20,0x11
+ 1063 0356 21E0      		ldi r18,lo8(1)
+ 1064 0358 30E0      		ldi r19,0
+ 1065 035a B901      		movw r22,r18
+ 1066 035c 00C0      		rjmp 2f
+ 1067               		1:
+ 1068 035e 660F      		lsl r22
+ 1069 0360 771F      		rol r23
+ 1070               		2:
+ 1071 0362 8A95      		dec r24
+ 1072 0364 02F4      		brpl 1b
+ 1073 0366 CB01      		movw r24,r22
+ 1074 0368 8095      		com r24
+ 1075 036a 8423      		and r24,r20
+ 1076 036c 81BB      		out 0x11,r24
+ 1077               	.L54:
+ 332:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 1079               	.LM73:
+ 1080 036e 81E0      		ldi r24,lo8(1)
+ 329:../../../src/platform/firefly3_usb/source/ulib.c ****                 default: return -1;
+ 1082               	.LM74:
+ 1083 0370 0895      		ret
+ 1084               	.L53:
+ 330:../../../src/platform/firefly3_usb/source/ulib.c ****         }
+ 1086               	.LM75:
+ 1087 0372 8FEF      		ldi r24,lo8(-1)
+ 333:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 1089               	.LM76:
+ 1090 0374 0895      		ret
+ 1092               	.Lscope10:
+ 1094               		.stabd	78,0,0
+ 1097               	.global	nrk_gpio_get
+ 1099               	nrk_gpio_get:
+ 1100               		.stabd	46,0,0
+ 336:../../../src/platform/firefly3_usb/source/ulib.c ****     if (pin == NRK_INVALID_PIN_VAL) return -1;
+ 1102               	.LM77:
+ 1103               	.LFBB11:
+ 1104               	/* prologue: function */
+ 1105               	/* frame size = 0 */
+ 1106               	/* stack size = 0 */
+ 1107               	.L__stack_usage = 0
+ 337:../../../src/platform/firefly3_usb/source/ulib.c ****         switch (pin & 0x07) {
+ 1109               	.LM78:
+ 1110 0376 8F3F      		cpi r24,lo8(-1)
+ 1111 0378 01F0      		breq .L66
+ 338:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTA:
+ 1113               	.LM79:
+ 1114 037a E82F      		mov r30,r24
+ 1115 037c E770      		andi r30,lo8(7)
+ 1116 037e 4E2F      		mov r20,r30
+ 1117 0380 50E0      		ldi r21,0
+ 1118 0382 4730      		cpi r20,7
+ 1119 0384 5105      		cpc r21,__zero_reg__
+ 1120 0386 00F4      		brsh .L66
+ 1121 0388 FA01      		movw r30,r20
+ 1122 038a E050      		subi r30,lo8(-(gs(.L58)))
+ 1123 038c F040      		sbci r31,hi8(-(gs(.L58)))
+ 1124 038e 282F      		mov r18,r24
+ 1125 0390 2695      		lsr r18
+ 1126 0392 2695      		lsr r18
+ 1127 0394 2695      		lsr r18
+ 1128 0396 0C94 0000 		jmp __tablejump2__
+ 1129               		.section	.progmem.gcc_sw_table,"a",@progbits
+ 1130               		.p2align	1
+ 1131               	.L58:
+ 1132 001c 0000      		.word gs(.L57)
+ 1133 001e 0000      		.word gs(.L59)
+ 1134 0020 0000      		.word gs(.L60)
+ 1135 0022 0000      		.word gs(.L61)
+ 1136 0024 0000      		.word gs(.L62)
+ 1137 0026 0000      		.word gs(.L63)
+ 1138 0028 0000      		.word gs(.L64)
+ 1139               		.text
+ 1140               	.L57:
+ 340:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTB:
+ 1142               	.LM80:
+ 1143 039a 90B1      		in r25,0
+ 1144 039c 00C0      		rjmp .L67
+ 1145               	.L59:
+ 342:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTC:
+ 1147               	.LM81:
+ 1148 039e 93B1      		in r25,0x3
+ 1149 03a0 00C0      		rjmp .L67
+ 1150               	.L60:
+ 344:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTD:
+ 1152               	.LM82:
+ 1153 03a2 96B1      		in r25,0x6
+ 1154 03a4 00C0      		rjmp .L67
+ 1155               	.L61:
+ 346:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTE:
+ 1157               	.LM83:
+ 1158 03a6 99B1      		in r25,0x9
+ 1159 03a8 00C0      		rjmp .L67
+ 1160               	.L62:
+ 348:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTF:
+ 1162               	.LM84:
+ 1163 03aa 9CB1      		in r25,0xc
+ 1164 03ac 00C0      		rjmp .L67
+ 1165               	.L63:
+ 350:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTG:
+ 1167               	.LM85:
+ 1168 03ae 9FB1      		in r25,0xf
+ 1169 03b0 00C0      		rjmp .L67
+ 1170               	.L64:
+ 352:../../../src/platform/firefly3_usb/source/ulib.c ****                 default: return -1;
+ 1172               	.LM86:
+ 1173 03b2 92B3      		in r25,0x12
+ 1174               	.L67:
+ 1175 03b4 892F      		mov r24,r25
+ 1176 03b6 90E0      		ldi r25,0
+ 1177 03b8 00C0      		rjmp 2f
+ 1178               		1:
+ 1179 03ba 9595      		asr r25
+ 1180 03bc 8795      		ror r24
+ 1181               		2:
+ 1182 03be 2A95      		dec r18
+ 1183 03c0 02F4      		brpl 1b
+ 1184 03c2 8170      		andi r24,lo8(1)
+ 1185 03c4 0895      		ret
+ 1186               	.L66:
+ 353:../../../src/platform/firefly3_usb/source/ulib.c ****         }
+ 1188               	.LM87:
+ 1189 03c6 8FEF      		ldi r24,lo8(-1)
+ 356:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 1191               	.LM88:
+ 1192 03c8 0895      		ret
+ 1194               	.Lscope11:
+ 1196               		.stabd	78,0,0
+ 1199               	.global	nrk_gpio_toggle
+ 1201               	nrk_gpio_toggle:
+ 1202               		.stabd	46,0,0
+ 359:../../../src/platform/firefly3_usb/source/ulib.c ****     if (pin == NRK_INVALID_PIN_VAL) return -1;
+ 1204               	.LM89:
+ 1205               	.LFBB12:
+ 1206               	/* prologue: function */
+ 1207               	/* frame size = 0 */
+ 1208               	/* stack size = 0 */
+ 1209               	.L__stack_usage = 0
+ 360:../../../src/platform/firefly3_usb/source/ulib.c ****         switch (pin & 0x07) {
+ 1211               	.LM90:
+ 1212 03ca 8F3F      		cpi r24,lo8(-1)
+ 1213 03cc 01F4      		brne .+2
+ 1214 03ce 00C0      		rjmp .L86
+ 361:../../../src/platform/firefly3_usb/source/ulib.c ****                 case NRK_PORTA:
+ 1216               	.LM91:
+ 1217 03d0 E82F      		mov r30,r24
+ 1218 03d2 E770      		andi r30,lo8(7)
+ 1219 03d4 4E2F      		mov r20,r30
+ 1220 03d6 50E0      		ldi r21,0
+ 1221 03d8 4730      		cpi r20,7
+ 1222 03da 5105      		cpc r21,__zero_reg__
+ 1223 03dc 00F0      		brlo .+2
+ 1224 03de 00C0      		rjmp .L86
+ 1225 03e0 FA01      		movw r30,r20
+ 1226 03e2 E050      		subi r30,lo8(-(gs(.L71)))
+ 1227 03e4 F040      		sbci r31,hi8(-(gs(.L71)))
+ 1228 03e6 8695      		lsr r24
+ 1229 03e8 8695      		lsr r24
+ 1230 03ea 8695      		lsr r24
+ 1231 03ec 0C94 0000 		jmp __tablejump2__
+ 1232               		.section	.progmem.gcc_sw_table,"a",@progbits
+ 1233               		.p2align	1
+ 1234               	.L71:
+ 1235 002a 0000      		.word gs(.L70)
+ 1236 002c 0000      		.word gs(.L72)
+ 1237 002e 0000      		.word gs(.L73)
+ 1238 0030 0000      		.word gs(.L74)
+ 1239 0032 0000      		.word gs(.L75)
+ 1240 0034 0000      		.word gs(.L76)
+ 1241 0036 0000      		.word gs(.L77)
+ 1242               		.text
+ 1243               	.L70:
+ 363:../../../src/platform/firefly3_usb/source/ulib.c ****                                 do { PORTA |= BM((pin & 0xF8) >> 3); } while(0);
+ 1245               	.LM92:
+ 1246 03f0 20B1      		in r18,0
+ 1247 03f2 30E0      		ldi r19,0
+ 1248 03f4 082E      		mov r0,r24
+ 1249 03f6 00C0      		rjmp 2f
+ 1250               		1:
+ 1251 03f8 3595      		asr r19
+ 1252 03fa 2795      		ror r18
+ 1253               		2:
+ 1254 03fc 0A94      		dec r0
+ 1255 03fe 02F4      		brpl 1b
+ 364:../../../src/platform/firefly3_usb/source/ulib.c ****                         } else {
+ 1257               	.LM93:
+ 1258 0400 42B1      		in r20,0x2
+ 363:../../../src/platform/firefly3_usb/source/ulib.c ****                                 do { PORTA |= BM((pin & 0xF8) >> 3); } while(0);
+ 1260               	.LM94:
+ 1261 0402 20FD      		sbrc r18,0
+ 1262 0404 00C0      		rjmp .L78
+ 364:../../../src/platform/firefly3_usb/source/ulib.c ****                         } else {
+ 1264               	.LM95:
+ 1265 0406 21E0      		ldi r18,lo8(1)
+ 1266 0408 30E0      		ldi r19,0
+ 1267 040a B901      		movw r22,r18
+ 1268 040c 00C0      		rjmp 2f
+ 1269               		1:
+ 1270 040e 660F      		lsl r22
+ 1271 0410 771F      		rol r23
+ 1272               		2:
+ 1273 0412 8A95      		dec r24
+ 1274 0414 02F4      		brpl 1b
+ 1275 0416 CB01      		movw r24,r22
+ 1276 0418 842B      		or r24,r20
+ 1277 041a 00C0      		rjmp .L92
+ 1278               	.L78:
+ 366:../../../src/platform/firefly3_usb/source/ulib.c ****                         }
+ 1280               	.LM96:
+ 1281 041c 21E0      		ldi r18,lo8(1)
+ 1282 041e 30E0      		ldi r19,0
+ 1283 0420 B901      		movw r22,r18
+ 1284 0422 00C0      		rjmp 2f
+ 1285               		1:
+ 1286 0424 660F      		lsl r22
+ 1287 0426 771F      		rol r23
+ 1288               		2:
+ 1289 0428 8A95      		dec r24
+ 1290 042a 02F4      		brpl 1b
+ 1291 042c CB01      		movw r24,r22
+ 1292 042e 8095      		com r24
+ 1293 0430 8423      		and r24,r20
+ 1294               	.L92:
+ 1295 0432 82B9      		out 0x2,r24
+ 1296 0434 00C0      		rjmp .L90
+ 1297               	.L72:
+ 370:../../../src/platform/firefly3_usb/source/ulib.c ****                                 do { PORTB |= BM((pin & 0xF8) >> 3); } while(0);
+ 1299               	.LM97:
+ 1300 0436 23B1      		in r18,0x3
+ 1301 0438 30E0      		ldi r19,0
+ 1302 043a 082E      		mov r0,r24
+ 1303 043c 00C0      		rjmp 2f
+ 1304               		1:
+ 1305 043e 3595      		asr r19
+ 1306 0440 2795      		ror r18
+ 1307               		2:
+ 1308 0442 0A94      		dec r0
+ 1309 0444 02F4      		brpl 1b
+ 371:../../../src/platform/firefly3_usb/source/ulib.c ****                         } else {
+ 1311               	.LM98:
+ 1312 0446 45B1      		in r20,0x5
+ 370:../../../src/platform/firefly3_usb/source/ulib.c ****                                 do { PORTB |= BM((pin & 0xF8) >> 3); } while(0);
+ 1314               	.LM99:
+ 1315 0448 20FD      		sbrc r18,0
+ 1316 044a 00C0      		rjmp .L79
+ 371:../../../src/platform/firefly3_usb/source/ulib.c ****                         } else {
+ 1318               	.LM100:
+ 1319 044c 21E0      		ldi r18,lo8(1)
+ 1320 044e 30E0      		ldi r19,0
+ 1321 0450 B901      		movw r22,r18
+ 1322 0452 00C0      		rjmp 2f
+ 1323               		1:
+ 1324 0454 660F      		lsl r22
+ 1325 0456 771F      		rol r23
+ 1326               		2:
+ 1327 0458 8A95      		dec r24
+ 1328 045a 02F4      		brpl 1b
+ 1329 045c CB01      		movw r24,r22
+ 1330 045e 842B      		or r24,r20
+ 1331               	.L91:
+ 1332 0460 85B9      		out 0x5,r24
+ 1333               	.L90:
+ 413:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 1335               	.LM101:
+ 1336 0462 81E0      		ldi r24,lo8(1)
+ 1337 0464 0895      		ret
+ 1338               	.L79:
+ 373:../../../src/platform/firefly3_usb/source/ulib.c ****                         }
+ 1340               	.LM102:
+ 1341 0466 21E0      		ldi r18,lo8(1)
+ 1342 0468 30E0      		ldi r19,0
+ 1343 046a B901      		movw r22,r18
+ 1344 046c 00C0      		rjmp 2f
+ 1345               		1:
+ 1346 046e 660F      		lsl r22
+ 1347 0470 771F      		rol r23
+ 1348               		2:
+ 1349 0472 8A95      		dec r24
+ 1350 0474 02F4      		brpl 1b
+ 1351 0476 CB01      		movw r24,r22
+ 1352 0478 8095      		com r24
+ 1353 047a 8423      		and r24,r20
+ 1354 047c 00C0      		rjmp .L91
+ 1355               	.L73:
+ 377:../../../src/platform/firefly3_usb/source/ulib.c ****                                 do { PORTC |= BM((pin & 0xF8) >> 3); } while(0);
+ 1357               	.LM103:
+ 1358 047e 26B1      		in r18,0x6
+ 1359 0480 30E0      		ldi r19,0
+ 1360 0482 082E      		mov r0,r24
+ 1361 0484 00C0      		rjmp 2f
+ 1362               		1:
+ 1363 0486 3595      		asr r19
+ 1364 0488 2795      		ror r18
+ 1365               		2:
+ 1366 048a 0A94      		dec r0
+ 1367 048c 02F4      		brpl 1b
+ 378:../../../src/platform/firefly3_usb/source/ulib.c ****                         } else {
+ 1369               	.LM104:
+ 1370 048e 48B1      		in r20,0x8
+ 377:../../../src/platform/firefly3_usb/source/ulib.c ****                                 do { PORTC |= BM((pin & 0xF8) >> 3); } while(0);
+ 1372               	.LM105:
+ 1373 0490 20FD      		sbrc r18,0
+ 1374 0492 00C0      		rjmp .L80
+ 378:../../../src/platform/firefly3_usb/source/ulib.c ****                         } else {
+ 1376               	.LM106:
+ 1377 0494 21E0      		ldi r18,lo8(1)
+ 1378 0496 30E0      		ldi r19,0
+ 1379 0498 B901      		movw r22,r18
+ 1380 049a 00C0      		rjmp 2f
+ 1381               		1:
+ 1382 049c 660F      		lsl r22
+ 1383 049e 771F      		rol r23
+ 1384               		2:
+ 1385 04a0 8A95      		dec r24
+ 1386 04a2 02F4      		brpl 1b
+ 1387 04a4 CB01      		movw r24,r22
+ 1388 04a6 842B      		or r24,r20
+ 1389 04a8 00C0      		rjmp .L93
+ 1390               	.L80:
+ 380:../../../src/platform/firefly3_usb/source/ulib.c ****                         }
+ 1392               	.LM107:
+ 1393 04aa 21E0      		ldi r18,lo8(1)
+ 1394 04ac 30E0      		ldi r19,0
+ 1395 04ae B901      		movw r22,r18
+ 1396 04b0 00C0      		rjmp 2f
+ 1397               		1:
+ 1398 04b2 660F      		lsl r22
+ 1399 04b4 771F      		rol r23
+ 1400               		2:
+ 1401 04b6 8A95      		dec r24
+ 1402 04b8 02F4      		brpl 1b
+ 1403 04ba CB01      		movw r24,r22
+ 1404 04bc 8095      		com r24
+ 1405 04be 8423      		and r24,r20
+ 1406               	.L93:
+ 1407 04c0 88B9      		out 0x8,r24
+ 1408 04c2 00C0      		rjmp .L90
+ 1409               	.L74:
+ 384:../../../src/platform/firefly3_usb/source/ulib.c ****                                 do { PORTD |= BM((pin & 0xF8) >> 3); } while(0);
+ 1411               	.LM108:
+ 1412 04c4 29B1      		in r18,0x9
+ 1413 04c6 30E0      		ldi r19,0
+ 1414 04c8 082E      		mov r0,r24
+ 1415 04ca 00C0      		rjmp 2f
+ 1416               		1:
+ 1417 04cc 3595      		asr r19
+ 1418 04ce 2795      		ror r18
+ 1419               		2:
+ 1420 04d0 0A94      		dec r0
+ 1421 04d2 02F4      		brpl 1b
+ 385:../../../src/platform/firefly3_usb/source/ulib.c ****                         } else {
+ 1423               	.LM109:
+ 1424 04d4 4BB1      		in r20,0xb
+ 384:../../../src/platform/firefly3_usb/source/ulib.c ****                                 do { PORTD |= BM((pin & 0xF8) >> 3); } while(0);
+ 1426               	.LM110:
+ 1427 04d6 20FD      		sbrc r18,0
+ 1428 04d8 00C0      		rjmp .L81
+ 385:../../../src/platform/firefly3_usb/source/ulib.c ****                         } else {
+ 1430               	.LM111:
+ 1431 04da 21E0      		ldi r18,lo8(1)
+ 1432 04dc 30E0      		ldi r19,0
+ 1433 04de B901      		movw r22,r18
+ 1434 04e0 00C0      		rjmp 2f
+ 1435               		1:
+ 1436 04e2 660F      		lsl r22
+ 1437 04e4 771F      		rol r23
+ 1438               		2:
+ 1439 04e6 8A95      		dec r24
+ 1440 04e8 02F4      		brpl 1b
+ 1441 04ea CB01      		movw r24,r22
+ 1442 04ec 842B      		or r24,r20
+ 1443 04ee 00C0      		rjmp .L94
+ 1444               	.L81:
+ 387:../../../src/platform/firefly3_usb/source/ulib.c ****                         }
+ 1446               	.LM112:
+ 1447 04f0 21E0      		ldi r18,lo8(1)
+ 1448 04f2 30E0      		ldi r19,0
+ 1449 04f4 B901      		movw r22,r18
+ 1450 04f6 00C0      		rjmp 2f
+ 1451               		1:
+ 1452 04f8 660F      		lsl r22
+ 1453 04fa 771F      		rol r23
+ 1454               		2:
+ 1455 04fc 8A95      		dec r24
+ 1456 04fe 02F4      		brpl 1b
+ 1457 0500 CB01      		movw r24,r22
+ 1458 0502 8095      		com r24
+ 1459 0504 8423      		and r24,r20
+ 1460               	.L94:
+ 1461 0506 8BB9      		out 0xb,r24
+ 1462 0508 00C0      		rjmp .L90
+ 1463               	.L75:
+ 391:../../../src/platform/firefly3_usb/source/ulib.c ****                                 do { PORTE |= BM((pin & 0xF8) >> 3); } while(0);
+ 1465               	.LM113:
+ 1466 050a 2CB1      		in r18,0xc
+ 1467 050c 30E0      		ldi r19,0
+ 1468 050e 082E      		mov r0,r24
+ 1469 0510 00C0      		rjmp 2f
+ 1470               		1:
+ 1471 0512 3595      		asr r19
+ 1472 0514 2795      		ror r18
+ 1473               		2:
+ 1474 0516 0A94      		dec r0
+ 1475 0518 02F4      		brpl 1b
+ 392:../../../src/platform/firefly3_usb/source/ulib.c ****                         } else {
+ 1477               	.LM114:
+ 1478 051a 4EB1      		in r20,0xe
+ 391:../../../src/platform/firefly3_usb/source/ulib.c ****                                 do { PORTE |= BM((pin & 0xF8) >> 3); } while(0);
+ 1480               	.LM115:
+ 1481 051c 20FD      		sbrc r18,0
+ 1482 051e 00C0      		rjmp .L82
+ 392:../../../src/platform/firefly3_usb/source/ulib.c ****                         } else {
+ 1484               	.LM116:
+ 1485 0520 21E0      		ldi r18,lo8(1)
+ 1486 0522 30E0      		ldi r19,0
+ 1487 0524 B901      		movw r22,r18
+ 1488 0526 00C0      		rjmp 2f
+ 1489               		1:
+ 1490 0528 660F      		lsl r22
+ 1491 052a 771F      		rol r23
+ 1492               		2:
+ 1493 052c 8A95      		dec r24
+ 1494 052e 02F4      		brpl 1b
+ 1495 0530 CB01      		movw r24,r22
+ 1496 0532 842B      		or r24,r20
+ 1497 0534 00C0      		rjmp .L95
+ 1498               	.L82:
+ 394:../../../src/platform/firefly3_usb/source/ulib.c ****                         }
+ 1500               	.LM117:
+ 1501 0536 21E0      		ldi r18,lo8(1)
+ 1502 0538 30E0      		ldi r19,0
+ 1503 053a B901      		movw r22,r18
+ 1504 053c 00C0      		rjmp 2f
+ 1505               		1:
+ 1506 053e 660F      		lsl r22
+ 1507 0540 771F      		rol r23
+ 1508               		2:
+ 1509 0542 8A95      		dec r24
+ 1510 0544 02F4      		brpl 1b
+ 1511 0546 CB01      		movw r24,r22
+ 1512 0548 8095      		com r24
+ 1513 054a 8423      		and r24,r20
+ 1514               	.L95:
+ 1515 054c 8EB9      		out 0xe,r24
+ 1516 054e 00C0      		rjmp .L90
+ 1517               	.L76:
+ 398:../../../src/platform/firefly3_usb/source/ulib.c ****                                 do { PORTF |= BM((pin & 0xF8) >> 3); } while(0);
+ 1519               	.LM118:
+ 1520 0550 2FB1      		in r18,0xf
+ 1521 0552 30E0      		ldi r19,0
+ 1522 0554 082E      		mov r0,r24
+ 1523 0556 00C0      		rjmp 2f
+ 1524               		1:
+ 1525 0558 3595      		asr r19
+ 1526 055a 2795      		ror r18
+ 1527               		2:
+ 1528 055c 0A94      		dec r0
+ 1529 055e 02F4      		brpl 1b
+ 399:../../../src/platform/firefly3_usb/source/ulib.c ****                         } else {
+ 1531               	.LM119:
+ 1532 0560 41B3      		in r20,0x11
+ 398:../../../src/platform/firefly3_usb/source/ulib.c ****                                 do { PORTF |= BM((pin & 0xF8) >> 3); } while(0);
+ 1534               	.LM120:
+ 1535 0562 20FD      		sbrc r18,0
+ 1536 0564 00C0      		rjmp .L83
+ 399:../../../src/platform/firefly3_usb/source/ulib.c ****                         } else {
+ 1538               	.LM121:
+ 1539 0566 21E0      		ldi r18,lo8(1)
+ 1540 0568 30E0      		ldi r19,0
+ 1541 056a B901      		movw r22,r18
+ 1542 056c 00C0      		rjmp 2f
+ 1543               		1:
+ 1544 056e 660F      		lsl r22
+ 1545 0570 771F      		rol r23
+ 1546               		2:
+ 1547 0572 8A95      		dec r24
+ 1548 0574 02F4      		brpl 1b
+ 1549 0576 CB01      		movw r24,r22
+ 1550 0578 842B      		or r24,r20
+ 1551 057a 00C0      		rjmp .L89
+ 1552               	.L83:
+ 401:../../../src/platform/firefly3_usb/source/ulib.c ****                         }
+ 1554               	.LM122:
+ 1555 057c 21E0      		ldi r18,lo8(1)
+ 1556 057e 30E0      		ldi r19,0
+ 1557 0580 B901      		movw r22,r18
+ 1558 0582 00C0      		rjmp 2f
+ 1559               		1:
+ 1560 0584 660F      		lsl r22
+ 1561 0586 771F      		rol r23
+ 1562               		2:
+ 1563 0588 8A95      		dec r24
+ 1564 058a 02F4      		brpl 1b
+ 1565 058c CB01      		movw r24,r22
+ 1566 058e 8095      		com r24
+ 1567 0590 8423      		and r24,r20
+ 1568               	.L89:
+ 1569 0592 81BB      		out 0x11,r24
+ 1570 0594 00C0      		rjmp .L90
+ 1571               	.L77:
+ 405:../../../src/platform/firefly3_usb/source/ulib.c ****                                 do { PORTG |= BM((pin & 0xF8) >> 3); } while(0);
+ 1573               	.LM123:
+ 1574 0596 22B3      		in r18,0x12
+ 1575 0598 30E0      		ldi r19,0
+ 1576 059a 082E      		mov r0,r24
+ 1577 059c 00C0      		rjmp 2f
+ 1578               		1:
+ 1579 059e 3595      		asr r19
+ 1580 05a0 2795      		ror r18
+ 1581               		2:
+ 1582 05a2 0A94      		dec r0
+ 1583 05a4 02F4      		brpl 1b
+ 406:../../../src/platform/firefly3_usb/source/ulib.c ****                         } else {
+ 1585               	.LM124:
+ 1586 05a6 44B3      		in r20,0x14
+ 405:../../../src/platform/firefly3_usb/source/ulib.c ****                                 do { PORTG |= BM((pin & 0xF8) >> 3); } while(0);
+ 1588               	.LM125:
+ 1589 05a8 20FD      		sbrc r18,0
+ 1590 05aa 00C0      		rjmp .L84
+ 406:../../../src/platform/firefly3_usb/source/ulib.c ****                         } else {
+ 1592               	.LM126:
+ 1593 05ac 21E0      		ldi r18,lo8(1)
+ 1594 05ae 30E0      		ldi r19,0
+ 1595 05b0 B901      		movw r22,r18
+ 1596 05b2 00C0      		rjmp 2f
+ 1597               		1:
+ 1598 05b4 660F      		lsl r22
+ 1599 05b6 771F      		rol r23
+ 1600               		2:
+ 1601 05b8 8A95      		dec r24
+ 1602 05ba 02F4      		brpl 1b
+ 1603 05bc CB01      		movw r24,r22
+ 1604 05be 842B      		or r24,r20
+ 1605 05c0 00C0      		rjmp .L87
+ 1606               	.L84:
+ 408:../../../src/platform/firefly3_usb/source/ulib.c ****                         }
+ 1608               	.LM127:
+ 1609 05c2 21E0      		ldi r18,lo8(1)
+ 1610 05c4 30E0      		ldi r19,0
+ 1611 05c6 B901      		movw r22,r18
+ 1612 05c8 00C0      		rjmp 2f
+ 1613               		1:
+ 1614 05ca 660F      		lsl r22
+ 1615 05cc 771F      		rol r23
+ 1616               		2:
+ 1617 05ce 8A95      		dec r24
+ 1618 05d0 02F4      		brpl 1b
+ 1619 05d2 CB01      		movw r24,r22
+ 1620 05d4 8095      		com r24
+ 1621 05d6 8423      		and r24,r20
+ 1622               	.L87:
+ 1623 05d8 84BB      		out 0x14,r24
+ 1624 05da 00C0      		rjmp .L90
+ 1625               	.L86:
+ 411:../../../src/platform/firefly3_usb/source/ulib.c ****         }
+ 1627               	.LM128:
+ 1628 05dc 8FEF      		ldi r24,lo8(-1)
+ 414:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 1630               	.LM129:
+ 1631 05de 0895      		ret
+ 1633               	.Lscope12:
+ 1635               		.stabd	78,0,0
+ 1639               	.global	nrk_gpio_direction
+ 1641               	nrk_gpio_direction:
+ 1642               		.stabd	46,0,0
+ 417:../../../src/platform/firefly3_usb/source/ulib.c ****         if (pin == NRK_INVALID_PIN_VAL) return -1;
+ 1644               	.LM130:
+ 1645               	.LFBB13:
+ 1646               	/* prologue: function */
+ 1647               	/* frame size = 0 */
+ 1648               	/* stack size = 0 */
+ 1649               	.L__stack_usage = 0
+ 418:../../../src/platform/firefly3_usb/source/ulib.c ****         if (pin_direction == NRK_PIN_INPUT) {
+ 1651               	.LM131:
+ 1652 05e0 8F3F      		cpi r24,lo8(-1)
+ 1653 05e2 01F4      		brne .+2
+ 1654 05e4 00C0      		rjmp .L117
+ 1655 05e6 E82F      		mov r30,r24
+ 1656 05e8 E770      		andi r30,lo8(7)
+ 420:../../../src/platform/firefly3_usb/source/ulib.c ****                         case NRK_PORTA:
+ 1658               	.LM132:
+ 1659 05ea 4E2F      		mov r20,r30
+ 1660 05ec 50E0      		ldi r21,0
+ 419:../../../src/platform/firefly3_usb/source/ulib.c ****                 switch (pin & 0x07) {
+ 1662               	.LM133:
+ 1663 05ee 6111      		cpse r22,__zero_reg__
+ 1664 05f0 00C0      		rjmp .L98
+ 420:../../../src/platform/firefly3_usb/source/ulib.c ****                         case NRK_PORTA:
+ 1666               	.LM134:
+ 1667 05f2 4730      		cpi r20,7
+ 1668 05f4 5105      		cpc r21,__zero_reg__
+ 1669 05f6 00F0      		brlo .+2
+ 1670 05f8 00C0      		rjmp .L117
+ 1671 05fa FA01      		movw r30,r20
+ 1672 05fc E050      		subi r30,lo8(-(gs(.L100)))
+ 1673 05fe F040      		sbci r31,hi8(-(gs(.L100)))
+ 1674 0600 8695      		lsr r24
+ 1675 0602 8695      		lsr r24
+ 1676 0604 8695      		lsr r24
+ 1677 0606 0C94 0000 		jmp __tablejump2__
+ 1678               		.section	.progmem.gcc_sw_table,"a",@progbits
+ 1679               		.p2align	1
+ 1680               	.L100:
+ 1681 0038 0000      		.word gs(.L99)
+ 1682 003a 0000      		.word gs(.L101)
+ 1683 003c 0000      		.word gs(.L102)
+ 1684 003e 0000      		.word gs(.L103)
+ 1685 0040 0000      		.word gs(.L104)
+ 1686 0042 0000      		.word gs(.L105)
+ 1687 0044 0000      		.word gs(.L106)
+ 1688               		.text
+ 1689               	.L99:
+ 422:../../../src/platform/firefly3_usb/source/ulib.c ****                                 //PORTA |= BM((pin & 0xF8) >> 3); 
+ 1691               	.LM135:
+ 1692 060a 41B1      		in r20,0x1
+ 1693 060c 21E0      		ldi r18,lo8(1)
+ 1694 060e 30E0      		ldi r19,0
+ 1695 0610 B901      		movw r22,r18
+ 1696 0612 00C0      		rjmp 2f
+ 1697               		1:
+ 1698 0614 660F      		lsl r22
+ 1699 0616 771F      		rol r23
+ 1700               		2:
+ 1701 0618 8A95      		dec r24
+ 1702 061a 02F4      		brpl 1b
+ 1703 061c CB01      		movw r24,r22
+ 1704 061e 8095      		com r24
+ 1705 0620 8423      		and r24,r20
+ 1706 0622 00C0      		rjmp .L121
+ 1707               	.L101:
+ 426:../../../src/platform/firefly3_usb/source/ulib.c ****                                 //PORTB |= BM((pin & 0xF8) >> 3); 
+ 1709               	.LM136:
+ 1710 0624 44B1      		in r20,0x4
+ 1711 0626 21E0      		ldi r18,lo8(1)
+ 1712 0628 30E0      		ldi r19,0
+ 1713 062a B901      		movw r22,r18
+ 1714 062c 00C0      		rjmp 2f
+ 1715               		1:
+ 1716 062e 660F      		lsl r22
+ 1717 0630 771F      		rol r23
+ 1718               		2:
+ 1719 0632 8A95      		dec r24
+ 1720 0634 02F4      		brpl 1b
+ 1721 0636 CB01      		movw r24,r22
+ 1722 0638 8095      		com r24
+ 1723 063a 8423      		and r24,r20
+ 1724 063c 00C0      		rjmp .L122
+ 1725               	.L102:
+ 430:../../../src/platform/firefly3_usb/source/ulib.c ****                                 //PORTC |= BM((pin & 0xF8) >> 3); 
+ 1727               	.LM137:
+ 1728 063e 47B1      		in r20,0x7
+ 1729 0640 21E0      		ldi r18,lo8(1)
+ 1730 0642 30E0      		ldi r19,0
+ 1731 0644 B901      		movw r22,r18
+ 1732 0646 00C0      		rjmp 2f
+ 1733               		1:
+ 1734 0648 660F      		lsl r22
+ 1735 064a 771F      		rol r23
+ 1736               		2:
+ 1737 064c 8A95      		dec r24
+ 1738 064e 02F4      		brpl 1b
+ 1739 0650 CB01      		movw r24,r22
+ 1740 0652 8095      		com r24
+ 1741 0654 8423      		and r24,r20
+ 1742 0656 00C0      		rjmp .L123
+ 1743               	.L103:
+ 434:../../../src/platform/firefly3_usb/source/ulib.c ****                                 //PORTD |= BM((pin & 0xF8) >> 3); 
+ 1745               	.LM138:
+ 1746 0658 4AB1      		in r20,0xa
+ 1747 065a 21E0      		ldi r18,lo8(1)
+ 1748 065c 30E0      		ldi r19,0
+ 1749 065e B901      		movw r22,r18
+ 1750 0660 00C0      		rjmp 2f
+ 1751               		1:
+ 1752 0662 660F      		lsl r22
+ 1753 0664 771F      		rol r23
+ 1754               		2:
+ 1755 0666 8A95      		dec r24
+ 1756 0668 02F4      		brpl 1b
+ 1757 066a CB01      		movw r24,r22
+ 1758 066c 8095      		com r24
+ 1759 066e 8423      		and r24,r20
+ 1760 0670 00C0      		rjmp .L124
+ 1761               	.L104:
+ 438:../../../src/platform/firefly3_usb/source/ulib.c ****                                 //PORTE |= BM((pin & 0xF8) >> 3); 
+ 1763               	.LM139:
+ 1764 0672 4DB1      		in r20,0xd
+ 1765 0674 21E0      		ldi r18,lo8(1)
+ 1766 0676 30E0      		ldi r19,0
+ 1767 0678 B901      		movw r22,r18
+ 1768 067a 00C0      		rjmp 2f
+ 1769               		1:
+ 1770 067c 660F      		lsl r22
+ 1771 067e 771F      		rol r23
+ 1772               		2:
+ 1773 0680 8A95      		dec r24
+ 1774 0682 02F4      		brpl 1b
+ 1775 0684 CB01      		movw r24,r22
+ 1776 0686 8095      		com r24
+ 1777 0688 8423      		and r24,r20
+ 1778 068a 00C0      		rjmp .L125
+ 1779               	.L105:
+ 442:../../../src/platform/firefly3_usb/source/ulib.c ****                                 //PORTF |= BM((pin & 0xF8) >> 3); 
+ 1781               	.LM140:
+ 1782 068c 40B3      		in r20,0x10
+ 1783 068e 21E0      		ldi r18,lo8(1)
+ 1784 0690 30E0      		ldi r19,0
+ 1785 0692 B901      		movw r22,r18
+ 1786 0694 00C0      		rjmp 2f
+ 1787               		1:
+ 1788 0696 660F      		lsl r22
+ 1789 0698 771F      		rol r23
+ 1790               		2:
+ 1791 069a 8A95      		dec r24
+ 1792 069c 02F4      		brpl 1b
+ 1793 069e CB01      		movw r24,r22
+ 1794 06a0 8095      		com r24
+ 1795 06a2 8423      		and r24,r20
+ 1796 06a4 00C0      		rjmp .L120
+ 1797               	.L106:
+ 446:../../../src/platform/firefly3_usb/source/ulib.c ****                                 //PORTG |= BM((pin & 0xF8) >> 3); 
+ 1799               	.LM141:
+ 1800 06a6 43B3      		in r20,0x13
+ 1801 06a8 21E0      		ldi r18,lo8(1)
+ 1802 06aa 30E0      		ldi r19,0
+ 1803 06ac B901      		movw r22,r18
+ 1804 06ae 00C0      		rjmp 2f
+ 1805               		1:
+ 1806 06b0 660F      		lsl r22
+ 1807 06b2 771F      		rol r23
+ 1808               		2:
+ 1809 06b4 8A95      		dec r24
+ 1810 06b6 02F4      		brpl 1b
+ 1811 06b8 CB01      		movw r24,r22
+ 1812 06ba 8095      		com r24
+ 1813 06bc 8423      		and r24,r20
+ 1814 06be 00C0      		rjmp .L119
+ 1815               	.L98:
+ 452:../../../src/platform/firefly3_usb/source/ulib.c ****                         case NRK_PORTA:
+ 1817               	.LM142:
+ 1818 06c0 4730      		cpi r20,7
+ 1819 06c2 5105      		cpc r21,__zero_reg__
+ 1820 06c4 00F0      		brlo .+2
+ 1821 06c6 00C0      		rjmp .L117
+ 1822 06c8 FA01      		movw r30,r20
+ 1823 06ca E050      		subi r30,lo8(-(gs(.L108)))
+ 1824 06cc F040      		sbci r31,hi8(-(gs(.L108)))
+ 1825 06ce 8695      		lsr r24
+ 1826 06d0 8695      		lsr r24
+ 1827 06d2 8695      		lsr r24
+ 1828 06d4 0C94 0000 		jmp __tablejump2__
+ 1829               		.section	.progmem.gcc_sw_table,"a",@progbits
+ 1830               		.p2align	1
+ 1831               	.L108:
+ 1832 0046 0000      		.word gs(.L107)
+ 1833 0048 0000      		.word gs(.L109)
+ 1834 004a 0000      		.word gs(.L110)
+ 1835 004c 0000      		.word gs(.L111)
+ 1836 004e 0000      		.word gs(.L112)
+ 1837 0050 0000      		.word gs(.L113)
+ 1838 0052 0000      		.word gs(.L114)
+ 1839               		.text
+ 1840               	.L107:
+ 454:../../../src/platform/firefly3_usb/source/ulib.c ****                         case NRK_PORTB:
+ 1842               	.LM143:
+ 1843 06d8 41B1      		in r20,0x1
+ 1844 06da 21E0      		ldi r18,lo8(1)
+ 1845 06dc 30E0      		ldi r19,0
+ 1846 06de B901      		movw r22,r18
+ 1847 06e0 00C0      		rjmp 2f
+ 1848               		1:
+ 1849 06e2 660F      		lsl r22
+ 1850 06e4 771F      		rol r23
+ 1851               		2:
+ 1852 06e6 8A95      		dec r24
+ 1853 06e8 02F4      		brpl 1b
+ 1854 06ea CB01      		movw r24,r22
+ 1855 06ec 842B      		or r24,r20
+ 1856               	.L121:
+ 1857 06ee 81B9      		out 0x1,r24
+ 1858 06f0 00C0      		rjmp .L118
+ 1859               	.L109:
+ 456:../../../src/platform/firefly3_usb/source/ulib.c ****                         case NRK_PORTC:
+ 1861               	.LM144:
+ 1862 06f2 44B1      		in r20,0x4
+ 1863 06f4 21E0      		ldi r18,lo8(1)
+ 1864 06f6 30E0      		ldi r19,0
+ 1865 06f8 B901      		movw r22,r18
+ 1866 06fa 00C0      		rjmp 2f
+ 1867               		1:
+ 1868 06fc 660F      		lsl r22
+ 1869 06fe 771F      		rol r23
+ 1870               		2:
+ 1871 0700 8A95      		dec r24
+ 1872 0702 02F4      		brpl 1b
+ 1873 0704 CB01      		movw r24,r22
+ 1874 0706 842B      		or r24,r20
+ 1875               	.L122:
+ 1876 0708 84B9      		out 0x4,r24
+ 1877 070a 00C0      		rjmp .L118
+ 1878               	.L110:
+ 458:../../../src/platform/firefly3_usb/source/ulib.c ****                         case NRK_PORTD:
+ 1880               	.LM145:
+ 1881 070c 47B1      		in r20,0x7
+ 1882 070e 21E0      		ldi r18,lo8(1)
+ 1883 0710 30E0      		ldi r19,0
+ 1884 0712 B901      		movw r22,r18
+ 1885 0714 00C0      		rjmp 2f
+ 1886               		1:
+ 1887 0716 660F      		lsl r22
+ 1888 0718 771F      		rol r23
+ 1889               		2:
+ 1890 071a 8A95      		dec r24
+ 1891 071c 02F4      		brpl 1b
+ 1892 071e CB01      		movw r24,r22
+ 1893 0720 842B      		or r24,r20
+ 1894               	.L123:
+ 1895 0722 87B9      		out 0x7,r24
+ 1896 0724 00C0      		rjmp .L118
+ 1897               	.L111:
+ 460:../../../src/platform/firefly3_usb/source/ulib.c ****                         case NRK_PORTE:
+ 1899               	.LM146:
+ 1900 0726 4AB1      		in r20,0xa
+ 1901 0728 21E0      		ldi r18,lo8(1)
+ 1902 072a 30E0      		ldi r19,0
+ 1903 072c B901      		movw r22,r18
+ 1904 072e 00C0      		rjmp 2f
+ 1905               		1:
+ 1906 0730 660F      		lsl r22
+ 1907 0732 771F      		rol r23
+ 1908               		2:
+ 1909 0734 8A95      		dec r24
+ 1910 0736 02F4      		brpl 1b
+ 1911 0738 CB01      		movw r24,r22
+ 1912 073a 842B      		or r24,r20
+ 1913               	.L124:
+ 1914 073c 8AB9      		out 0xa,r24
+ 1915 073e 00C0      		rjmp .L118
+ 1916               	.L112:
+ 462:../../../src/platform/firefly3_usb/source/ulib.c ****                         case NRK_PORTF:
+ 1918               	.LM147:
+ 1919 0740 4DB1      		in r20,0xd
+ 1920 0742 21E0      		ldi r18,lo8(1)
+ 1921 0744 30E0      		ldi r19,0
+ 1922 0746 B901      		movw r22,r18
+ 1923 0748 00C0      		rjmp 2f
+ 1924               		1:
+ 1925 074a 660F      		lsl r22
+ 1926 074c 771F      		rol r23
+ 1927               		2:
+ 1928 074e 8A95      		dec r24
+ 1929 0750 02F4      		brpl 1b
+ 1930 0752 CB01      		movw r24,r22
+ 1931 0754 842B      		or r24,r20
+ 1932               	.L125:
+ 1933 0756 8DB9      		out 0xd,r24
+ 1934 0758 00C0      		rjmp .L118
+ 1935               	.L113:
+ 464:../../../src/platform/firefly3_usb/source/ulib.c ****                         case NRK_PORTG:
+ 1937               	.LM148:
+ 1938 075a 40B3      		in r20,0x10
+ 1939 075c 21E0      		ldi r18,lo8(1)
+ 1940 075e 30E0      		ldi r19,0
+ 1941 0760 B901      		movw r22,r18
+ 1942 0762 00C0      		rjmp 2f
+ 1943               		1:
+ 1944 0764 660F      		lsl r22
+ 1945 0766 771F      		rol r23
+ 1946               		2:
+ 1947 0768 8A95      		dec r24
+ 1948 076a 02F4      		brpl 1b
+ 1949 076c CB01      		movw r24,r22
+ 1950 076e 842B      		or r24,r20
+ 1951               	.L120:
+ 1952 0770 80BB      		out 0x10,r24
+ 1953 0772 00C0      		rjmp .L118
+ 1954               	.L114:
+ 466:../../../src/platform/firefly3_usb/source/ulib.c ****                         default: return -1;
+ 1956               	.LM149:
+ 1957 0774 43B3      		in r20,0x13
+ 1958 0776 21E0      		ldi r18,lo8(1)
+ 1959 0778 30E0      		ldi r19,0
+ 1960 077a B901      		movw r22,r18
+ 1961 077c 00C0      		rjmp 2f
+ 1962               		1:
+ 1963 077e 660F      		lsl r22
+ 1964 0780 771F      		rol r23
+ 1965               		2:
+ 1966 0782 8A95      		dec r24
+ 1967 0784 02F4      		brpl 1b
+ 1968 0786 CB01      		movw r24,r22
+ 1969 0788 842B      		or r24,r20
+ 1970               	.L119:
+ 1971 078a 83BB      		out 0x13,r24
+ 1972               	.L118:
+ 470:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 1974               	.LM150:
+ 1975 078c 81E0      		ldi r24,lo8(1)
+ 466:../../../src/platform/firefly3_usb/source/ulib.c ****                         default: return -1;
+ 1977               	.LM151:
+ 1978 078e 0895      		ret
+ 1979               	.L117:
+ 467:../../../src/platform/firefly3_usb/source/ulib.c ****                 }
+ 1981               	.LM152:
+ 1982 0790 8FEF      		ldi r24,lo8(-1)
+ 471:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 1984               	.LM153:
+ 1985 0792 0895      		ret
+ 1987               	.Lscope13:
+ 1989               		.stabd	78,0,0
+ 1992               	.global	nrk_get_button
+ 1994               	nrk_get_button:
+ 1995               		.stabd	46,0,0
+ 474:../../../src/platform/firefly3_usb/source/ulib.c **** if(b==0) {
+ 1997               	.LM154:
+ 1998               	.LFBB14:
+ 1999               	/* prologue: function */
+ 2000               	/* frame size = 0 */
+ 2001               	/* stack size = 0 */
+ 2002               	.L__stack_usage = 0
+ 475:../../../src/platform/firefly3_usb/source/ulib.c **** 	 return( !(PINA & BM(BUTTON))); 
+ 2004               	.LM155:
+ 2005 0794 8111      		cpse r24,__zero_reg__
+ 2006 0796 00C0      		rjmp .L128
+ 476:../../../src/platform/firefly3_usb/source/ulib.c **** 	} 
+ 2008               	.LM156:
+ 2009 0798 80B1      		in r24,0
+ 2010 079a 8695      		lsr r24
+ 2011 079c 8170      		andi r24,1
+ 2012 079e 91E0      		ldi r25,lo8(1)
+ 2013 07a0 8927      		eor r24,r25
+ 2014 07a2 0895      		ret
+ 2015               	.L128:
+ 478:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 2017               	.LM157:
+ 2018 07a4 8FEF      		ldi r24,lo8(-1)
+ 479:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 2020               	.LM158:
+ 2021 07a6 0895      		ret
+ 2023               	.Lscope14:
+ 2025               		.stabd	78,0,0
+ 2028               	.global	nrk_led_toggle
+ 2030               	nrk_led_toggle:
+ 2031               		.stabd	46,0,0
+ 482:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==0) { nrk_gpio_toggle(NRK_LED_0); return 1; }
+ 2033               	.LM159:
+ 2034               	.LFBB15:
+ 2035               	/* prologue: function */
+ 2036               	/* frame size = 0 */
+ 2037               	/* stack size = 0 */
+ 2038               	.L__stack_usage = 0
+ 483:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==1) { nrk_gpio_toggle(NRK_LED_1); return 1; }
+ 2040               	.LM160:
+ 2041 07a8 0097      		sbiw r24,0
+ 2042 07aa 01F4      		brne .L130
+ 483:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==1) { nrk_gpio_toggle(NRK_LED_1); return 1; }
+ 2044               	.LM161:
+ 2045 07ac 83E2      		ldi r24,lo8(35)
+ 2046 07ae 00C0      		rjmp .L135
+ 2047               	.L130:
+ 484:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==2) { nrk_gpio_toggle(NRK_LED_2); return 1; }
+ 2049               	.LM162:
+ 2050 07b0 8130      		cpi r24,1
+ 2051 07b2 9105      		cpc r25,__zero_reg__
+ 2052 07b4 01F4      		brne .L132
+ 484:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==2) { nrk_gpio_toggle(NRK_LED_2); return 1; }
+ 2054               	.LM163:
+ 2055 07b6 8BE2      		ldi r24,lo8(43)
+ 2056 07b8 00C0      		rjmp .L135
+ 2057               	.L132:
+ 485:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==3) { nrk_gpio_toggle(NRK_LED_3); return 1; }
+ 2059               	.LM164:
+ 2060 07ba 8230      		cpi r24,2
+ 2061 07bc 9105      		cpc r25,__zero_reg__
+ 2062 07be 01F4      		brne .L133
+ 485:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==3) { nrk_gpio_toggle(NRK_LED_3); return 1; }
+ 2064               	.LM165:
+ 2065 07c0 83E3      		ldi r24,lo8(51)
+ 2066 07c2 00C0      		rjmp .L135
+ 2067               	.L133:
+ 486:../../../src/platform/firefly3_usb/source/ulib.c **** return -1;
+ 2069               	.LM166:
+ 2070 07c4 0397      		sbiw r24,3
+ 2071 07c6 01F4      		brne .L134
+ 486:../../../src/platform/firefly3_usb/source/ulib.c **** return -1;
+ 2073               	.LM167:
+ 2074 07c8 8BE3      		ldi r24,lo8(59)
+ 2075               	.L135:
+ 2076 07ca 0E94 0000 		call nrk_gpio_toggle
+ 2077 07ce 81E0      		ldi r24,lo8(1)
+ 2078 07d0 0895      		ret
+ 2079               	.L134:
+ 487:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 2081               	.LM168:
+ 2082 07d2 8FEF      		ldi r24,lo8(-1)
+ 488:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 2084               	.LM169:
+ 2085 07d4 0895      		ret
+ 2087               	.Lscope15:
+ 2089               		.stabd	78,0,0
+ 2092               	.global	nrk_led_clr
+ 2094               	nrk_led_clr:
+ 2095               		.stabd	46,0,0
+ 491:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==0) { nrk_gpio_set(NRK_LED_0); return 1; }
+ 2097               	.LM170:
+ 2098               	.LFBB16:
+ 2099               	/* prologue: function */
+ 2100               	/* frame size = 0 */
+ 2101               	/* stack size = 0 */
+ 2102               	.L__stack_usage = 0
+ 492:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==1) { nrk_gpio_set(NRK_LED_1); return 1; }
+ 2104               	.LM171:
+ 2105 07d6 0097      		sbiw r24,0
+ 2106 07d8 01F4      		brne .L137
+ 492:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==1) { nrk_gpio_set(NRK_LED_1); return 1; }
+ 2108               	.LM172:
+ 2109 07da 83E2      		ldi r24,lo8(35)
+ 2110 07dc 00C0      		rjmp .L142
+ 2111               	.L137:
+ 493:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==2) { nrk_gpio_set(NRK_LED_2); return 1; }
+ 2113               	.LM173:
+ 2114 07de 8130      		cpi r24,1
+ 2115 07e0 9105      		cpc r25,__zero_reg__
+ 2116 07e2 01F4      		brne .L139
+ 493:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==2) { nrk_gpio_set(NRK_LED_2); return 1; }
+ 2118               	.LM174:
+ 2119 07e4 8BE2      		ldi r24,lo8(43)
+ 2120 07e6 00C0      		rjmp .L142
+ 2121               	.L139:
+ 494:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==3) { nrk_gpio_set(NRK_LED_3); return 1; }
+ 2123               	.LM175:
+ 2124 07e8 8230      		cpi r24,2
+ 2125 07ea 9105      		cpc r25,__zero_reg__
+ 2126 07ec 01F4      		brne .L140
+ 494:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==3) { nrk_gpio_set(NRK_LED_3); return 1; }
+ 2128               	.LM176:
+ 2129 07ee 83E3      		ldi r24,lo8(51)
+ 2130 07f0 00C0      		rjmp .L142
+ 2131               	.L140:
+ 495:../../../src/platform/firefly3_usb/source/ulib.c **** return -1;
+ 2133               	.LM177:
+ 2134 07f2 0397      		sbiw r24,3
+ 2135 07f4 01F4      		brne .L141
+ 495:../../../src/platform/firefly3_usb/source/ulib.c **** return -1;
+ 2137               	.LM178:
+ 2138 07f6 8BE3      		ldi r24,lo8(59)
+ 2139               	.L142:
+ 2140 07f8 0E94 0000 		call nrk_gpio_set
+ 2141 07fc 81E0      		ldi r24,lo8(1)
+ 2142 07fe 0895      		ret
+ 2143               	.L141:
+ 496:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 2145               	.LM179:
+ 2146 0800 8FEF      		ldi r24,lo8(-1)
+ 497:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 2148               	.LM180:
+ 2149 0802 0895      		ret
+ 2151               	.Lscope16:
+ 2153               		.stabd	78,0,0
+ 2156               	.global	nrk_led_set
+ 2158               	nrk_led_set:
+ 2159               		.stabd	46,0,0
+ 500:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==0) { nrk_gpio_clr(NRK_LED_0); return 1; }
+ 2161               	.LM181:
+ 2162               	.LFBB17:
+ 2163               	/* prologue: function */
+ 2164               	/* frame size = 0 */
+ 2165               	/* stack size = 0 */
+ 2166               	.L__stack_usage = 0
+ 501:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==1) { nrk_gpio_clr(NRK_LED_1); return 1; }
+ 2168               	.LM182:
+ 2169 0804 0097      		sbiw r24,0
+ 2170 0806 01F4      		brne .L144
+ 501:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==1) { nrk_gpio_clr(NRK_LED_1); return 1; }
+ 2172               	.LM183:
+ 2173 0808 83E2      		ldi r24,lo8(35)
+ 2174 080a 00C0      		rjmp .L149
+ 2175               	.L144:
+ 502:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==2) { nrk_gpio_clr(NRK_LED_2); return 1; }
+ 2177               	.LM184:
+ 2178 080c 8130      		cpi r24,1
+ 2179 080e 9105      		cpc r25,__zero_reg__
+ 2180 0810 01F4      		brne .L146
+ 502:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==2) { nrk_gpio_clr(NRK_LED_2); return 1; }
+ 2182               	.LM185:
+ 2183 0812 8BE2      		ldi r24,lo8(43)
+ 2184 0814 00C0      		rjmp .L149
+ 2185               	.L146:
+ 503:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==3) { nrk_gpio_clr(NRK_LED_3); return 1; }
+ 2187               	.LM186:
+ 2188 0816 8230      		cpi r24,2
+ 2189 0818 9105      		cpc r25,__zero_reg__
+ 2190 081a 01F4      		brne .L147
+ 503:../../../src/platform/firefly3_usb/source/ulib.c **** if(led==3) { nrk_gpio_clr(NRK_LED_3); return 1; }
+ 2192               	.LM187:
+ 2193 081c 83E3      		ldi r24,lo8(51)
+ 2194 081e 00C0      		rjmp .L149
+ 2195               	.L147:
+ 504:../../../src/platform/firefly3_usb/source/ulib.c **** return -1;
+ 2197               	.LM188:
+ 2198 0820 0397      		sbiw r24,3
+ 2199 0822 01F4      		brne .L148
+ 504:../../../src/platform/firefly3_usb/source/ulib.c **** return -1;
+ 2201               	.LM189:
+ 2202 0824 8BE3      		ldi r24,lo8(59)
+ 2203               	.L149:
+ 2204 0826 0E94 0000 		call nrk_gpio_clr
+ 2205 082a 81E0      		ldi r24,lo8(1)
+ 2206 082c 0895      		ret
+ 2207               	.L148:
+ 505:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 2209               	.LM190:
+ 2210 082e 8FEF      		ldi r24,lo8(-1)
+ 506:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 2212               	.LM191:
+ 2213 0830 0895      		ret
+ 2215               	.Lscope17:
+ 2217               		.stabd	78,0,0
+ 2220               	.global	nrk_gpio_pullups
+ 2222               	nrk_gpio_pullups:
+ 2223               		.stabd	46,0,0
+ 509:../../../src/platform/firefly3_usb/source/ulib.c **** if(enable) MCUCR &= ~BM(PUD);
+ 2225               	.LM192:
+ 2226               	.LFBB18:
+ 2227               	/* prologue: function */
+ 2228               	/* frame size = 0 */
+ 2229               	/* stack size = 0 */
+ 2230               	.L__stack_usage = 0
+ 510:../../../src/platform/firefly3_usb/source/ulib.c **** else MCUCR |= BM(PUD);
+ 2232               	.LM193:
+ 2233 0832 8823      		tst r24
+ 2234 0834 01F0      		breq .L151
+ 510:../../../src/platform/firefly3_usb/source/ulib.c **** else MCUCR |= BM(PUD);
+ 2236               	.LM194:
+ 2237 0836 85B7      		in r24,0x35
+ 2238 0838 8F7E      		andi r24,lo8(-17)
+ 2239 083a 00C0      		rjmp .L153
+ 2240               	.L151:
+ 511:../../../src/platform/firefly3_usb/source/ulib.c **** return NRK_OK;
+ 2242               	.LM195:
+ 2243 083c 85B7      		in r24,0x35
+ 2244 083e 8061      		ori r24,lo8(16)
+ 2245               	.L153:
+ 2246 0840 85BF      		out 0x35,r24
+ 513:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 2248               	.LM196:
+ 2249 0842 81E0      		ldi r24,lo8(1)
+ 2250 0844 0895      		ret
+ 2252               	.Lscope18:
+ 2254               		.stabd	78,0,0
+ 2257               	.global	putc1
+ 2259               	putc1:
+ 2260               		.stabd	46,0,0
+ 541:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 542:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 543:../../../src/platform/firefly3_usb/source/ulib.c **** void putc1(char x)
+ 544:../../../src/platform/firefly3_usb/source/ulib.c **** {
+ 2262               	.LM197:
+ 2263               	.LFBB19:
+ 2264               	/* prologue: function */
+ 2265               	/* frame size = 0 */
+ 2266               	/* stack size = 0 */
+ 2267               	.L__stack_usage = 0
+ 2268               	.L155:
+ 545:../../../src/platform/firefly3_usb/source/ulib.c ****      UART1_WAIT_AND_SEND(x);
+ 2270               	.LM198:
+ 2271 0846 9091 C800 		lds r25,200
+ 2272 084a 95FF      		sbrs r25,5
+ 2273 084c 00C0      		rjmp .L155
+ 2275               	.LM199:
+ 2276 084e 8093 CE00 		sts 206,r24
+ 2277 0852 0895      		ret
+ 2279               	.Lscope19:
+ 2281               		.stabd	78,0,0
+ 2283               	.global	setup_uart0
+ 2285               	setup_uart0:
+ 2286               		.stabd	46,0,0
+ 546:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 547:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 548:../../../src/platform/firefly3_usb/source/ulib.c **** void setup_uart0(uint16_t baudrate)
+ 549:../../../src/platform/firefly3_usb/source/ulib.c **** {
+ 2288               	.LM200:
+ 2289               	.LFBB20:
+ 2290               	/* prologue: function */
+ 2291               	/* frame size = 0 */
+ 2292               	/* stack size = 0 */
+ 2293               	.L__stack_usage = 0
+ 550:../../../src/platform/firefly3_usb/source/ulib.c **** //INIT_UART1( UART_BAUDRATE_115K2, (UART_OPT_NO_PARITY|UART_OPT_8_BITS_PER_CHAR|UART_OPT_ONE_STOP_B
+ 551:../../../src/platform/firefly3_usb/source/ulib.c **** INIT_UART0( baudrate, (UART_OPT_NO_PARITY|UART_OPT_8_BITS_PER_CHAR|UART_OPT_ONE_STOP_BIT));
+ 2295               	.LM201:
+ 2296 0854 9093 C500 		sts 197,r25
+ 2297 0858 8093 C400 		sts 196,r24
+ 2298 085c 86E0      		ldi r24,lo8(6)
+ 2299 085e 8093 C200 		sts 194,r24
+ 2300 0862 E1EC      		ldi r30,lo8(-63)
+ 2301 0864 F0E0      		ldi r31,0
+ 2302 0866 8081      		ld r24,Z
+ 2303 0868 8B7F      		andi r24,lo8(-5)
+ 2304 086a 8083      		st Z,r24
+ 2305 086c A0EC      		ldi r26,lo8(-64)
+ 2306 086e B0E0      		ldi r27,0
+ 2307 0870 8C91      		ld r24,X
+ 2308 0872 8260      		ori r24,lo8(2)
+ 2309 0874 8C93      		st X,r24
+ 552:../../../src/platform/firefly3_usb/source/ulib.c **** ENABLE_UART0();
+ 2311               	.LM202:
+ 2312 0876 8081      		ld r24,Z
+ 2313 0878 8861      		ori r24,lo8(24)
+ 2314 087a 8083      		st Z,r24
+ 2315 087c 0895      		ret
+ 2317               	.Lscope20:
+ 2319               		.stabd	78,0,0
+ 2321               	.global	setup_uart1
+ 2323               	setup_uart1:
+ 2324               		.stabd	46,0,0
+ 553:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 554:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 555:../../../src/platform/firefly3_usb/source/ulib.c **** void setup_uart1(uint16_t baudrate)
+ 556:../../../src/platform/firefly3_usb/source/ulib.c **** {
+ 2326               	.LM203:
+ 2327               	.LFBB21:
+ 2328               	/* prologue: function */
+ 2329               	/* frame size = 0 */
+ 2330               	/* stack size = 0 */
+ 2331               	.L__stack_usage = 0
+ 557:../../../src/platform/firefly3_usb/source/ulib.c **** //INIT_UART1( UART_BAUDRATE_115K2, (UART_OPT_NO_PARITY|UART_OPT_8_BITS_PER_CHAR|UART_OPT_ONE_STOP_B
+ 558:../../../src/platform/firefly3_usb/source/ulib.c **** INIT_UART1( baudrate, (UART_OPT_NO_PARITY|UART_OPT_8_BITS_PER_CHAR|UART_OPT_ONE_STOP_BIT));
+ 2333               	.LM204:
+ 2334 087e 9093 CD00 		sts 205,r25
+ 2335 0882 8093 CC00 		sts 204,r24
+ 2336 0886 86E0      		ldi r24,lo8(6)
+ 2337 0888 8093 CA00 		sts 202,r24
+ 2338 088c E9EC      		ldi r30,lo8(-55)
+ 2339 088e F0E0      		ldi r31,0
+ 2340 0890 8081      		ld r24,Z
+ 2341 0892 8B7F      		andi r24,lo8(-5)
+ 2342 0894 8083      		st Z,r24
+ 2343 0896 A8EC      		ldi r26,lo8(-56)
+ 2344 0898 B0E0      		ldi r27,0
+ 2345 089a 8C91      		ld r24,X
+ 2346 089c 8260      		ori r24,lo8(2)
+ 2347 089e 8C93      		st X,r24
+ 559:../../../src/platform/firefly3_usb/source/ulib.c **** ENABLE_UART1();
+ 2349               	.LM205:
+ 2350 08a0 8081      		ld r24,Z
+ 2351 08a2 8861      		ori r24,lo8(24)
+ 2352 08a4 8083      		st Z,r24
+ 2353 08a6 0895      		ret
+ 2355               	.Lscope21:
+ 2357               		.stabd	78,0,0
+ 2360               	.global	nrk_setup_uart
+ 2362               	nrk_setup_uart:
+ 2363               		.stabd	46,0,0
+ 560:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 561:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 562:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 563:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 564:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 565:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 566:../../../src/platform/firefly3_usb/source/ulib.c **** /**
+ 567:../../../src/platform/firefly3_usb/source/ulib.c ****  * nrk_setup_uart()
+ 568:../../../src/platform/firefly3_usb/source/ulib.c ****  *
+ 569:../../../src/platform/firefly3_usb/source/ulib.c ****  * Sets a default uart for a given platform and
+ 570:../../../src/platform/firefly3_usb/source/ulib.c ****  * direct stdin and stdout to that port.
+ 571:../../../src/platform/firefly3_usb/source/ulib.c ****  *
+ 572:../../../src/platform/firefly3_usb/source/ulib.c ****  * More advanced UART usage will require manually
+ 573:../../../src/platform/firefly3_usb/source/ulib.c ****  * setting parameters.
+ 574:../../../src/platform/firefly3_usb/source/ulib.c ****  */
+ 575:../../../src/platform/firefly3_usb/source/ulib.c **** void nrk_setup_uart(uint16_t baudrate)
+ 576:../../../src/platform/firefly3_usb/source/ulib.c **** {
+ 2365               	.LM206:
+ 2366               	.LFBB22:
+ 2367               	/* prologue: function */
+ 2368               	/* frame size = 0 */
+ 2369               	/* stack size = 0 */
+ 2370               	.L__stack_usage = 0
+ 577:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 578:../../../src/platform/firefly3_usb/source/ulib.c **** //  setup_uart1(baudrate);
+ 579:../../../src/platform/firefly3_usb/source/ulib.c **** //  stdout = fdevopen( (void *)putc1, (void *)getc1);
+ 580:../../../src/platform/firefly3_usb/source/ulib.c **** //  stdin = fdevopen( (void *)putc1, (void *)getc1);
+ 581:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 582:../../../src/platform/firefly3_usb/source/ulib.c ****   setup_uart0(baudrate);
+ 2372               	.LM207:
+ 2373 08a8 0E94 0000 		call setup_uart0
+ 583:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 584:../../../src/platform/firefly3_usb/source/ulib.c ****   stdout = fdevopen( (void *)putc0, (void *)getc0);
+ 2375               	.LM208:
+ 2376 08ac 60E0      		ldi r22,lo8(gs(getc0))
+ 2377 08ae 70E0      		ldi r23,hi8(gs(getc0))
+ 2378 08b0 80E0      		ldi r24,lo8(gs(putc0))
+ 2379 08b2 90E0      		ldi r25,hi8(gs(putc0))
+ 2380 08b4 0E94 0000 		call fdevopen
+ 2381 08b8 9093 0000 		sts __iob+2+1,r25
+ 2382 08bc 8093 0000 		sts __iob+2,r24
+ 585:../../../src/platform/firefly3_usb/source/ulib.c ****   stdin = fdevopen( (void *)putc0, (void *)getc0);
+ 2384               	.LM209:
+ 2385 08c0 60E0      		ldi r22,lo8(gs(getc0))
+ 2386 08c2 70E0      		ldi r23,hi8(gs(getc0))
+ 2387 08c4 80E0      		ldi r24,lo8(gs(putc0))
+ 2388 08c6 90E0      		ldi r25,hi8(gs(putc0))
+ 2389 08c8 0E94 0000 		call fdevopen
+ 2390 08cc 9093 0000 		sts __iob+1,r25
+ 2391 08d0 8093 0000 		sts __iob,r24
+ 586:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 587:../../../src/platform/firefly3_usb/source/ulib.c **** #ifdef NRK_UART_BUF
+ 588:../../../src/platform/firefly3_usb/source/ulib.c ****    uart_rx_signal=nrk_signal_create();
+ 2393               	.LM210:
+ 2394 08d4 0E94 0000 		call nrk_signal_create
+ 2395 08d8 8093 0000 		sts uart_rx_signal,r24
+ 589:../../../src/platform/firefly3_usb/source/ulib.c ****    if(uart_rx_signal==NRK_ERROR) nrk_error_add(NRK_SIGNAL_CREATE_ERROR);
+ 2397               	.LM211:
+ 2398 08dc 8F3F      		cpi r24,lo8(-1)
+ 2399 08de 01F4      		brne .L161
+ 2401               	.LM212:
+ 2402 08e0 8EE0      		ldi r24,lo8(14)
+ 2403 08e2 0E94 0000 		call nrk_error_add
+ 2404               	.L161:
+ 590:../../../src/platform/firefly3_usb/source/ulib.c ****    uart_rx_buf_start=0;
+ 2406               	.LM213:
+ 2407 08e6 1092 0000 		sts uart_rx_buf_start+1,__zero_reg__
+ 2408 08ea 1092 0000 		sts uart_rx_buf_start,__zero_reg__
+ 591:../../../src/platform/firefly3_usb/source/ulib.c ****    uart_rx_buf_end=0;
+ 2410               	.LM214:
+ 2411 08ee 1092 0000 		sts uart_rx_buf_end+1,__zero_reg__
+ 2412 08f2 1092 0000 		sts uart_rx_buf_end,__zero_reg__
+ 592:../../../src/platform/firefly3_usb/source/ulib.c ****    ENABLE_UART0_RX_INT();
+ 2414               	.LM215:
+ 2415 08f6 8091 C100 		lds r24,193
+ 2416 08fa 8068      		ori r24,lo8(-128)
+ 2417 08fc 8093 C100 		sts 193,r24
+ 2418 0900 0895      		ret
+ 2420               	.Lscope22:
+ 2422               		.stabd	78,0,0
+ 2424               	.global	getc1
+ 2426               	getc1:
+ 2427               		.stabd	46,0,0
+ 593:../../../src/platform/firefly3_usb/source/ulib.c **** #endif
+ 594:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 595:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 596:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 597:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 598:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 599:../../../src/platform/firefly3_usb/source/ulib.c **** /* get one char from uart */
+ 600:../../../src/platform/firefly3_usb/source/ulib.c **** //char getc0(void){
+ 601:../../../src/platform/firefly3_usb/source/ulib.c **** //	unsigned char tmp;
+ 602:../../../src/platform/firefly3_usb/source/ulib.c **** //	UART0_WAIT_AND_RECEIVE(tmp);
+ 603:../../../src/platform/firefly3_usb/source/ulib.c **** //	return tmp;
+ 604:../../../src/platform/firefly3_usb/source/ulib.c **** //}
+ 605:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 606:../../../src/platform/firefly3_usb/source/ulib.c **** char getc1()
+ 607:../../../src/platform/firefly3_usb/source/ulib.c **** {
+ 2429               	.LM216:
+ 2430               	.LFBB23:
+ 2431               	/* prologue: function */
+ 2432               	/* frame size = 0 */
+ 2433               	/* stack size = 0 */
+ 2434               	.L__stack_usage = 0
+ 2435               	.L163:
+ 608:../../../src/platform/firefly3_usb/source/ulib.c **** char tmp;
+ 609:../../../src/platform/firefly3_usb/source/ulib.c **** 
+ 610:../../../src/platform/firefly3_usb/source/ulib.c **** UART1_WAIT_AND_RECEIVE(tmp);
+ 2437               	.LM217:
+ 2438 0902 8091 C800 		lds r24,200
+ 2439 0906 87FF      		sbrs r24,7
+ 2440 0908 00C0      		rjmp .L163
+ 2442               	.LM218:
+ 2443 090a 8091 C800 		lds r24,200
+ 2444 090e 8F77      		andi r24,lo8(127)
+ 2445 0910 8093 C800 		sts 200,r24
+ 2446 0914 8091 CE00 		lds r24,206
+ 611:../../../src/platform/firefly3_usb/source/ulib.c **** return tmp;
+ 612:../../../src/platform/firefly3_usb/source/ulib.c **** }
+ 2448               	.LM219:
+ 2449 0918 0895      		ret
+ 2454               	.Lscope23:
+ 2456               		.stabd	78,0,0
+ 2457               		.section	.progmem.data,"a",@progbits
+ 2460               	__c.3125:
+ 2461 0000 7561 7274 		.string	"uart rx sig failed\r\n"
+ 2461      2072 7820 
+ 2461      7369 6720 
+ 2461      6661 696C 
+ 2461      6564 0D0A 
+ 2462               	.global	NRK_ADC_INPUT_7
+ 2463               		.section	.rodata
+ 2466               	NRK_ADC_INPUT_7:
+ 2467 0000 3D        		.byte	61
+ 2468               	.global	NRK_ADC_INPUT_6
+ 2471               	NRK_ADC_INPUT_6:
+ 2472 0001 35        		.byte	53
+ 2473               	.global	NRK_ADC_INPUT_5
+ 2476               	NRK_ADC_INPUT_5:
+ 2477 0002 2D        		.byte	45
+ 2478               	.global	NRK_ADC_INPUT_4
+ 2481               	NRK_ADC_INPUT_4:
+ 2482 0003 25        		.byte	37
+ 2483               	.global	NRK_ADC_INPUT_3
+ 2486               	NRK_ADC_INPUT_3:
+ 2487 0004 1D        		.byte	29
+ 2488               	.global	NRK_ADC_INPUT_2
+ 2491               	NRK_ADC_INPUT_2:
+ 2492 0005 15        		.byte	21
+ 2493               	.global	NRK_ADC_INPUT_1
+ 2496               	NRK_ADC_INPUT_1:
+ 2497 0006 0D        		.byte	13
+ 2498               	.global	NRK_ADC_INPUT_0
+ 2501               	NRK_ADC_INPUT_0:
+ 2502 0007 05        		.byte	5
+ 2503               	.global	NRK_PORTF_7
+ 2506               	NRK_PORTF_7:
+ 2507 0008 3D        		.byte	61
+ 2508               	.global	NRK_PORTF_6
+ 2511               	NRK_PORTF_6:
+ 2512 0009 35        		.byte	53
+ 2513               	.global	NRK_PORTF_5
+ 2516               	NRK_PORTF_5:
+ 2517 000a 2D        		.byte	45
+ 2518               	.global	NRK_PORTF_4
+ 2521               	NRK_PORTF_4:
+ 2522 000b 25        		.byte	37
+ 2523               	.global	NRK_PORTF_3
+ 2526               	NRK_PORTF_3:
+ 2527 000c 1D        		.byte	29
+ 2528               	.global	NRK_PORTF_2
+ 2531               	NRK_PORTF_2:
+ 2532 000d 15        		.byte	21
+ 2533               	.global	NRK_PORTF_1
+ 2536               	NRK_PORTF_1:
+ 2537 000e 0D        		.byte	13
+ 2538               	.global	NRK_PORTF_0
+ 2541               	NRK_PORTF_0:
+ 2542 000f 05        		.byte	5
+ 2543               	.global	NRK_PORTG_5
+ 2546               	NRK_PORTG_5:
+ 2547 0010 2E        		.byte	46
+ 2548               	.global	NRK_PORTG_4
+ 2551               	NRK_PORTG_4:
+ 2552 0011 26        		.byte	38
+ 2553               	.global	NRK_PORTG_3
+ 2556               	NRK_PORTG_3:
+ 2557 0012 1E        		.byte	30
+ 2558               	.global	NRK_PORTG_2
+ 2561               	NRK_PORTG_2:
+ 2562 0013 16        		.byte	22
+ 2563               	.global	NRK_PORTG_1
+ 2566               	NRK_PORTG_1:
+ 2567 0014 0E        		.byte	14
+ 2568               	.global	NRK_PORTG_0
+ 2571               	NRK_PORTG_0:
+ 2572 0015 06        		.byte	6
+ 2573               	.global	NRK_ANT_1
+ 2576               	NRK_ANT_1:
+ 2577 0016 FF        		.byte	-1
+ 2578               	.global	NRK_ANT_0
+ 2581               	NRK_ANT_0:
+ 2582 0017 FF        		.byte	-1
+ 2583               	.global	NRK_UART0_TXD
+ 2586               	NRK_UART0_TXD:
+ 2587 0018 0C        		.byte	12
+ 2588               	.global	NRK_UART0_RXD
+ 2591               	NRK_UART0_RXD:
+ 2592 0019 04        		.byte	4
+ 2593               	.global	NRK_PORTE_7
+ 2596               	NRK_PORTE_7:
+ 2597 001a 3C        		.byte	60
+ 2598               	.global	NRK_PORTE_6
+ 2601               	NRK_PORTE_6:
+ 2602 001b 34        		.byte	52
+ 2603               	.global	NRK_PORTE_5
+ 2606               	NRK_PORTE_5:
+ 2607 001c 2C        		.byte	44
+ 2608               	.global	NRK_PORTE_4
+ 2611               	NRK_PORTE_4:
+ 2612 001d 24        		.byte	36
+ 2613               	.global	NRK_PORTE_3
+ 2616               	NRK_PORTE_3:
+ 2617 001e 1C        		.byte	28
+ 2618               	.global	NRK_PORTE_2
+ 2621               	NRK_PORTE_2:
+ 2622 001f 14        		.byte	20
+ 2623               	.global	NRK_PORTE_1
+ 2626               	NRK_PORTE_1:
+ 2627 0020 0C        		.byte	12
+ 2628               	.global	NRK_PORTE_0
+ 2631               	NRK_PORTE_0:
+ 2632 0021 04        		.byte	4
+ 2633               	.global	NRK_LED_3
+ 2636               	NRK_LED_3:
+ 2637 0022 3B        		.byte	59
+ 2638               	.global	NRK_LED_2
+ 2641               	NRK_LED_2:
+ 2642 0023 33        		.byte	51
+ 2643               	.global	NRK_LED_1
+ 2646               	NRK_LED_1:
+ 2647 0024 2B        		.byte	43
+ 2648               	.global	NRK_LED_0
+ 2651               	NRK_LED_0:
+ 2652 0025 23        		.byte	35
+ 2653               	.global	NRK_UART1_TXD
+ 2656               	NRK_UART1_TXD:
+ 2657 0026 1B        		.byte	27
+ 2658               	.global	NRK_UART1_RXD
+ 2661               	NRK_UART1_RXD:
+ 2662 0027 13        		.byte	19
+ 2663               	.global	NRK_BUTTON
+ 2666               	NRK_BUTTON:
+ 2667 0028 0B        		.byte	11
+ 2668               	.global	NRK_PORTD_7
+ 2671               	NRK_PORTD_7:
+ 2672 0029 3B        		.byte	59
+ 2673               	.global	NRK_PORTD_6
+ 2676               	NRK_PORTD_6:
+ 2677 002a 33        		.byte	51
+ 2678               	.global	NRK_PORTD_5
+ 2681               	NRK_PORTD_5:
+ 2682 002b 2B        		.byte	43
+ 2683               	.global	NRK_PORTD_4
+ 2686               	NRK_PORTD_4:
+ 2687 002c 23        		.byte	35
+ 2688               	.global	NRK_PORTD_3
+ 2691               	NRK_PORTD_3:
+ 2692 002d 1B        		.byte	27
+ 2693               	.global	NRK_PORTD_2
+ 2696               	NRK_PORTD_2:
+ 2697 002e 13        		.byte	19
+ 2698               	.global	NRK_PORTD_1
+ 2701               	NRK_PORTD_1:
+ 2702 002f 0B        		.byte	11
+ 2703               	.global	NRK_PORTD_0
+ 2706               	NRK_PORTD_0:
+ 2707 0030 03        		.byte	3
+ 2708               	.global	NRK_PORTC_7
+ 2711               	NRK_PORTC_7:
+ 2712 0031 FF        		.byte	-1
+ 2713               	.global	NRK_PORTC_6
+ 2716               	NRK_PORTC_6:
+ 2717 0032 FF        		.byte	-1
+ 2718               	.global	NRK_PORTC_5
+ 2721               	NRK_PORTC_5:
+ 2722 0033 FF        		.byte	-1
+ 2723               	.global	NRK_PORTC_4
+ 2726               	NRK_PORTC_4:
+ 2727 0034 FF        		.byte	-1
+ 2728               	.global	NRK_PORTC_3
+ 2731               	NRK_PORTC_3:
+ 2732 0035 FF        		.byte	-1
+ 2733               	.global	NRK_PORTC_2
+ 2736               	NRK_PORTC_2:
+ 2737 0036 FF        		.byte	-1
+ 2738               	.global	NRK_PORTC_1
+ 2741               	NRK_PORTC_1:
+ 2742 0037 FF        		.byte	-1
+ 2743               	.global	NRK_PORTC_0
+ 2746               	NRK_PORTC_0:
+ 2747 0038 FF        		.byte	-1
+ 2748               	.global	NRK_PORTB_7
+ 2751               	NRK_PORTB_7:
+ 2752 0039 39        		.byte	57
+ 2753               	.global	NRK_PORTB_6
+ 2756               	NRK_PORTB_6:
+ 2757 003a 31        		.byte	49
+ 2758               	.global	NRK_PORTB_5
+ 2761               	NRK_PORTB_5:
+ 2762 003b 29        		.byte	41
+ 2763               	.global	NRK_PORTB_4
+ 2766               	NRK_PORTB_4:
+ 2767 003c 21        		.byte	33
+ 2768               	.global	NRK_PORTB_3
+ 2771               	NRK_PORTB_3:
+ 2772 003d 19        		.byte	25
+ 2773               	.global	NRK_PORTB_2
+ 2776               	NRK_PORTB_2:
+ 2777 003e 11        		.byte	17
+ 2778               	.global	NRK_PORTB_1
+ 2781               	NRK_PORTB_1:
+ 2782 003f 09        		.byte	9
+ 2783               	.global	NRK_PORTB_0
+ 2786               	NRK_PORTB_0:
+ 2787 0040 01        		.byte	1
+ 2788               	.global	NRK_MISO
+ 2791               	NRK_MISO:
+ 2792 0041 19        		.byte	25
+ 2793               	.global	NRK_MOSI
+ 2796               	NRK_MOSI:
+ 2797 0042 11        		.byte	17
+ 2798               	.global	NRK_SCK
+ 2801               	NRK_SCK:
+ 2802 0043 09        		.byte	9
+ 2803               	.global	NRK_SPI_SS
+ 2806               	NRK_SPI_SS:
+ 2807 0044 01        		.byte	1
+ 2808               	.global	NRK_DEBUG_3
+ 2811               	NRK_DEBUG_3:
+ 2812 0045 FF        		.byte	-1
+ 2813               	.global	NRK_DEBUG_2
+ 2816               	NRK_DEBUG_2:
+ 2817 0046 FF        		.byte	-1
+ 2818               	.global	NRK_DEBUG_1
+ 2821               	NRK_DEBUG_1:
+ 2822 0047 FF        		.byte	-1
+ 2823               	.global	NRK_DEBUG_0
+ 2826               	NRK_DEBUG_0:
+ 2827 0048 FF        		.byte	-1
+ 2828               	.global	NRK_PORTA_7
+ 2831               	NRK_PORTA_7:
+ 2832 0049 FF        		.byte	-1
+ 2833               	.global	NRK_PORTA_6
+ 2836               	NRK_PORTA_6:
+ 2837 004a FF        		.byte	-1
+ 2838               	.global	NRK_PORTA_5
+ 2841               	NRK_PORTA_5:
+ 2842 004b FF        		.byte	-1
+ 2843               	.global	NRK_PORTA_4
+ 2846               	NRK_PORTA_4:
+ 2847 004c FF        		.byte	-1
+ 2848               	.global	NRK_PORTA_3
+ 2851               	NRK_PORTA_3:
+ 2852 004d FF        		.byte	-1
+ 2853               	.global	NRK_PORTA_2
+ 2856               	NRK_PORTA_2:
+ 2857 004e FF        		.byte	-1
+ 2858               	.global	NRK_PORTA_1
+ 2861               	NRK_PORTA_1:
+ 2862 004f FF        		.byte	-1
+ 2863               	.global	NRK_PORTA_0
+ 2866               	NRK_PORTA_0:
+ 2867 0050 FF        		.byte	-1
+ 2868               		.local	uart_rx_signal
+ 2869               		.comm	uart_rx_signal,1,1
+ 2870               		.local	uart_rx_buf
+ 2871               		.comm	uart_rx_buf,128,1
+ 2872               		.local	uart_rx_buf_end
+ 2873               		.comm	uart_rx_buf_end,2,1
+ 2874               		.local	uart_rx_buf_start
+ 2875               		.comm	uart_rx_buf_start,2,1
+ 2876               		.comm	error_num,1,1
+ 2877               		.comm	error_task,1,1
+ 2878               		.comm	_nrk_signal_list,4,1
+ 2967               		.text
+ 2969               	.Letext0:
+ 2970               		.ident	"GCC: (GNU) 4.9.1"
+ 2971               	.global __do_copy_data
+ 2972               	.global __do_clear_bss
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 ulib.c
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:5      *ABS*:000000000000003b __RAMPZ__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:6      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:7      *ABS*:0000000000000001 __zero_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:307    .text:0000000000000000 putc0
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:336    .text:0000000000000018 __vector_25
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2871   .bss:0000000000000081 uart_rx_buf_end
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2869   .bss:0000000000000001 uart_rx_buf
+                             .bss:0000000000000000 uart_rx_signal
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:451    .text:00000000000000be nrk_uart_data_ready
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2873   .bss:0000000000000083 uart_rx_buf_start
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:502    .text:00000000000000f0 nrk_uart_rx_signal_get
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:533    .text:0000000000000104 nrk_kprintf
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:586    .text:000000000000012e getc0
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2460   .progmem.data:0000000000000000 __c.3125
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:677    .text:00000000000001a8 PORT_INIT
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:713    .text:00000000000001bc nrk_setup_ports
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:733    .text:00000000000001c0 nrk_gpio_set
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:922    .text:00000000000002a2 nrk_gpio_clr
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:1099   .text:0000000000000376 nrk_gpio_get
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:1201   .text:00000000000003ca nrk_gpio_toggle
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:1641   .text:00000000000005e0 nrk_gpio_direction
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:1994   .text:0000000000000794 nrk_get_button
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2030   .text:00000000000007a8 nrk_led_toggle
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2094   .text:00000000000007d6 nrk_led_clr
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2158   .text:0000000000000804 nrk_led_set
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2222   .text:0000000000000832 nrk_gpio_pullups
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2259   .text:0000000000000846 putc1
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2285   .text:0000000000000854 setup_uart0
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2323   .text:000000000000087e setup_uart1
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2362   .text:00000000000008a8 nrk_setup_uart
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2426   .text:0000000000000902 getc1
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2466   .rodata:0000000000000000 NRK_ADC_INPUT_7
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2471   .rodata:0000000000000001 NRK_ADC_INPUT_6
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2476   .rodata:0000000000000002 NRK_ADC_INPUT_5
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2481   .rodata:0000000000000003 NRK_ADC_INPUT_4
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2486   .rodata:0000000000000004 NRK_ADC_INPUT_3
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2491   .rodata:0000000000000005 NRK_ADC_INPUT_2
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2496   .rodata:0000000000000006 NRK_ADC_INPUT_1
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2501   .rodata:0000000000000007 NRK_ADC_INPUT_0
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2506   .rodata:0000000000000008 NRK_PORTF_7
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2511   .rodata:0000000000000009 NRK_PORTF_6
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2516   .rodata:000000000000000a NRK_PORTF_5
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2521   .rodata:000000000000000b NRK_PORTF_4
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2526   .rodata:000000000000000c NRK_PORTF_3
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2531   .rodata:000000000000000d NRK_PORTF_2
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2536   .rodata:000000000000000e NRK_PORTF_1
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2541   .rodata:000000000000000f NRK_PORTF_0
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2546   .rodata:0000000000000010 NRK_PORTG_5
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2551   .rodata:0000000000000011 NRK_PORTG_4
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2556   .rodata:0000000000000012 NRK_PORTG_3
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2561   .rodata:0000000000000013 NRK_PORTG_2
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2566   .rodata:0000000000000014 NRK_PORTG_1
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2571   .rodata:0000000000000015 NRK_PORTG_0
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2576   .rodata:0000000000000016 NRK_ANT_1
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2581   .rodata:0000000000000017 NRK_ANT_0
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2586   .rodata:0000000000000018 NRK_UART0_TXD
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2591   .rodata:0000000000000019 NRK_UART0_RXD
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2596   .rodata:000000000000001a NRK_PORTE_7
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2601   .rodata:000000000000001b NRK_PORTE_6
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2606   .rodata:000000000000001c NRK_PORTE_5
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2611   .rodata:000000000000001d NRK_PORTE_4
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2616   .rodata:000000000000001e NRK_PORTE_3
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2621   .rodata:000000000000001f NRK_PORTE_2
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2626   .rodata:0000000000000020 NRK_PORTE_1
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2631   .rodata:0000000000000021 NRK_PORTE_0
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2636   .rodata:0000000000000022 NRK_LED_3
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2641   .rodata:0000000000000023 NRK_LED_2
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2646   .rodata:0000000000000024 NRK_LED_1
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2651   .rodata:0000000000000025 NRK_LED_0
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2656   .rodata:0000000000000026 NRK_UART1_TXD
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2661   .rodata:0000000000000027 NRK_UART1_RXD
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2666   .rodata:0000000000000028 NRK_BUTTON
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2671   .rodata:0000000000000029 NRK_PORTD_7
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2676   .rodata:000000000000002a NRK_PORTD_6
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2681   .rodata:000000000000002b NRK_PORTD_5
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2686   .rodata:000000000000002c NRK_PORTD_4
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2691   .rodata:000000000000002d NRK_PORTD_3
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2696   .rodata:000000000000002e NRK_PORTD_2
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2701   .rodata:000000000000002f NRK_PORTD_1
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2706   .rodata:0000000000000030 NRK_PORTD_0
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2711   .rodata:0000000000000031 NRK_PORTC_7
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2716   .rodata:0000000000000032 NRK_PORTC_6
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2721   .rodata:0000000000000033 NRK_PORTC_5
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2726   .rodata:0000000000000034 NRK_PORTC_4
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2731   .rodata:0000000000000035 NRK_PORTC_3
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2736   .rodata:0000000000000036 NRK_PORTC_2
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2741   .rodata:0000000000000037 NRK_PORTC_1
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2746   .rodata:0000000000000038 NRK_PORTC_0
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2751   .rodata:0000000000000039 NRK_PORTB_7
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2756   .rodata:000000000000003a NRK_PORTB_6
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2761   .rodata:000000000000003b NRK_PORTB_5
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2766   .rodata:000000000000003c NRK_PORTB_4
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2771   .rodata:000000000000003d NRK_PORTB_3
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2776   .rodata:000000000000003e NRK_PORTB_2
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2781   .rodata:000000000000003f NRK_PORTB_1
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2786   .rodata:0000000000000040 NRK_PORTB_0
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2791   .rodata:0000000000000041 NRK_MISO
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2796   .rodata:0000000000000042 NRK_MOSI
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2801   .rodata:0000000000000043 NRK_SCK
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2806   .rodata:0000000000000044 NRK_SPI_SS
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2811   .rodata:0000000000000045 NRK_DEBUG_3
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2816   .rodata:0000000000000046 NRK_DEBUG_2
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2821   .rodata:0000000000000047 NRK_DEBUG_1
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2826   .rodata:0000000000000048 NRK_DEBUG_0
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2831   .rodata:0000000000000049 NRK_PORTA_7
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2836   .rodata:000000000000004a NRK_PORTA_6
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2841   .rodata:000000000000004b NRK_PORTA_5
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2846   .rodata:000000000000004c NRK_PORTA_4
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2851   .rodata:000000000000004d NRK_PORTA_3
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2856   .rodata:000000000000004e NRK_PORTA_2
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2861   .rodata:000000000000004f NRK_PORTA_1
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccVfM0eE.s:2866   .rodata:0000000000000050 NRK_PORTA_0
+                            *COM*:0000000000000001 error_num
+                            *COM*:0000000000000001 error_task
+                            *COM*:0000000000000004 _nrk_signal_list
+
+UNDEFINED SYMBOLS
+nrk_int_disable
+nrk_event_signal
+nrk_int_enable
+nrk_error_add
+__iob
+fputc
+nrk_signal_register
+nrk_event_wait
+__tablejump2__
+fdevopen
+nrk_signal_create
+__do_copy_data
+__do_clear_bss

@@ -1,0 +1,129 @@
+   1               		.file	"nrk_eeprom.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__RAMPZ__ = 0x3b
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+  10               		.text
+  11               	.Ltext0:
+ 148               	.global	read_eeprom_mac_address
+ 150               	read_eeprom_mac_address:
+ 151               		.stabd	46,0,0
+   1:../../../src/platform/firefly2_1/source/nrk_eeprom.c **** #include <nrk_eeprom.h>
+   2:../../../src/platform/firefly2_1/source/nrk_eeprom.c **** #include <avr/eeprom.h>
+   3:../../../src/platform/firefly2_1/source/nrk_eeprom.c **** #include <nrk_error.h>
+   4:../../../src/platform/firefly2_1/source/nrk_eeprom.c **** 
+   5:../../../src/platform/firefly2_1/source/nrk_eeprom.c **** 
+   6:../../../src/platform/firefly2_1/source/nrk_eeprom.c **** int8_t read_eeprom_mac_address(uint32_t *address)
+   7:../../../src/platform/firefly2_1/source/nrk_eeprom.c **** {
+ 153               	.LM0:
+ 154               	.LFBB1:
+ 155 0000 EF92      		push r14
+ 156 0002 FF92      		push r15
+ 157 0004 0F93      		push r16
+ 158 0006 1F93      		push r17
+ 159 0008 CF93      		push r28
+ 160 000a DF93      		push r29
+ 161               	/* prologue: function */
+ 162               	/* frame size = 0 */
+ 163               	/* stack size = 6 */
+ 164               	.L__stack_usage = 6
+ 165 000c 7C01      		movw r14,r24
+   8:../../../src/platform/firefly2_1/source/nrk_eeprom.c **** uint8_t checksum,ct;
+   9:../../../src/platform/firefly2_1/source/nrk_eeprom.c **** uint8_t *buf;
+  10:../../../src/platform/firefly2_1/source/nrk_eeprom.c **** buf=address;
+  11:../../../src/platform/firefly2_1/source/nrk_eeprom.c **** checksum=buf[0]+buf[1]+buf[2]+buf[3];
+  12:../../../src/platform/firefly2_1/source/nrk_eeprom.c **** buf[3]=eeprom_read_byte ((uint8_t*)0);
+ 167               	.LM1:
+ 168 000e 80E0      		ldi r24,0
+ 169 0010 90E0      		ldi r25,0
+ 170 0012 0E94 0000 		call __eerd_byte_m128
+ 171 0016 182F      		mov r17,r24
+ 172 0018 F701      		movw r30,r14
+ 173 001a 8383      		std Z+3,r24
+  13:../../../src/platform/firefly2_1/source/nrk_eeprom.c **** buf[2]=eeprom_read_byte ((uint8_t*)1);
+ 175               	.LM2:
+ 176 001c 81E0      		ldi r24,lo8(1)
+ 177 001e 90E0      		ldi r25,0
+ 178 0020 0E94 0000 		call __eerd_byte_m128
+ 179 0024 082F      		mov r16,r24
+ 180 0026 F701      		movw r30,r14
+ 181 0028 8283      		std Z+2,r24
+  14:../../../src/platform/firefly2_1/source/nrk_eeprom.c **** buf[1]=eeprom_read_byte ((uint8_t*)2);
+ 183               	.LM3:
+ 184 002a 82E0      		ldi r24,lo8(2)
+ 185 002c 90E0      		ldi r25,0
+ 186 002e 0E94 0000 		call __eerd_byte_m128
+ 187 0032 D82F      		mov r29,r24
+ 188 0034 F701      		movw r30,r14
+ 189 0036 8183      		std Z+1,r24
+  15:../../../src/platform/firefly2_1/source/nrk_eeprom.c **** buf[0]=eeprom_read_byte ((uint8_t*)3);
+ 191               	.LM4:
+ 192 0038 83E0      		ldi r24,lo8(3)
+ 193 003a 90E0      		ldi r25,0
+ 194 003c 0E94 0000 		call __eerd_byte_m128
+ 195 0040 C82F      		mov r28,r24
+ 196 0042 F701      		movw r30,r14
+ 197 0044 8083      		st Z,r24
+  16:../../../src/platform/firefly2_1/source/nrk_eeprom.c **** checksum=eeprom_read_byte ((uint8_t*)4);
+ 199               	.LM5:
+ 200 0046 84E0      		ldi r24,lo8(4)
+ 201 0048 90E0      		ldi r25,0
+ 202 004a 0E94 0000 		call __eerd_byte_m128
+ 203 004e 100F      		add r17,r16
+ 204 0050 D10F      		add r29,r17
+  17:../../../src/platform/firefly2_1/source/nrk_eeprom.c **** ct=buf[0];
+  18:../../../src/platform/firefly2_1/source/nrk_eeprom.c **** ct+=buf[1];
+  19:../../../src/platform/firefly2_1/source/nrk_eeprom.c **** ct+=buf[2];
+  20:../../../src/platform/firefly2_1/source/nrk_eeprom.c **** ct+=buf[3];
+ 206               	.LM6:
+ 207 0052 CD0F      		add r28,r29
+  21:../../../src/platform/firefly2_1/source/nrk_eeprom.c **** if(checksum==ct) return NRK_OK;
+ 209               	.LM7:
+ 210 0054 8C17      		cp r24,r28
+ 211 0056 01F0      		breq .L3
+  22:../../../src/platform/firefly2_1/source/nrk_eeprom.c **** 
+  23:../../../src/platform/firefly2_1/source/nrk_eeprom.c **** return NRK_ERROR;
+ 213               	.LM8:
+ 214 0058 8FEF      		ldi r24,lo8(-1)
+ 215 005a 00C0      		rjmp .L2
+ 216               	.L3:
+  21:../../../src/platform/firefly2_1/source/nrk_eeprom.c **** if(checksum==ct) return NRK_OK;
+ 218               	.LM9:
+ 219 005c 81E0      		ldi r24,lo8(1)
+ 220               	.L2:
+ 221               	/* epilogue start */
+  24:../../../src/platform/firefly2_1/source/nrk_eeprom.c **** }
+ 223               	.LM10:
+ 224 005e DF91      		pop r29
+ 225 0060 CF91      		pop r28
+ 226 0062 1F91      		pop r17
+ 227 0064 0F91      		pop r16
+ 228 0066 FF90      		pop r15
+ 229 0068 EF90      		pop r14
+ 230 006a 0895      		ret
+ 232               	.Lscope1:
+ 234               		.stabd	78,0,0
+ 235               		.comm	error_num,1,1
+ 236               		.comm	error_task,1,1
+ 237               		.comm	_nrk_signal_list,4,1
+ 242               	.Letext0:
+ 243               		.ident	"GCC: (GNU) 4.9.1"
+ 244               	.global __do_clear_bss
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 nrk_eeprom.c
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccEuGtnl.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccEuGtnl.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccEuGtnl.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccEuGtnl.s:5      *ABS*:000000000000003b __RAMPZ__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccEuGtnl.s:6      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccEuGtnl.s:7      *ABS*:0000000000000001 __zero_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccEuGtnl.s:150    .text:0000000000000000 read_eeprom_mac_address
+                            *COM*:0000000000000001 error_num
+                            *COM*:0000000000000001 error_task
+                            *COM*:0000000000000004 _nrk_signal_list
+
+UNDEFINED SYMBOLS
+__eerd_byte_m128
+__do_clear_bss

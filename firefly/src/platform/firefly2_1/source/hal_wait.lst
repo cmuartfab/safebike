@@ -1,0 +1,139 @@
+   1               		.file	"hal_wait.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__RAMPZ__ = 0x3b
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+  10               		.text
+  11               	.Ltext0:
+ 141               	.global	halWait
+ 143               	halWait:
+ 144               		.stabd	46,0,0
+   1:../../../src/platform/firefly2_1/source/hal_wait.c **** /**************************************************************************************************
+   2:../../../src/platform/firefly2_1/source/hal_wait.c ****  *                                                                                                 
+   3:../../../src/platform/firefly2_1/source/hal_wait.c ****  *        **********                                                                               
+   4:../../../src/platform/firefly2_1/source/hal_wait.c ****  *       ************                                                                              
+   5:../../../src/platform/firefly2_1/source/hal_wait.c ****  *      ***        ***                                                                             
+   6:../../../src/platform/firefly2_1/source/hal_wait.c ****  *      ***   +++   ***                                                                            
+   7:../../../src/platform/firefly2_1/source/hal_wait.c ****  *      ***   + +   ***                                                                            
+   8:../../../src/platform/firefly2_1/source/hal_wait.c ****  *      ***   +                        CHIPCON HARDWARE ABSTRACTION LIBRARY FOR THE CC2420         
+   9:../../../src/platform/firefly2_1/source/hal_wait.c ****  *      ***   + +   ***                                   Idle looping                             
+  10:../../../src/platform/firefly2_1/source/hal_wait.c ****  *      ***   +++   ***                                                                            
+  11:../../../src/platform/firefly2_1/source/hal_wait.c ****  *      ***        ***                                                                             
+  12:../../../src/platform/firefly2_1/source/hal_wait.c ****  *       ************                                                                              
+  13:../../../src/platform/firefly2_1/source/hal_wait.c ****  *        **********                                                                               
+  14:../../../src/platform/firefly2_1/source/hal_wait.c ****  *                                                                                                 
+  15:../../../src/platform/firefly2_1/source/hal_wait.c ****  **************************************************************************************************
+  16:../../../src/platform/firefly2_1/source/hal_wait.c ****  * The Chipcon Hardware Abstraction Library is a collection of functions, macros and constants, whi
+  17:../../../src/platform/firefly2_1/source/hal_wait.c ****  * can be used to ease access to the hardware on the CC2420 and the target microcontroller.        
+  18:../../../src/platform/firefly2_1/source/hal_wait.c ****  *                                                                                                 
+  19:../../../src/platform/firefly2_1/source/hal_wait.c ****  * This function contains a function for idle looping with millisecond resolution.                 
+  20:../../../src/platform/firefly2_1/source/hal_wait.c ****  **************************************************************************************************
+  21:../../../src/platform/firefly2_1/source/hal_wait.c ****  * Compiler: AVR-GCC                                                                               
+  22:../../../src/platform/firefly2_1/source/hal_wait.c ****  * Target platform: CC2420DB, CC2420 + any ATMEGA MCU                                              
+  23:../../../src/platform/firefly2_1/source/hal_wait.c ****  **************************************************************************************************
+  24:../../../src/platform/firefly2_1/source/hal_wait.c ****  * Revision history:                                                                               
+  25:../../../src/platform/firefly2_1/source/hal_wait.c ****  * $Log: hal_wait.c,v $
+  26:../../../src/platform/firefly2_1/source/hal_wait.c ****  * Revision 1.1  2006/09/03 03:02:10  agr
+  27:../../../src/platform/firefly2_1/source/hal_wait.c ****  * added firefly2 platform dir
+  28:../../../src/platform/firefly2_1/source/hal_wait.c ****  *
+  29:../../../src/platform/firefly2_1/source/hal_wait.c ****  * Revision 1.2  2006/08/17 21:19:48  agr
+  30:../../../src/platform/firefly2_1/source/hal_wait.c ****  * Refactored Code... This was huge... MAJOR Problems could happen...
+  31:../../../src/platform/firefly2_1/source/hal_wait.c ****  *
+  32:../../../src/platform/firefly2_1/source/hal_wait.c ****  * Revision 1.1.1.1  2006/06/29 16:16:15  agr
+  33:../../../src/platform/firefly2_1/source/hal_wait.c ****  * Import from Source
+  34:../../../src/platform/firefly2_1/source/hal_wait.c ****  *
+  35:../../../src/platform/firefly2_1/source/hal_wait.c ****  * Revision 1.1.1.1  2006/02/02 04:41:48  agr
+  36:../../../src/platform/firefly2_1/source/hal_wait.c ****  * Import From Source
+  37:../../../src/platform/firefly2_1/source/hal_wait.c ****  *
+  38:../../../src/platform/firefly2_1/source/hal_wait.c ****  * Revision 1.1  2005/03/25 07:32:22  rtml
+  39:../../../src/platform/firefly2_1/source/hal_wait.c ****  * Added updated rf library with sample app.
+  40:../../../src/platform/firefly2_1/source/hal_wait.c ****  *
+  41:../../../src/platform/firefly2_1/source/hal_wait.c ****  * Revision 1.1.1.1  2005/03/23 18:50:51  agr
+  42:../../../src/platform/firefly2_1/source/hal_wait.c ****  * Import wispernet
+  43:../../../src/platform/firefly2_1/source/hal_wait.c ****  *
+  44:../../../src/platform/firefly2_1/source/hal_wait.c ****  * Revision 1.2  2004/03/30 14:59:50  mbr
+  45:../../../src/platform/firefly2_1/source/hal_wait.c ****  * Release for web
+  46:../../../src/platform/firefly2_1/source/hal_wait.c ****  *  
+  47:../../../src/platform/firefly2_1/source/hal_wait.c ****  *
+  48:../../../src/platform/firefly2_1/source/hal_wait.c ****  *
+  49:../../../src/platform/firefly2_1/source/hal_wait.c ****  **************************************************************************************************
+  50:../../../src/platform/firefly2_1/source/hal_wait.c **** #include <include.h>
+  51:../../../src/platform/firefly2_1/source/hal_wait.c **** 
+  52:../../../src/platform/firefly2_1/source/hal_wait.c **** 
+  53:../../../src/platform/firefly2_1/source/hal_wait.c **** //-------------------------------------------------------------------------------------------------
+  54:../../../src/platform/firefly2_1/source/hal_wait.c **** //	void halWait(uint16_t timeout)
+  55:../../../src/platform/firefly2_1/source/hal_wait.c **** //
+  56:../../../src/platform/firefly2_1/source/hal_wait.c **** //	DESCRIPTION:
+  57:../../../src/platform/firefly2_1/source/hal_wait.c **** //		Runs an idle loop for [timeout] microseconds.
+  58:../../../src/platform/firefly2_1/source/hal_wait.c **** //
+  59:../../../src/platform/firefly2_1/source/hal_wait.c **** //  ARGUMENTS:
+  60:../../../src/platform/firefly2_1/source/hal_wait.c **** //      uint16_t timeout
+  61:../../../src/platform/firefly2_1/source/hal_wait.c **** //          The timeout in microseconds
+  62:../../../src/platform/firefly2_1/source/hal_wait.c **** //-------------------------------------------------------------------------------------------------
+  63:../../../src/platform/firefly2_1/source/hal_wait.c **** void halWait(uint16_t timeout) {
+ 146               	.LM0:
+ 147               	.LFBB1:
+ 148               	/* prologue: function */
+ 149               	/* frame size = 0 */
+ 150               	/* stack size = 0 */
+ 151               	.L__stack_usage = 0
+ 152               	.L2:
+  64:../../../src/platform/firefly2_1/source/hal_wait.c **** 
+  65:../../../src/platform/firefly2_1/source/hal_wait.c ****     // This sequence uses exactly 8 clock cycle for each round
+  66:../../../src/platform/firefly2_1/source/hal_wait.c ****     do {
+  67:../../../src/platform/firefly2_1/source/hal_wait.c ****         NOP();
+ 154               	.LM1:
+ 155               	/* #APP */
+ 156               	 ;  67 "../../../src/platform/firefly2_1/source/hal_wait.c" 1
+ 157 0000 0000      		nop
+ 158               		
+ 159               	 ;  0 "" 2
+  68:../../../src/platform/firefly2_1/source/hal_wait.c ****         NOP();
+ 161               	.LM2:
+ 162               	 ;  68 "../../../src/platform/firefly2_1/source/hal_wait.c" 1
+ 163 0002 0000      		nop
+ 164               		
+ 165               	 ;  0 "" 2
+  69:../../../src/platform/firefly2_1/source/hal_wait.c ****         NOP();
+ 167               	.LM3:
+ 168               	 ;  69 "../../../src/platform/firefly2_1/source/hal_wait.c" 1
+ 169 0004 0000      		nop
+ 170               		
+ 171               	 ;  0 "" 2
+  70:../../../src/platform/firefly2_1/source/hal_wait.c ****         NOP();
+ 173               	.LM4:
+ 174               	 ;  70 "../../../src/platform/firefly2_1/source/hal_wait.c" 1
+ 175 0006 0000      		nop
+ 176               		
+ 177               	 ;  0 "" 2
+  71:../../../src/platform/firefly2_1/source/hal_wait.c ****     } while (--timeout);
+ 179               	.LM5:
+ 180               	/* #NOAPP */
+ 181 0008 0197      		sbiw r24,1
+ 182 000a 01F4      		brne .L2
+ 183               	/* epilogue start */
+  72:../../../src/platform/firefly2_1/source/hal_wait.c **** 
+  73:../../../src/platform/firefly2_1/source/hal_wait.c **** } // halWait
+ 185               	.LM6:
+ 186 000c 0895      		ret
+ 188               	.Lscope1:
+ 190               		.stabd	78,0,0
+ 191               		.comm	_nrk_signal_list,4,1
+ 194               	.Letext0:
+ 195               		.ident	"GCC: (GNU) 4.9.1"
+ 196               	.global __do_clear_bss
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 hal_wait.c
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccIwKnDo.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccIwKnDo.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccIwKnDo.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccIwKnDo.s:5      *ABS*:000000000000003b __RAMPZ__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccIwKnDo.s:6      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccIwKnDo.s:7      *ABS*:0000000000000001 __zero_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccIwKnDo.s:143    .text:0000000000000000 halWait
+                            *COM*:0000000000000004 _nrk_signal_list
+
+UNDEFINED SYMBOLS
+__do_clear_bss

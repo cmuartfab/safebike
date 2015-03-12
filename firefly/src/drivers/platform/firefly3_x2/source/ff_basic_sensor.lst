@@ -1,0 +1,2287 @@
+   1               		.file	"ff_basic_sensor.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__RAMPZ__ = 0x3b
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+  10               		.text
+  11               	.Ltext0:
+ 331               	.global	open
+ 333               	open:
+ 334               		.stabd	46,0,0
+   1:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** /******************************************************************************
+   2:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****  *  Nano-RK, a real-time operating system for sensor networks.
+   3:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****  *  Copyright (C) 2007, Real-Time and Multimedia Lab, Carnegie Mellon University
+   4:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****  *  All rights reserved.
+   5:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****  *
+   6:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****  *  This is the Open Source Version of Nano-RK included as part of a Dual
+   7:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****  *  Licensing Model. If you are unsure which license to use please refer to:
+   8:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****  *  http://www.nanork.org/nano-RK/wiki/Licensing
+   9:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****  *
+  10:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****  *  This program is free software: you can redistribute it and/or modify
+  11:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****  *  it under the terms of the GNU General Public License as published by
+  12:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****  *  the Free Software Foundation, version 2.0 of the License.
+  13:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****  *
+  14:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****  *  This program is distributed in the hope that it will be useful,
+  15:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  16:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  17:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****  *  GNU General Public License for more details.
+  18:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****  *
+  19:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****  *  You should have received a copy of the GNU General Public License
+  20:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  21:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****  *
+  22:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****  *  Contributing Authors (specific to this file):
+  23:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****  *  Anthony Rowe
+  24:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****  *  Zane Starr
+  25:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****  *  Andrew Jameson
+  26:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****  *******************************************************************************/
+  27:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+  28:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+  29:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #include <nrk_driver_list.h>
+  30:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #include <nrk_driver.h>
+  31:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #include <ff_basic_sensor.h>
+  32:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #include <include.h>
+  33:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #include <stdio.h>
+  34:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #include <ulib.h>
+  35:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #include <nrk_error.h>
+  36:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #include <nrk.h>
+  37:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #include <stdint.h>
+  38:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #include <basic_rf.h>
+  39:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #include <nrk_timer.h>
+  40:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #include <twi_base_calls.h>
+  41:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+  42:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+  43:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #include <math.h>
+  44:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+  45:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #define DEBUG 0
+  46:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #define BOSCH_EEPROM_ADDRESS 0xEE
+  47:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+  48:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+  49:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** int16_t eeprom_values[11]; /* Used to store the calibration values read from the Bosch's EEPROM */
+  50:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+  51:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** // These eeprom register values are from the Bosch datasheet
+  52:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #define AC1 (int16_t)eeprom_values[0]
+  53:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #define AC2 (int16_t)eeprom_values[1]
+  54:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #define AC3 (int16_t)eeprom_values[2]
+  55:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #define AC4 (uint16_t)eeprom_values[3]
+  56:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #define AC5 (uint16_t)eeprom_values[4]
+  57:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #define AC6 (uint16_t)eeprom_values[5]
+  58:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #define B1 (int16_t)eeprom_values[6]
+  59:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #define B2 (int16_t)eeprom_values[7]
+  60:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #define MB (int16_t)eeprom_values[8]
+  61:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #define MC (int16_t)eeprom_values[9]
+  62:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #define MD (int16_t)eeprom_values[10]
+  63:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+  64:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #define TEMP_BASE_REGISTER 0xF6 /* The address of the initial place to read from for temperature */
+  65:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #define PRESS_BASE_REGISTER 0xF6 /* The address of the initial place to read from for pressure */
+  66:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+  67:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #define ADC_STARTUP_DELAY  1000
+  68:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #define ADC_SETUP_DELAY  200
+  69:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+  70:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** int32_t UT, UP; /* The uncompensated temperature and pressure values */
+  71:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+  72:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** // Temp variables used in converting from the raw values to the finished product
+  73:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** int32_t X1, X2, X3, B3, B5, B6, P, T;
+  74:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** uint32_t B4, B7;
+  75:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+  76:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** //uint16_t h_cnt;
+  77:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** uint8_t h_cnt;
+  78:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** uint8_t channel;
+  79:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** uint8_t is_open;
+  80:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+  81:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** // VREF is set to VCC by default
+  82:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #define ADC_INIT() \
+  83:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     do { \
+  84:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	ADCSRA = BM(ADPS0) | BM(ADPS1); \
+  85:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** } while (0)
+  86:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	//ADMUX = BM(REFS0);  \
+  87:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+  88:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #define ADC_VREF_VCC() \
+  89:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****    do { \
+  90:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** } while(0)
+  91:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+  92:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	//ADMUX &= ~(BM(REFS1));  \
+  93:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	//ADMUX |= BM(REFS0);  \
+  94:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+  95:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #define ADC_VREF_1_1() \
+  96:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****    do { \
+  97:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	ADMUX &= ~(BM(REFS0));  \
+  98:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	ADMUX |= BM(REFS1);  \
+  99:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** } while(0)
+ 100:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 101:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 102:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #define ADC_VREF_2_56() \
+ 103:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****    do { \
+ 104:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	ADMUX |= BM(REFS1) | BM(REFS0);  \
+ 105:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** } while(0)
+ 106:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 107:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #define ADC_SET_CHANNEL(channel) do { ADMUX &= ~0x1F; ADMUX |= (ADMUX & ~0x1F) | (channel); } while
+ 108:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 109:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** // Enables/disables the ADC
+ 110:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #define ADC_ENABLE() do { ADCSRA |= BM(ADEN); } while (0)
+ 111:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #define ADC_DISABLE() do { ADCSRA &= ~BM(ADEN); } while (0)
+ 112:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 113:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #define ADC_SAMPLE_SINGLE() \
+ 114:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     do { \
+ 115:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** ADCSRA |= BM(ADSC); \
+ 116:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** while (!(ADCSRA & 0x10)); \
+ 117:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** } while(0)
+ 118:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 119:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** // Macros for obtaining the latest sample value
+ 120:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #define ADC_GET_SAMPLE_10(x) \
+ 121:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** do { \
+ 122:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** x =  ADCL; \
+ 123:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** x |= ADCH << 8; \
+ 124:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** } while (0)
+ 125:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 126:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** #define ADC_GET_SAMPLE_8(x) \
+ 127:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** do { \
+ 128:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** x = ((uint8_t) ADCL) >> 2; \
+ 129:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** x |= ((int8_t) ADCH) << 6; \
+ 130:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** } while (0)
+ 131:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 132:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 133:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 134:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** int8_t dev_manager_ff3_sensors(uint8_t action, uint8_t opt, uint8_t *buffer, uint8_t size) {
+ 135:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 136:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     switch (action) {
+ 137:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 138:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         /**
+ 139:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****          * Note that currently the functions below initialize both the ADC as
+ 140:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****          * well as the I2C methods of getting inputs, even though only one of
+ 141:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****          * them will be used at any given time.
+ 142:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****          */
+ 143:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 144:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         case INIT:
+ 145:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             return init(action, opt, buffer, size);
+ 146:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 147:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         case OPEN:
+ 148:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             return open(action, opt, buffer, size);
+ 149:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 150:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         case READ:
+ 151:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             return read(action, opt, buffer, size);
+ 152:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 153:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         case CLOSE:
+ 154:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             return close(action, opt, buffer, size);
+ 155:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 156:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         case GET_STATUS:
+ 157:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             return get_status(action, opt, buffer, size);
+ 158:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 159:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         case SET_STATUS:
+ 160:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             return set_status(action, opt, buffer, size);
+ 161:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 162:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         default:
+ 163:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             nrk_kernel_error_add(NRK_DEVICE_DRIVER, 0);
+ 164:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             return 0;
+ 165:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     }
+ 166:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** }
+ 167:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 168:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** int8_t init(uint8_t action, uint8_t opt, uint8_t *buffer, uint8_t size) {
+ 169:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         // For handling the ADC
+ 170:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         // Set the pwr ctrl pin as output
+ 171:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	//DDRE = 0;
+ 172:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         //DDRE |= PWR_CTRL_MASK;
+ 173:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         //PORTE |= PWR_CTRL_MASK;
+ 174:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         nrk_gpio_direction(PWR_CTRL_PIN, NRK_PIN_OUTPUT);
+ 175:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         //nrk_gpio_clr(PWR_CTRL_PIN);
+ 176:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         nrk_gpio_set(PWR_CTRL_PIN);
+ 177:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	// Input for motion detector
+ 178:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         nrk_gpio_direction(NRK_PORTE_4, NRK_PIN_INPUT);
+ 179:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         nrk_gpio_direction(NRK_PORTE_2, NRK_PIN_INPUT);
+ 180:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         nrk_gpio_clr(NRK_PORTE_2);
+ 181:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	nrk_gpio_pullups(0);
+ 182:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 183:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         //nrk_gpio_direction(NRK_PORTB_4, NRK_PIN_INPUT);
+ 184:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         //nrk_gpio_direction(NRK_PORTB_5, NRK_PIN_INPUT);
+ 185:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         init_adc();
+ 186:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         
+ 187:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         // For handling the I2C
+ 188:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	init_i2c();
+ 189:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 190:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	set_i2c_device(BOSCH_EEPROM_ADDRESS);
+ 191:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	get_eeprom_values();
+ 192:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         is_open = 0;
+ 193:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         return 1;
+ 194:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     
+ 195:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** }
+ 196:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 197:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** int8_t open(uint8_t action, uint8_t opt, uint8_t *buffer, uint8_t size) {
+ 336               	.LM0:
+ 337               	.LFBB1:
+ 338               	/* prologue: function */
+ 339               	/* frame size = 0 */
+ 340               	/* stack size = 0 */
+ 341               	.L__stack_usage = 0
+ 198:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     // Note that here nothing needs to be done for the I2C. This is the original
+ 199:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     // code for the firefly 2.2 board driver
+ 200:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	if (is_open == 1) return NRK_ERROR;
+ 343               	.LM1:
+ 344 0000 8091 0000 		lds r24,is_open
+ 345 0004 8130      		cpi r24,lo8(1)
+ 346 0006 01F4      		brne .L2
+ 347               	.L5:
+ 348 0008 8FEF      		ldi r24,lo8(-1)
+ 349 000a 0895      		ret
+ 350               	.L2:
+ 201:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     is_open = 1;
+ 352               	.LM2:
+ 353 000c 81E0      		ldi r24,lo8(1)
+ 354 000e 8093 0000 		sts is_open,r24
+ 202:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     if (opt & READ_FLAG) {
+ 356               	.LM3:
+ 357 0012 60FF      		sbrs r22,0
+ 358 0014 00C0      		rjmp .L4
+ 359               	.LBB8:
+ 360               	.LBB9:
+ 203:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         // Turn on Sensor Node Power
+ 204:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         //PORTE &= ~(PWR_CTRL_MASK);
+ 205:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         //PORTE |= PWR_CTRL_MASK;
+ 206:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         nrk_gpio_set(PWR_CTRL_PIN);
+ 362               	.LM4:
+ 363 0016 8091 0000 		lds r24,NRK_PORTE_3
+ 364 001a 0E94 0000 		call nrk_gpio_set
+ 207:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         channel = 0;
+ 366               	.LM5:
+ 367 001e 1092 0000 		sts channel,__zero_reg__
+ 208:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         ADC_SET_CHANNEL(0);
+ 369               	.LM6:
+ 370 0022 8091 7C00 		lds r24,124
+ 371 0026 807E      		andi r24,lo8(-32)
+ 372 0028 8093 7C00 		sts 124,r24
+ 373 002c 8091 7C00 		lds r24,124
+ 374 0030 9091 7C00 		lds r25,124
+ 375 0034 807E      		andi r24,lo8(-32)
+ 376 0036 892B      		or r24,r25
+ 377 0038 8093 7C00 		sts 124,r24
+ 209:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         nrk_spin_wait_us(ADC_STARTUP_DELAY);
+ 379               	.LM7:
+ 380 003c 88EE      		ldi r24,lo8(-24)
+ 381 003e 93E0      		ldi r25,lo8(3)
+ 382 0040 0E94 0000 		call nrk_spin_wait_us
+ 383 0044 00C0      		rjmp .L9
+ 384               	.L4:
+ 385 0046 862F      		mov r24,r22
+ 386 0048 8670      		andi r24,lo8(6)
+ 387               	.LBE9:
+ 388               	.LBE8:
+ 210:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         return NRK_OK;
+ 211:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     }
+ 212:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     if (opt & WRITE_FLAG) {
+ 213:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         return NRK_ERROR;
+ 214:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     }
+ 215:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     if (opt & APPEND_FLAG) {
+ 390               	.LM8:
+ 391 004a 01F4      		brne .L5
+ 216:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         return NRK_ERROR;
+ 217:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     }
+ 218:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     if (((opt)&(READ_FLAG | WRITE_FLAG | APPEND_FLAG)) == 0)
+ 393               	.LM9:
+ 394 004c 6770      		andi r22,lo8(7)
+ 395 004e 01F0      		breq .L5
+ 396               	.L9:
+ 219:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         return NRK_ERROR;
+ 220:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     else return NRK_OK;
+ 398               	.LM10:
+ 399 0050 81E0      		ldi r24,lo8(1)
+ 221:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 222:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** }
+ 401               	.LM11:
+ 402 0052 0895      		ret
+ 404               	.Lscope1:
+ 406               		.stabd	78,0,0
+ 412               	.global	close
+ 414               	close:
+ 415               		.stabd	46,0,0
+ 223:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 224:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** int8_t read(uint8_t action, uint8_t opt, uint8_t *buffer, uint8_t size) {
+ 225:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 226:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     int32_t value_from_sensor;
+ 227:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 228:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 229:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 230:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     ADC_ENABLE();
+ 231:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     uint8_t count = 0;
+ 232:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     // key and value get passed as opt and size
+ 233:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     uint8_t key = opt;
+ 234:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     uint8_t value = size;
+ 235:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 236:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     if (size != 1 && size != 2 && size != 4) return 0;
+ 237:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     if ((channel != TEMP2) && (channel != PRESS) && channel <= 7) {
+ 238:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         /* Conversion to 8-bit value*/
+ 239:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         uint16_t val = get_adc_val();
+ 240:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 241:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         if (size == 2) {
+ 242:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             buffer[count] = val & 0xFF;
+ 243:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             count++;
+ 244:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             buffer[count] = (val >> 8) & 0xFF;
+ 245:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         }
+ 246:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 247:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         if (size == 1) {
+ 248:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             buffer[count] = (val >> 2) & 0xFF;
+ 249:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         }
+ 250:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 251:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 252:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     } else if (channel == MOTION ){
+ 253:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 254:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	// Pull the pin low to dissipate charge otherwise it always floats high
+ 255:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	// In the future, we either need a buffer or a tiny pull down 
+ 256:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         nrk_gpio_direction(NRK_PORTE_2, NRK_PIN_OUTPUT);
+ 257:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         nrk_gpio_clr(NRK_PORTE_2);
+ 258:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         nrk_gpio_direction(NRK_PORTE_2, NRK_PIN_INPUT);
+ 259:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	if(size==2) {buffer[count]=nrk_gpio_get(NRK_PORTE_2); count++; buffer[count]=0;  }
+ 260:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	if(size==1) {buffer[count]=nrk_gpio_get(NRK_PORTE_2); }
+ 261:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****      } 
+ 262:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	else if (channel == AUDIO_P2P) {
+ 263:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         /* Conversion to 8-bit value*/
+ 264:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         //uint16_t val=get_adc_val();
+ 265:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         uint16_t val, min, max;
+ 266:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         uint16_t i;
+ 267:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         max = 0;
+ 268:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         min = 1025;
+ 269:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         for (i = 0; i < 256; i++) {
+ 270:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             // 10ms snapshot at around 11KHz measured on scope
+ 271:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	    ADC_SAMPLE_SINGLE();
+ 272:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             nrk_spin_wait_us(32);
+ 273:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     	    ADC_GET_SAMPLE_10(val);
+ 274:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             if (val < min)min = val;
+ 275:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             if (val > max)max = val;
+ 276:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         }
+ 277:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         val = max - min;
+ 278:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         if (size == 2) {
+ 279:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             buffer[count] = val & 0xFF;
+ 280:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             count++;
+ 281:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             buffer[count] = (val >> 8) & 0xFF;
+ 282:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         }
+ 283:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 284:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         if (size == 1) {
+ 285:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             buffer[count] = (val >> 2) & 0xFF;
+ 286:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         }
+ 287:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     }
+ 288:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     else if(channel == HUMIDITY)
+ 289:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     {
+ 290:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	h_cnt=0;
+ 291:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	// Port F.2
+ 292:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	// Wait while pin is high
+ 293:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	nrk_int_disable();
+ 294:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	do{
+ 295:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	}while((PINE & 0x10) == 0x10 );
+ 296:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	// Wait while pin is low
+ 297:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	do{
+ 298:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	}while((PINE & 0x10) == 0 );
+ 299:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	// Time how long pin stays high
+ 300:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	//_nrk_high_speed_timer_stop();
+ 301:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	//_nrk_high_speed_timer_reset();
+ 302:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	//_nrk_high_speed_timer_start();
+ 303:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	do{
+ 304:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	// Make h_cnt only 8 bit so it accumulates faster
+ 305:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	h_cnt++;
+ 306:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	}while((PINE & 0x10) == 0x10 );
+ 307:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	nrk_int_enable();
+ 308:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** //	h_cnt=_nrk_high_speed_timer_get();
+ 309:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	buffer[0]=h_cnt&0xff;
+ 310:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	buffer[1]=0;
+ 311:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	buffer[2]=0;
+ 312:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	buffer[3]=0;
+ 313:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	//buffer[1]=h_cnt >> 8;
+ 314:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	//buffer[2]=h_cnt >> 16;
+ 315:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	//buffer[3]=h_cnt >> 24;
+ 316:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 317:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     }
+ 318:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     // Here the special cases of the I2C sensors (pressure and temperature)
+ 319:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     // are dealt with
+ 320:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     else if(channel == TEMP2 || channel == PRESS){
+ 321:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         // Size must be 2 for these measurements. If the user has specified 1,
+ 322:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         // give them a zero to indicate something is wrong
+ 323:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         if(size != 4)
+ 324:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             return 0;
+ 325:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 326:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         if(channel == TEMP2)
+ 327:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	{
+ 328:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             value_from_sensor = calc_temp();
+ 329:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	}
+ 330:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	    else{
+ 331:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             calc_temp(); /* Note this is neccessary because the pressure calculations depend upon t
+ 332:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****              raw temperature values*/
+ 333:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             value_from_sensor = calc_press(0); // OSS hard coded to 0 for now, doesn't really matte
+ 334:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         }
+ 335:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         // Now break up the value to fit in the buffer
+ 336:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         buffer[count] = value_from_sensor & 0xFF;
+ 337:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         count++;
+ 338:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         buffer[count] = (value_from_sensor >> 8 ) & 0xFF;
+ 339:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         count++;
+ 340:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         buffer[count] = (value_from_sensor >> 16 ) & 0xFF;
+ 341:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         count++;
+ 342:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         buffer[count] = (value_from_sensor >> 24 ) & 0xFF;
+ 343:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 344:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     }
+ 345:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 346:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     ADC_DISABLE();
+ 347:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     count++;
+ 348:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     return count;
+ 349:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 350:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 351:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** }
+ 352:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 353:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 354:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** int8_t close(uint8_t action, uint8_t opt, uint8_t *buffer, uint8_t size) {
+ 417               	.LM12:
+ 418               	.LFBB2:
+ 419               	/* prologue: function */
+ 420               	/* frame size = 0 */
+ 421               	/* stack size = 0 */
+ 422               	.L__stack_usage = 0
+ 355:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 356:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     // Turn off sensor power
+ 357:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     //PORTE |= PWR_CTRL_MASK;
+ 358:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     nrk_gpio_clr(PWR_CTRL_PIN);
+ 424               	.LM13:
+ 425 0054 8091 0000 		lds r24,NRK_PORTE_3
+ 426 0058 0E94 0000 		call nrk_gpio_clr
+ 359:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     //PORTE &= ~(PWR_CTRL_MASK);
+ 360:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     	is_open = 0;
+ 428               	.LM14:
+ 429 005c 1092 0000 		sts is_open,__zero_reg__
+ 361:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     close_i2c(); // Shut down the I2C
+ 431               	.LM15:
+ 432 0060 0E94 0000 		call close_i2c
+ 362:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     ADC_DISABLE();
+ 434               	.LM16:
+ 435 0064 EAE7      		ldi r30,lo8(122)
+ 436 0066 F0E0      		ldi r31,0
+ 437 0068 8081      		ld r24,Z
+ 438 006a 8F77      		andi r24,lo8(127)
+ 439 006c 8083      		st Z,r24
+ 363:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     return NRK_OK;
+ 364:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** }
+ 441               	.LM17:
+ 442 006e 81E0      		ldi r24,lo8(1)
+ 443 0070 0895      		ret
+ 445               	.Lscope2:
+ 447               		.stabd	78,0,0
+ 453               	.global	get_status
+ 455               	get_status:
+ 456               		.stabd	46,0,0
+ 365:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 366:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** int8_t get_status(uint8_t action, uint8_t opt, uint8_t *buffer, uint8_t size) {
+ 458               	.LM18:
+ 459               	.LFBB3:
+ 460               	/* prologue: function */
+ 461               	/* frame size = 0 */
+ 462               	/* stack size = 0 */
+ 463               	.L__stack_usage = 0
+ 367:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 368:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     // key and value get passed as opt and size
+ 369:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     uint8_t key = opt;
+ 370:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 371:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     // use "key" here
+ 372:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     if (key == SENSOR_SELECT) return channel;
+ 465               	.LM19:
+ 466 0072 6130      		cpi r22,lo8(1)
+ 467 0074 01F4      		brne .L14
+ 469               	.LM20:
+ 470 0076 8091 0000 		lds r24,channel
+ 471 007a 0895      		ret
+ 472               	.L14:
+ 373:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     return NRK_ERROR;
+ 474               	.LM21:
+ 475 007c 8FEF      		ldi r24,lo8(-1)
+ 374:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** }
+ 477               	.LM22:
+ 478 007e 0895      		ret
+ 480               	.Lscope3:
+ 482               		.stabd	78,0,0
+ 488               	.global	set_status
+ 490               	set_status:
+ 491               		.stabd	46,0,0
+ 375:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 376:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** int8_t set_status(uint8_t action, uint8_t opt, uint8_t *buffer, uint8_t size) {
+ 493               	.LM23:
+ 494               	.LFBB4:
+ 495               	/* prologue: function */
+ 496               	/* frame size = 0 */
+ 497               	/* stack size = 0 */
+ 498               	.L__stack_usage = 0
+ 377:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 378:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     // Note that here nothing needs to be done for the I2C. This is the original
+ 379:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     // code for the firefly 2.2 board driver
+ 380:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 381:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     // key and value get passed as opt and size
+ 382:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     uint8_t key = opt;
+ 383:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     uint8_t value = size;
+ 384:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 385:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     // use "key" and "value" here
+ 386:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     if (key == SENSOR_SELECT) {
+ 500               	.LM24:
+ 501 0080 6130      		cpi r22,lo8(1)
+ 502 0082 01F4      		brne .L19
+ 387:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         // Set to audio channel if it is an average value
+ 388:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         if (value == AUDIO_P2P) {
+ 504               	.LM25:
+ 505 0084 2C30      		cpi r18,lo8(12)
+ 506 0086 01F4      		brne .L17
+ 507               	.LBB12:
+ 508               	.LBB13:
+ 389:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             channel = value;
+ 510               	.LM26:
+ 511 0088 2093 0000 		sts channel,r18
+ 390:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             ADC_VREF_VCC();
+ 391:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             ADC_SET_CHANNEL(AUDIO);
+ 513               	.LM27:
+ 514 008c 8091 7C00 		lds r24,124
+ 515 0090 807E      		andi r24,lo8(-32)
+ 516 0092 8093 7C00 		sts 124,r24
+ 517 0096 9091 7C00 		lds r25,124
+ 518 009a 2091 7C00 		lds r18,124
+ 519 009e 892F      		mov r24,r25
+ 520 00a0 90E0      		ldi r25,0
+ 521 00a2 807E      		andi r24,224
+ 522 00a4 8360      		ori r24,3
+ 523 00a6 00C0      		rjmp .L20
+ 524               	.L17:
+ 525               	.LBE13:
+ 526               	.LBE12:
+ 392:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             nrk_spin_wait_us(ADC_SETUP_DELAY);
+ 393:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             return NRK_OK;
+ 394:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 395:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         } else {
+ 396:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             if (value > 13) { // Update for all of the sensors
+ 528               	.LM28:
+ 529 00a8 2E30      		cpi r18,lo8(14)
+ 530 00aa 00F0      		brlo .L18
+ 397:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****                 _nrk_errno_set(1);
+ 532               	.LM29:
+ 533 00ac 81E0      		ldi r24,lo8(1)
+ 534 00ae 0E94 0000 		call _nrk_errno_set
+ 535 00b2 00C0      		rjmp .L19
+ 536               	.L18:
+ 398:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****                 return NRK_ERROR;
+ 399:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             }
+ 400:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             channel = value;
+ 538               	.LM30:
+ 539 00b4 2093 0000 		sts channel,r18
+ 401:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             ADC_VREF_VCC();
+ 402:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             ADC_SET_CHANNEL(channel);
+ 541               	.LM31:
+ 542 00b8 8091 7C00 		lds r24,124
+ 543 00bc 807E      		andi r24,lo8(-32)
+ 544 00be 8093 7C00 		sts 124,r24
+ 545 00c2 9091 7C00 		lds r25,124
+ 546 00c6 2091 7C00 		lds r18,124
+ 547 00ca 892F      		mov r24,r25
+ 548 00cc 90E0      		ldi r25,0
+ 549 00ce 807E      		andi r24,224
+ 550 00d0 3091 0000 		lds r19,channel
+ 551 00d4 832B      		or r24,r19
+ 552               	.L20:
+ 553 00d6 822B      		or r24,r18
+ 554 00d8 8093 7C00 		sts 124,r24
+ 403:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             nrk_spin_wait_us(ADC_SETUP_DELAY);
+ 556               	.LM32:
+ 557 00dc 88EC      		ldi r24,lo8(-56)
+ 558 00de 90E0      		ldi r25,0
+ 559 00e0 0E94 0000 		call nrk_spin_wait_us
+ 404:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             return NRK_OK;
+ 561               	.LM33:
+ 562 00e4 81E0      		ldi r24,lo8(1)
+ 563 00e6 0895      		ret
+ 564               	.L19:
+ 405:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         }
+ 406:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     }
+ 407:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     return NRK_ERROR;
+ 566               	.LM34:
+ 567 00e8 8FEF      		ldi r24,lo8(-1)
+ 408:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** }
+ 569               	.LM35:
+ 570 00ea 0895      		ret
+ 572               	.Lscope4:
+ 574               		.stabd	78,0,0
+ 576               	.global	get_eeprom_values
+ 578               	get_eeprom_values:
+ 579               		.stabd	46,0,0
+ 409:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 410:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** void get_eeprom_values(){
+ 581               	.LM36:
+ 582               	.LFBB5:
+ 583 00ec CF93      		push r28
+ 584 00ee DF93      		push r29
+ 585 00f0 CDB7      		in r28,__SP_L__
+ 586 00f2 DEB7      		in r29,__SP_H__
+ 587 00f4 6697      		sbiw r28,22
+ 588 00f6 0FB6      		in __tmp_reg__,__SREG__
+ 589 00f8 F894      		cli
+ 590 00fa DEBF      		out __SP_H__,r29
+ 591 00fc 0FBE      		out __SREG__,__tmp_reg__
+ 592 00fe CDBF      		out __SP_L__,r28
+ 593               	/* prologue: function */
+ 594               	/* frame size = 22 */
+ 595               	/* stack size = 24 */
+ 596               	.L__stack_usage = 24
+ 411:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 412:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****    uint8_t raw_eeprom_data[22]; // Buffer for storing the raw values being returned
+ 413:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****    int j = 0;
+ 414:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****    int rv;
+ 415:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 416:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****    // Get the values
+ 417:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****   rv = ee24xx_read_bytes(0xAA, 22, raw_eeprom_data);
+ 598               	.LM37:
+ 599 0100 AE01      		movw r20,r28
+ 600 0102 4F5F      		subi r20,-1
+ 601 0104 5F4F      		sbci r21,-1
+ 602 0106 66E1      		ldi r22,lo8(22)
+ 603 0108 70E0      		ldi r23,0
+ 604 010a 8AEA      		ldi r24,lo8(-86)
+ 605 010c 90E0      		ldi r25,0
+ 606 010e 0E94 0000 		call ee24xx_read_bytes
+ 607 0112 FE01      		movw r30,r28
+ 608 0114 3196      		adiw r30,1
+ 609 0116 A0E0      		ldi r26,lo8(eeprom_values)
+ 610 0118 B0E0      		ldi r27,hi8(eeprom_values)
+ 611 011a 9E01      		movw r18,r28
+ 612 011c 295E      		subi r18,-23
+ 613 011e 3F4F      		sbci r19,-1
+ 614               	.L22:
+ 418:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 419:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****   if(DEBUG){
+ 420:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 421:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****    //   printf("The raw values from the EEPROM are: \r\n");
+ 422:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 423:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     //  for(j = 0; j<22; j++)
+ 424:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****       //  printf("%02x ", raw_eeprom_data[j]);
+ 425:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****      // printf("\r\n");
+ 426:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****   }
+ 427:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 428:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****   // Place the data in a formatted buffer
+ 429:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****   for(j = 0; j < 11; j++){
+ 430:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****       eeprom_values[j] = ((raw_eeprom_data[2*j] | 0x0000) << 8) |
+ 616               	.LM38:
+ 617 0120 8081      		ld r24,Z
+ 618 0122 90E0      		ldi r25,0
+ 619 0124 982F      		mov r25,r24
+ 620 0126 8827      		clr r24
+ 621 0128 4181      		ldd r20,Z+1
+ 622 012a 842B      		or r24,r20
+ 623 012c 8D93      		st X+,r24
+ 624 012e 9D93      		st X+,r25
+ 625 0130 3296      		adiw r30,2
+ 429:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****       eeprom_values[j] = ((raw_eeprom_data[2*j] | 0x0000) << 8) |
+ 627               	.LM39:
+ 628 0132 E217      		cp r30,r18
+ 629 0134 F307      		cpc r31,r19
+ 630 0136 01F4      		brne .L22
+ 631               	/* epilogue start */
+ 431:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** (raw_eeprom_data[2*j + 1]);
+ 432:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****   }
+ 433:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 434:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****  // Print out the values of the EEPROM
+ 435:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** /*  if(DEBUG){
+ 436:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****       printf("AC1: %i\r\n", AC1);
+ 437:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****       printf("AC2: %i\r\n", AC2);
+ 438:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****       printf("AC3: %i\r\n", AC3);
+ 439:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****       printf("AC4: %u\r\n", AC4);
+ 440:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****       printf("AC5: %u\r\n", AC5);
+ 441:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****       printf("AC6: %u\r\n", AC6);
+ 442:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****       printf("B1: %i\r\n", B1);
+ 443:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****       printf("B2: %i\r\n", B2);
+ 444:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****       printf("MB: %i\r\n", MB);
+ 445:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****       printf("MC: %i\r\n", MC);
+ 446:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****       printf("MD: %i\r\n", MD);
+ 447:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****       printf("-------------------------------------------------\r\n");
+ 448:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****   }
+ 449:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****   */
+ 450:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** }
+ 633               	.LM40:
+ 634 0138 6696      		adiw r28,22
+ 635 013a 0FB6      		in __tmp_reg__,__SREG__
+ 636 013c F894      		cli
+ 637 013e DEBF      		out __SP_H__,r29
+ 638 0140 0FBE      		out __SREG__,__tmp_reg__
+ 639 0142 CDBF      		out __SP_L__,r28
+ 640 0144 DF91      		pop r29
+ 641 0146 CF91      		pop r28
+ 642 0148 0895      		ret
+ 647               	.Lscope5:
+ 649               		.stabd	78,0,0
+ 651               	.global	init_adc
+ 653               	init_adc:
+ 654               		.stabd	46,0,0
+ 451:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 452:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 453:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** // read_voltage_status()
+ 454:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** //
+ 455:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** // This function sets different voltage threshold levels on
+ 456:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** // the cc2420 chip to search for the voltage.
+ 457:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** // If the voltage is above 3.3 volts, then the ADC reads
+ 458:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** // the external voltage value going through a voltage divider.
+ 459:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** // This function will return VOLTS*100
+ 460:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** /*
+ 461:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** uint16_t read_voltage_status() {
+ 462:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     volatile uint16_t val;
+ 463:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     uint8_t check, level;
+ 464:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     nrk_sem_t *radio_sem;
+ 465:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 466:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     radio_sem = rf_get_sem();
+ 467:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 468:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     // if semaphore not created, then assume you own the radio
+ 469:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     if (radio_sem != NULL)
+ 470:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         nrk_sem_pend(radio_sem);
+ 471:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 472:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     // activate cc2420 vreg
+ 473:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****      //SET_VREG_ACTIVE();
+ 474:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     // FIXME: Check at end if VREG needs to be disabled again...
+ 475:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 476:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     level = 0;
+ 477:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     while (level < 0x1F) {
+ 478:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         val = 0x0020 | level;
+ 479:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         //FASTSPI_SETREG(CC2420_BATTMON, val);
+ 480:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         nrk_spin_wait_us(2);
+ 481:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         //FASTSPI_GETREG(CC2420_BATTMON, val);
+ 482:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         if (val & 0x0040) break;
+ 483:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         level++;
+ 484:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     }
+ 485:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     if (radio_sem != NULL)
+ 486:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         nrk_sem_post(radio_sem);
+ 487:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     if (level == 0) {
+ 488:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         val = get_adc_val();
+ 489:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         // FIXME:  This probably isn't correct...
+ 490:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         if (val > 174) val -= 174;
+ 491:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         if (val < 330) val = 330;
+ 492:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     } else val = (9000 - (level * 125)) / 27;
+ 493:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 494:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     return val;
+ 495:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** }
+ 496:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** */
+ 497:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** void init_adc() {
+ 656               	.LM41:
+ 657               	.LFBB6:
+ 658               	/* prologue: function */
+ 659               	/* frame size = 0 */
+ 660               	/* stack size = 0 */
+ 661               	.L__stack_usage = 0
+ 498:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     // Initialize values here
+ 499:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     ADC_INIT();
+ 663               	.LM42:
+ 664 014a EAE7      		ldi r30,lo8(122)
+ 665 014c F0E0      		ldi r31,0
+ 666 014e 83E0      		ldi r24,lo8(3)
+ 667 0150 8083      		st Z,r24
+ 500:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     ADC_ENABLE();
+ 669               	.LM43:
+ 670 0152 8081      		ld r24,Z
+ 671 0154 8068      		ori r24,lo8(-128)
+ 672 0156 8083      		st Z,r24
+ 501:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     channel = 0;
+ 674               	.LM44:
+ 675 0158 1092 0000 		sts channel,__zero_reg__
+ 502:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     ADC_SET_CHANNEL(0);
+ 677               	.LM45:
+ 678 015c ACE7      		ldi r26,lo8(124)
+ 679 015e B0E0      		ldi r27,0
+ 680 0160 8C91      		ld r24,X
+ 681 0162 807E      		andi r24,lo8(-32)
+ 682 0164 8C93      		st X,r24
+ 683 0166 8C91      		ld r24,X
+ 684 0168 9C91      		ld r25,X
+ 685 016a 807E      		andi r24,lo8(-32)
+ 686 016c 892B      		or r24,r25
+ 687 016e 8C93      		st X,r24
+ 503:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     ADC_DISABLE();
+ 689               	.LM46:
+ 690 0170 8081      		ld r24,Z
+ 691 0172 8F77      		andi r24,lo8(127)
+ 692 0174 8083      		st Z,r24
+ 693 0176 0895      		ret
+ 695               	.Lscope6:
+ 697               		.stabd	78,0,0
+ 703               	.global	init
+ 705               	init:
+ 706               		.stabd	46,0,0
+ 168:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         // For handling the ADC
+ 708               	.LM47:
+ 709               	.LFBB7:
+ 710 0178 CF93      		push r28
+ 711               	/* prologue: function */
+ 712               	/* frame size = 0 */
+ 713               	/* stack size = 1 */
+ 714               	.L__stack_usage = 1
+ 174:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         //nrk_gpio_clr(PWR_CTRL_PIN);
+ 716               	.LM48:
+ 717 017a C091 0000 		lds r28,NRK_PORTE_3
+ 718 017e 61E0      		ldi r22,lo8(1)
+ 719 0180 8C2F      		mov r24,r28
+ 720 0182 0E94 0000 		call nrk_gpio_direction
+ 176:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	// Input for motion detector
+ 722               	.LM49:
+ 723 0186 8C2F      		mov r24,r28
+ 724 0188 0E94 0000 		call nrk_gpio_set
+ 178:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         nrk_gpio_direction(NRK_PORTE_2, NRK_PIN_INPUT);
+ 726               	.LM50:
+ 727 018c 60E0      		ldi r22,0
+ 728 018e 8091 0000 		lds r24,NRK_PORTE_4
+ 729 0192 0E94 0000 		call nrk_gpio_direction
+ 179:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         nrk_gpio_clr(NRK_PORTE_2);
+ 731               	.LM51:
+ 732 0196 C091 0000 		lds r28,NRK_PORTE_2
+ 733 019a 60E0      		ldi r22,0
+ 734 019c 8C2F      		mov r24,r28
+ 735 019e 0E94 0000 		call nrk_gpio_direction
+ 180:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	nrk_gpio_pullups(0);
+ 737               	.LM52:
+ 738 01a2 8C2F      		mov r24,r28
+ 739 01a4 0E94 0000 		call nrk_gpio_clr
+ 181:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 741               	.LM53:
+ 742 01a8 80E0      		ldi r24,0
+ 743 01aa 0E94 0000 		call nrk_gpio_pullups
+ 185:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         
+ 745               	.LM54:
+ 746 01ae 0E94 0000 		call init_adc
+ 188:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 748               	.LM55:
+ 749 01b2 0E94 0000 		call init_i2c
+ 190:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	get_eeprom_values();
+ 751               	.LM56:
+ 752 01b6 8EEE      		ldi r24,lo8(-18)
+ 753 01b8 0E94 0000 		call set_i2c_device
+ 191:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         is_open = 0;
+ 755               	.LM57:
+ 756 01bc 0E94 0000 		call get_eeprom_values
+ 192:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         return 1;
+ 758               	.LM58:
+ 759 01c0 1092 0000 		sts is_open,__zero_reg__
+ 195:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 761               	.LM59:
+ 762 01c4 81E0      		ldi r24,lo8(1)
+ 763               	/* epilogue start */
+ 764 01c6 CF91      		pop r28
+ 765 01c8 0895      		ret
+ 767               	.Lscope7:
+ 769               		.stabd	78,0,0
+ 771               	.global	delay
+ 773               	delay:
+ 774               		.stabd	46,0,0
+ 504:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** }
+ 505:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 506:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** uint16_t get_adc_val() {
+ 507:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     uint16_t adc_val;
+ 508:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     ADC_SAMPLE_SINGLE();
+ 509:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     delay();
+ 510:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     ADC_GET_SAMPLE_10(adc_val);
+ 511:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     return adc_val;
+ 512:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** }
+ 513:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 514:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** void delay() {
+ 776               	.LM60:
+ 777               	.LFBB8:
+ 778               	/* prologue: function */
+ 779               	/* frame size = 0 */
+ 780               	/* stack size = 0 */
+ 781               	.L__stack_usage = 0
+ 515:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     nrk_spin_wait_us(ADC_SETUP_DELAY);
+ 783               	.LM61:
+ 784 01ca 88EC      		ldi r24,lo8(-56)
+ 785 01cc 90E0      		ldi r25,0
+ 786 01ce 0C94 0000 		jmp nrk_spin_wait_us
+ 788               	.Lscope8:
+ 790               		.stabd	78,0,0
+ 792               	.global	get_adc_val
+ 794               	get_adc_val:
+ 795               		.stabd	46,0,0
+ 506:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     uint16_t adc_val;
+ 797               	.LM62:
+ 798               	.LFBB9:
+ 799               	/* prologue: function */
+ 800               	/* frame size = 0 */
+ 801               	/* stack size = 0 */
+ 802               	.L__stack_usage = 0
+ 508:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     delay();
+ 804               	.LM63:
+ 805 01d2 8091 7A00 		lds r24,122
+ 806 01d6 8064      		ori r24,lo8(64)
+ 807 01d8 8093 7A00 		sts 122,r24
+ 808               	.L28:
+ 508:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     delay();
+ 810               	.LM64:
+ 811 01dc 8091 7A00 		lds r24,122
+ 812 01e0 84FF      		sbrs r24,4
+ 813 01e2 00C0      		rjmp .L28
+ 509:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     ADC_GET_SAMPLE_10(adc_val);
+ 815               	.LM65:
+ 816 01e4 0E94 0000 		call delay
+ 510:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     return adc_val;
+ 818               	.LM66:
+ 819 01e8 8091 7800 		lds r24,120
+ 820 01ec 2091 7900 		lds r18,121
+ 821 01f0 90E0      		ldi r25,0
+ 512:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 823               	.LM67:
+ 824 01f2 922B      		or r25,r18
+ 825 01f4 0895      		ret
+ 827               	.Lscope9:
+ 829               		.stabd	78,0,0
+ 832               	.global	calc_true_press
+ 834               	calc_true_press:
+ 835               		.stabd	46,0,0
+ 516:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** }
+ 517:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 518:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** int32_t calc_true_press(uint8_t oss){
+ 837               	.LM68:
+ 838               	.LFBB10:
+ 839 01f6 4F92      		push r4
+ 840 01f8 5F92      		push r5
+ 841 01fa 6F92      		push r6
+ 842 01fc 7F92      		push r7
+ 843 01fe 8F92      		push r8
+ 844 0200 9F92      		push r9
+ 845 0202 AF92      		push r10
+ 846 0204 BF92      		push r11
+ 847 0206 CF92      		push r12
+ 848 0208 DF92      		push r13
+ 849 020a EF92      		push r14
+ 850 020c FF92      		push r15
+ 851 020e 1F93      		push r17
+ 852 0210 CF93      		push r28
+ 853 0212 DF93      		push r29
+ 854 0214 CDB7      		in r28,__SP_L__
+ 855 0216 DEB7      		in r29,__SP_H__
+ 856 0218 2897      		sbiw r28,8
+ 857 021a 0FB6      		in __tmp_reg__,__SREG__
+ 858 021c F894      		cli
+ 859 021e DEBF      		out __SP_H__,r29
+ 860 0220 0FBE      		out __SREG__,__tmp_reg__
+ 861 0222 CDBF      		out __SP_L__,r28
+ 862               	/* prologue: function */
+ 863               	/* frame size = 8 */
+ 864               	/* stack size = 23 */
+ 865               	.L__stack_usage = 23
+ 866 0224 182F      		mov r17,r24
+ 519:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 520:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     B6 = B5 - 4000;                                     if(DEBUG) printf("B6 %li\r\n", B6);
+ 868               	.LM69:
+ 869 0226 C090 0000 		lds r12,B5
+ 870 022a D090 0000 		lds r13,B5+1
+ 871 022e E090 0000 		lds r14,B5+2
+ 872 0232 F090 0000 		lds r15,B5+3
+ 873 0236 20EA      		ldi r18,-96
+ 874 0238 C21A      		sub r12,r18
+ 875 023a 2FE0      		ldi r18,15
+ 876 023c D20A      		sbc r13,r18
+ 877 023e E108      		sbc r14,__zero_reg__
+ 878 0240 F108      		sbc r15,__zero_reg__
+ 879 0242 C092 0000 		sts B6,r12
+ 880 0246 D092 0000 		sts B6+1,r13
+ 881 024a E092 0000 		sts B6+2,r14
+ 882 024e F092 0000 		sts B6+3,r15
+ 521:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** //    X1 = (B2 * (B6 * B6/ pow(2,12)))/ pow(2,11);        if(DEBUG) printf("X1 %li\r\n", X1);
+ 522:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     X1 = (B2 * (B6 * B6/ 4096))/ 2048;        if(DEBUG) printf("X1 %li\r\n", X1);
+ 884               	.LM70:
+ 885 0252 A701      		movw r20,r14
+ 886 0254 9601      		movw r18,r12
+ 887 0256 C701      		movw r24,r14
+ 888 0258 B601      		movw r22,r12
+ 889 025a 0E94 0000 		call __mulsi3
+ 890 025e 4B01      		movw r8,r22
+ 891 0260 5C01      		movw r10,r24
+ 892 0262 5CE0      		ldi r21,12
+ 893               		1:
+ 894 0264 B594      		asr r11
+ 895 0266 A794      		ror r10
+ 896 0268 9794      		ror r9
+ 897 026a 8794      		ror r8
+ 898 026c 5A95      		dec r21
+ 899 026e 01F4      		brne 1b
+ 523:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     X2 = (int32_t)AC2 * B6 / 2048;                          if(DEBUG) printf("X2 %li\r\n", X2);
+ 524:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** //    X2 = AC2 * B6 / pow(2,11);                          if(DEBUG) printf("X2 %li\r\n", X2);
+ 525:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     X3 = X1 + X2;                                       if(DEBUG) printf("X3 %li\r\n", X3);
+ 526:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     B3 = ((((int32_t)AC1 * 4 + X3) << oss) + 2) / 4;               if(DEBUG) printf("B3 %li\r\n", B
+ 901               	.LM71:
+ 902 0270 4091 0000 		lds r20,eeprom_values
+ 903 0274 5091 0000 		lds r21,eeprom_values+1
+ 904 0278 6627      		clr r22
+ 905 027a 57FD      		sbrc r21,7
+ 906 027c 6095      		com r22
+ 907 027e 762F      		mov r23,r22
+ 908 0280 DB01      		movw r26,r22
+ 909 0282 CA01      		movw r24,r20
+ 910 0284 62E0      		ldi r22,2
+ 911               		1:
+ 912 0286 880F      		lsl r24
+ 913 0288 991F      		rol r25
+ 914 028a AA1F      		rol r26
+ 915 028c BB1F      		rol r27
+ 916 028e 6A95      		dec r22
+ 917 0290 01F4      		brne 1b
+ 918 0292 8983      		std Y+1,r24
+ 919 0294 9A83      		std Y+2,r25
+ 920 0296 AB83      		std Y+3,r26
+ 921 0298 BC83      		std Y+4,r27
+ 522:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     X2 = (int32_t)AC2 * B6 / 2048;                          if(DEBUG) printf("X2 %li\r\n", X2);
+ 923               	.LM72:
+ 924 029a A091 0000 		lds r26,eeprom_values+14
+ 925 029e B091 0000 		lds r27,eeprom_values+14+1
+ 926 02a2 A501      		movw r20,r10
+ 927 02a4 9401      		movw r18,r8
+ 928 02a6 0E94 0000 		call __mulshisi3
+ 929 02aa 412C      		mov r4,__zero_reg__
+ 930 02ac E8E0      		ldi r30,lo8(8)
+ 931 02ae 5E2E      		mov r5,r30
+ 932 02b0 612C      		mov r6,__zero_reg__
+ 933 02b2 712C      		mov r7,__zero_reg__
+ 934 02b4 A301      		movw r20,r6
+ 935 02b6 9201      		movw r18,r4
+ 936 02b8 0E94 0000 		call __divmodsi4
+ 937 02bc 2D83      		std Y+5,r18
+ 938 02be 3E83      		std Y+6,r19
+ 939 02c0 4F83      		std Y+7,r20
+ 940 02c2 5887      		std Y+8,r21
+ 523:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     X2 = (int32_t)AC2 * B6 / 2048;                          if(DEBUG) printf("X2 %li\r\n", X2);
+ 942               	.LM73:
+ 943 02c4 A091 0000 		lds r26,eeprom_values+2
+ 944 02c8 B091 0000 		lds r27,eeprom_values+2+1
+ 945 02cc A701      		movw r20,r14
+ 946 02ce 9601      		movw r18,r12
+ 947 02d0 0E94 0000 		call __mulshisi3
+ 948 02d4 A301      		movw r20,r6
+ 949 02d6 9201      		movw r18,r4
+ 950 02d8 0E94 0000 		call __divmodsi4
+ 525:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     B3 = ((((int32_t)AC1 * 4 + X3) << oss) + 2) / 4;               if(DEBUG) printf("B3 %li\r\n", B
+ 952               	.LM74:
+ 953 02dc 8D81      		ldd r24,Y+5
+ 954 02de 9E81      		ldd r25,Y+6
+ 955 02e0 AF81      		ldd r26,Y+7
+ 956 02e2 B885      		ldd r27,Y+8
+ 957 02e4 820F      		add r24,r18
+ 958 02e6 931F      		adc r25,r19
+ 959 02e8 A41F      		adc r26,r20
+ 960 02ea B51F      		adc r27,r21
+ 962               	.LM75:
+ 963 02ec 2981      		ldd r18,Y+1
+ 964 02ee 3A81      		ldd r19,Y+2
+ 965 02f0 4B81      		ldd r20,Y+3
+ 966 02f2 5C81      		ldd r21,Y+4
+ 967 02f4 820F      		add r24,r18
+ 968 02f6 931F      		adc r25,r19
+ 969 02f8 A41F      		adc r26,r20
+ 970 02fa B51F      		adc r27,r21
+ 971 02fc 012E      		mov r0,r17
+ 972 02fe 00C0      		rjmp 2f
+ 973               		1:
+ 974 0300 880F      		lsl r24
+ 975 0302 991F      		rol r25
+ 976 0304 AA1F      		rol r26
+ 977 0306 BB1F      		rol r27
+ 978               		2:
+ 979 0308 0A94      		dec r0
+ 980 030a 02F4      		brpl 1b
+ 981 030c BC01      		movw r22,r24
+ 982 030e CD01      		movw r24,r26
+ 983 0310 6E5F      		subi r22,-2
+ 984 0312 7F4F      		sbci r23,-1
+ 985 0314 8F4F      		sbci r24,-1
+ 986 0316 9F4F      		sbci r25,-1
+ 987 0318 F4E0      		ldi r31,lo8(4)
+ 988 031a 4F2E      		mov r4,r31
+ 989 031c 512C      		mov r5,__zero_reg__
+ 990 031e 612C      		mov r6,__zero_reg__
+ 991 0320 712C      		mov r7,__zero_reg__
+ 992 0322 A301      		movw r20,r6
+ 993 0324 9201      		movw r18,r4
+ 994 0326 0E94 0000 		call __divmodsi4
+ 995 032a 2983      		std Y+1,r18
+ 996 032c 3A83      		std Y+2,r19
+ 997 032e 4B83      		std Y+3,r20
+ 998 0330 5C83      		std Y+4,r21
+ 999 0332 2093 0000 		sts B3,r18
+ 1000 0336 3093 0000 		sts B3+1,r19
+ 1001 033a 4093 0000 		sts B3+2,r20
+ 1002 033e 5093 0000 		sts B3+3,r21
+ 527:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** //    X1 = AC3 * B6 / pow(2,13);                          if(DEBUG) printf("X1 %li\r\n", X1);
+ 528:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     X1 = AC3 * B6 / 8192;                          if(DEBUG) printf("X1 %li\r\n", X1);
+ 1004               	.LM76:
+ 1005 0342 A091 0000 		lds r26,eeprom_values+4
+ 1006 0346 B091 0000 		lds r27,eeprom_values+4+1
+ 1007 034a A701      		movw r20,r14
+ 1008 034c 9601      		movw r18,r12
+ 1009 034e 0E94 0000 		call __mulshisi3
+ 1010 0352 20E0      		ldi r18,0
+ 1011 0354 30E2      		ldi r19,lo8(32)
+ 1012 0356 40E0      		ldi r20,0
+ 1013 0358 50E0      		ldi r21,0
+ 1014 035a 0E94 0000 		call __divmodsi4
+ 1015 035e 6901      		movw r12,r18
+ 1016 0360 7A01      		movw r14,r20
+ 529:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** //    X2 = (B1 * (B6 * B6 / pow(2,12))) / pow(2,16);      if(DEBUG) printf("X2 %li\r\n", X2);
+ 530:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     X2 = (B1 * (B6 * B6 / 4096)) / 65536;      if(DEBUG) printf("X2 %li\r\n", X2);
+ 1018               	.LM77:
+ 1019 0362 A091 0000 		lds r26,eeprom_values+12
+ 1020 0366 B091 0000 		lds r27,eeprom_values+12+1
+ 1021 036a A501      		movw r20,r10
+ 1022 036c 9401      		movw r18,r8
+ 1023 036e 0E94 0000 		call __mulshisi3
+ 1024 0372 20E0      		ldi r18,0
+ 1025 0374 30E0      		ldi r19,0
+ 1026 0376 41E0      		ldi r20,lo8(1)
+ 1027 0378 50E0      		ldi r21,0
+ 1028 037a 0E94 0000 		call __divmodsi4
+ 531:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** //    X3 = ((X1 + X2) + 2) / pow(2,2);                    if(DEBUG) printf("X3 %li\r\n", X3);
+ 532:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     X3 = ((X1 + X2) + 2) / 4;                    if(DEBUG) printf("X3 %li\r\n", X3);
+ 1030               	.LM78:
+ 1031 037e D701      		movw r26,r14
+ 1032 0380 C601      		movw r24,r12
+ 1033 0382 820F      		add r24,r18
+ 1034 0384 931F      		adc r25,r19
+ 1035 0386 A41F      		adc r26,r20
+ 1036 0388 B51F      		adc r27,r21
+ 1037 038a BC01      		movw r22,r24
+ 1038 038c CD01      		movw r24,r26
+ 1039 038e 6E5F      		subi r22,-2
+ 1040 0390 7F4F      		sbci r23,-1
+ 1041 0392 8F4F      		sbci r24,-1
+ 1042 0394 9F4F      		sbci r25,-1
+ 1043 0396 A301      		movw r20,r6
+ 1044 0398 9201      		movw r18,r4
+ 1045 039a 0E94 0000 		call __divmodsi4
+ 1046 039e 2093 0000 		sts X3,r18
+ 1047 03a2 3093 0000 		sts X3+1,r19
+ 1048 03a6 4093 0000 		sts X3+2,r20
+ 1049 03aa 5093 0000 		sts X3+3,r21
+ 533:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** //    B4 = AC4 * (X3 + 32768) / pow(2,15);                if(DEBUG) printf("B4 %lu\r\n", B4);
+ 534:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     B4 = AC4 * (X3 + 32768) / 32768;                if(DEBUG) printf("B4 %lu\r\n", B4);
+ 1051               	.LM79:
+ 1052 03ae A091 0000 		lds r26,eeprom_values+6
+ 1053 03b2 B091 0000 		lds r27,eeprom_values+6+1
+ 1054 03b6 3058      		subi r19,-128
+ 1055 03b8 4F4F      		sbci r20,-1
+ 1056 03ba 5F4F      		sbci r21,-1
+ 1057 03bc 0E94 0000 		call __muluhisi3
+ 1058 03c0 20E0      		ldi r18,0
+ 1059 03c2 30E8      		ldi r19,lo8(-128)
+ 1060 03c4 40E0      		ldi r20,0
+ 1061 03c6 50E0      		ldi r21,0
+ 1062 03c8 0E94 0000 		call __divmodsi4
+ 1063 03cc 6901      		movw r12,r18
+ 1064 03ce 7A01      		movw r14,r20
+ 1065 03d0 2093 0000 		sts B4,r18
+ 1066 03d4 3093 0000 		sts B4+1,r19
+ 1067 03d8 4093 0000 		sts B4+2,r20
+ 1068 03dc 5093 0000 		sts B4+3,r21
+ 535:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     B7 = (UP - B3) * (50000 >> oss);                    if(DEBUG) printf("B7 %lu\r\n", B7);
+ 1070               	.LM80:
+ 1071 03e0 8091 0000 		lds r24,UP
+ 1072 03e4 9091 0000 		lds r25,UP+1
+ 1073 03e8 A091 0000 		lds r26,UP+2
+ 1074 03ec B091 0000 		lds r27,UP+3
+ 1075 03f0 9C01      		movw r18,r24
+ 1076 03f2 AD01      		movw r20,r26
+ 1077 03f4 8980      		ldd r8,Y+1
+ 1078 03f6 9A80      		ldd r9,Y+2
+ 1079 03f8 AB80      		ldd r10,Y+3
+ 1080 03fa BC80      		ldd r11,Y+4
+ 1081 03fc 2819      		sub r18,r8
+ 1082 03fe 3909      		sbc r19,r9
+ 1083 0400 4A09      		sbc r20,r10
+ 1084 0402 5B09      		sbc r21,r11
+ 1085 0404 80E5      		ldi r24,lo8(80)
+ 1086 0406 93EC      		ldi r25,lo8(-61)
+ 1087 0408 A0E0      		ldi r26,0
+ 1088 040a B0E0      		ldi r27,0
+ 1089 040c BC01      		movw r22,r24
+ 1090 040e CD01      		movw r24,r26
+ 1091 0410 00C0      		rjmp 2f
+ 1092               		1:
+ 1093 0412 9595      		asr r25
+ 1094 0414 8795      		ror r24
+ 1095 0416 7795      		ror r23
+ 1096 0418 6795      		ror r22
+ 1097               		2:
+ 1098 041a 1A95      		dec r17
+ 1099 041c 02F4      		brpl 1b
+ 1100 041e 0E94 0000 		call __mulsi3
+ 1101 0422 6093 0000 		sts B7,r22
+ 1102 0426 7093 0000 		sts B7+1,r23
+ 1103 042a 8093 0000 		sts B7+2,r24
+ 1104 042e 9093 0000 		sts B7+3,r25
+ 536:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 537:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     if(B7 < 0x80000000)
+ 1106               	.LM81:
+ 1107 0432 97FD      		sbrc r25,7
+ 1108 0434 00C0      		rjmp .L32
+ 538:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****        P = (B7 * 2)/ B4;
+ 1110               	.LM82:
+ 1111 0436 660F      		lsl r22
+ 1112 0438 771F      		rol r23
+ 1113 043a 881F      		rol r24
+ 1114 043c 991F      		rol r25
+ 1115 043e A701      		movw r20,r14
+ 1116 0440 9601      		movw r18,r12
+ 1117 0442 0E94 0000 		call __udivmodsi4
+ 1118 0446 2093 0000 		sts P,r18
+ 1119 044a 3093 0000 		sts P+1,r19
+ 1120 044e 4093 0000 		sts P+2,r20
+ 1121 0452 5093 0000 		sts P+3,r21
+ 1122 0456 00C0      		rjmp .L33
+ 1123               	.L32:
+ 539:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     else
+ 540:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         P = (B7 / B4) * 2;
+ 1125               	.LM83:
+ 1126 0458 A701      		movw r20,r14
+ 1127 045a 9601      		movw r18,r12
+ 1128 045c 0E94 0000 		call __udivmodsi4
+ 1129 0460 DA01      		movw r26,r20
+ 1130 0462 C901      		movw r24,r18
+ 1131 0464 880F      		lsl r24
+ 1132 0466 991F      		rol r25
+ 1133 0468 AA1F      		rol r26
+ 1134 046a BB1F      		rol r27
+ 1135 046c 8093 0000 		sts P,r24
+ 1136 0470 9093 0000 		sts P+1,r25
+ 1137 0474 A093 0000 		sts P+2,r26
+ 1138 0478 B093 0000 		sts P+3,r27
+ 1139               	.L33:
+ 541:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****                                                         if(DEBUG) printf("P %li\r\n", P);
+ 542:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     X1 = (P / 256) * (P / 256);               if(DEBUG) printf("X1 %li\r\n", X1);
+ 1141               	.LM84:
+ 1142 047c C090 0000 		lds r12,P
+ 1143 0480 D090 0000 		lds r13,P+1
+ 1144 0484 E090 0000 		lds r14,P+2
+ 1145 0488 F090 0000 		lds r15,P+3
+ 1146 048c C701      		movw r24,r14
+ 1147 048e B601      		movw r22,r12
+ 1148 0490 20E0      		ldi r18,0
+ 1149 0492 31E0      		ldi r19,lo8(1)
+ 1150 0494 40E0      		ldi r20,0
+ 1151 0496 50E0      		ldi r21,0
+ 1152 0498 0E94 0000 		call __divmodsi4
+ 1153 049c CA01      		movw r24,r20
+ 1154 049e B901      		movw r22,r18
+ 1155 04a0 0E94 0000 		call __mulsi3
+ 1156 04a4 9B01      		movw r18,r22
+ 1157 04a6 AC01      		movw r20,r24
+ 543:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** //    X1 = (P / pow(2,8)) * (P / pow(2,8));               if(DEBUG) printf("X1 %li\r\n", X1);
+ 544:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     X1 = (X1 * 3038) / 65536;                       if(DEBUG) printf("X1 %li\r\n", X1);
+ 1159               	.LM85:
+ 1160 04a8 AEED      		ldi r26,lo8(-34)
+ 1161 04aa BBE0      		ldi r27,lo8(11)
+ 1162 04ac 0E94 0000 		call __muluhisi3
+ 1163 04b0 4C01      		movw r8,r24
+ 1164 04b2 BB24      		clr r11
+ 1165 04b4 97FC      		sbrc r9,7
+ 1166 04b6 B094      		com r11
+ 1167 04b8 AB2C      		mov r10,r11
+ 1168 04ba 8092 0000 		sts X1,r8
+ 1169 04be 9092 0000 		sts X1+1,r9
+ 1170 04c2 A092 0000 		sts X1+2,r10
+ 1171 04c6 B092 0000 		sts X1+3,r11
+ 545:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** //    X1 = (X1 * 3038) / pow(2,16);                       if(DEBUG) printf("X1 %li\r\n", X1);
+ 546:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     X2 = (-7357 * P ) / 65536;                      if(DEBUG) printf("X2 %li\r\n", X2);
+ 1173               	.LM86:
+ 1174 04ca A3E4      		ldi r26,lo8(67)
+ 1175 04cc B3EE      		ldi r27,lo8(-29)
+ 1176 04ce A701      		movw r20,r14
+ 1177 04d0 9601      		movw r18,r12
+ 1178 04d2 0E94 0000 		call __mulohisi3
+ 1179 04d6 20E0      		ldi r18,0
+ 1180 04d8 30E0      		ldi r19,0
+ 1181 04da 41E0      		ldi r20,lo8(1)
+ 1182 04dc 50E0      		ldi r21,0
+ 1183 04de 0E94 0000 		call __divmodsi4
+ 1184 04e2 2093 0000 		sts X2,r18
+ 1185 04e6 3093 0000 		sts X2+1,r19
+ 1186 04ea 4093 0000 		sts X2+2,r20
+ 1187 04ee 5093 0000 		sts X2+3,r21
+ 547:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** //	X2 = (-7357 * P ) / pow(2,16);                      if(DEBUG) printf("X2 %li\r\n", X2);
+ 548:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** //    P = P + (X1 + X2 + 3791) / pow(2,4);                if(DEBUG) printf("P %li\r\n", P);
+ 549:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     P = P + (X1 + X2 + 3791) / 16;                if(DEBUG) printf("P %li\r\n", P);
+ 1189               	.LM87:
+ 1190 04f2 D501      		movw r26,r10
+ 1191 04f4 C401      		movw r24,r8
+ 1192 04f6 820F      		add r24,r18
+ 1193 04f8 931F      		adc r25,r19
+ 1194 04fa A41F      		adc r26,r20
+ 1195 04fc B51F      		adc r27,r21
+ 1196 04fe BC01      		movw r22,r24
+ 1197 0500 CD01      		movw r24,r26
+ 1198 0502 6153      		subi r22,49
+ 1199 0504 714F      		sbci r23,-15
+ 1200 0506 8F4F      		sbci r24,-1
+ 1201 0508 9F4F      		sbci r25,-1
+ 1202 050a 20E1      		ldi r18,lo8(16)
+ 1203 050c 30E0      		ldi r19,0
+ 1204 050e 40E0      		ldi r20,0
+ 1205 0510 50E0      		ldi r21,0
+ 1206 0512 0E94 0000 		call __divmodsi4
+ 1207 0516 C701      		movw r24,r14
+ 1208 0518 B601      		movw r22,r12
+ 1209 051a 620F      		add r22,r18
+ 1210 051c 731F      		adc r23,r19
+ 1211 051e 841F      		adc r24,r20
+ 1212 0520 951F      		adc r25,r21
+ 1213 0522 6093 0000 		sts P,r22
+ 1214 0526 7093 0000 		sts P+1,r23
+ 1215 052a 8093 0000 		sts P+2,r24
+ 1216 052e 9093 0000 		sts P+3,r25
+ 1217               	/* epilogue start */
+ 550:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 551:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     if(DEBUG) printf("Pressure is %li Pascals\r\n", P);
+ 552:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 553:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     return P;
+ 554:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 555:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** }
+ 1219               	.LM88:
+ 1220 0532 2896      		adiw r28,8
+ 1221 0534 0FB6      		in __tmp_reg__,__SREG__
+ 1222 0536 F894      		cli
+ 1223 0538 DEBF      		out __SP_H__,r29
+ 1224 053a 0FBE      		out __SREG__,__tmp_reg__
+ 1225 053c CDBF      		out __SP_L__,r28
+ 1226 053e DF91      		pop r29
+ 1227 0540 CF91      		pop r28
+ 1228 0542 1F91      		pop r17
+ 1229 0544 FF90      		pop r15
+ 1230 0546 EF90      		pop r14
+ 1231 0548 DF90      		pop r13
+ 1232 054a CF90      		pop r12
+ 1233 054c BF90      		pop r11
+ 1234 054e AF90      		pop r10
+ 1235 0550 9F90      		pop r9
+ 1236 0552 8F90      		pop r8
+ 1237 0554 7F90      		pop r7
+ 1238 0556 6F90      		pop r6
+ 1239 0558 5F90      		pop r5
+ 1240 055a 4F90      		pop r4
+ 1241 055c 0895      		ret
+ 1243               	.Lscope10:
+ 1245               		.stabd	78,0,0
+ 1247               	.global	calc_true_temp
+ 1249               	calc_true_temp:
+ 1250               		.stabd	46,0,0
+ 556:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 557:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 558:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** inline int32_t calc_true_temp(){
+ 1252               	.LM89:
+ 1253               	.LFBB11:
+ 1254 055e CF92      		push r12
+ 1255 0560 DF92      		push r13
+ 1256 0562 EF92      		push r14
+ 1257 0564 FF92      		push r15
+ 1258 0566 0F93      		push r16
+ 1259 0568 1F93      		push r17
+ 1260 056a CF93      		push r28
+ 1261 056c DF93      		push r29
+ 1262               	/* prologue: function */
+ 1263               	/* frame size = 0 */
+ 1264               	/* stack size = 8 */
+ 1265               	.L__stack_usage = 8
+ 559:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 560:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     X1 = ((int32_t)UT - (int32_t)AC6) * (int32_t)AC5 / (int32_t)32768;
+ 1267               	.LM90:
+ 1268 056e C0E0      		ldi r28,lo8(eeprom_values)
+ 1269 0570 D0E0      		ldi r29,hi8(eeprom_values)
+ 1270 0572 8A85      		ldd r24,Y+10
+ 1271 0574 9B85      		ldd r25,Y+11
+ 1272 0576 4091 0000 		lds r20,UT
+ 1273 057a 5091 0000 		lds r21,UT+1
+ 1274 057e 6091 0000 		lds r22,UT+2
+ 1275 0582 7091 0000 		lds r23,UT+3
+ 1276 0586 9A01      		movw r18,r20
+ 1277 0588 AB01      		movw r20,r22
+ 1278 058a 281B      		sub r18,r24
+ 1279 058c 390B      		sbc r19,r25
+ 1280 058e 4109      		sbc r20,__zero_reg__
+ 1281 0590 5109      		sbc r21,__zero_reg__
+ 1282 0592 A885      		ldd r26,Y+8
+ 1283 0594 B985      		ldd r27,Y+9
+ 1284 0596 0E94 0000 		call __muluhisi3
+ 1285 059a 20E0      		ldi r18,0
+ 1286 059c 30E8      		ldi r19,lo8(-128)
+ 1287 059e 40E0      		ldi r20,0
+ 1288 05a0 50E0      		ldi r21,0
+ 1289 05a2 0E94 0000 		call __divmodsi4
+ 1290 05a6 6901      		movw r12,r18
+ 1291 05a8 7A01      		movw r14,r20
+ 1292 05aa 2093 0000 		sts X1,r18
+ 1293 05ae 3093 0000 		sts X1+1,r19
+ 1294 05b2 4093 0000 		sts X1+2,r20
+ 1295 05b6 5093 0000 		sts X1+3,r21
+ 561:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** //    X1 = ((int32_t)UT - (int32_t)AC6) * (int32_t)AC5 / (int32_t)pow(2,15);
+ 562:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** if(DEBUG) printf("X1 %li\r\n", X1);
+ 563:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** //    X2 = (int32_t) MC * pow(2,11) / (X1 + MD);
+ 564:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     X2 = (int32_t) MC * 2048 / (X1 + MD);
+ 1297               	.LM91:
+ 1298 05ba 6A89      		ldd r22,Y+18
+ 1299 05bc 7B89      		ldd r23,Y+19
+ 1300 05be CB01      		movw r24,r22
+ 1301 05c0 AA27      		clr r26
+ 1302 05c2 97FD      		sbrc r25,7
+ 1303 05c4 A095      		com r26
+ 1304 05c6 BA2F      		mov r27,r26
+ 1305 05c8 BC01      		movw r22,r24
+ 1306 05ca CD01      		movw r24,r26
+ 1307 05cc 2BE0      		ldi r18,11
+ 1308               		1:
+ 1309 05ce 660F      		lsl r22
+ 1310 05d0 771F      		rol r23
+ 1311 05d2 881F      		rol r24
+ 1312 05d4 991F      		rol r25
+ 1313 05d6 2A95      		dec r18
+ 1314 05d8 01F4      		brne 1b
+ 1315 05da 0C89      		ldd r16,Y+20
+ 1316 05dc 1D89      		ldd r17,Y+21
+ 1317 05de 2227      		clr r18
+ 1318 05e0 17FD      		sbrc r17,7
+ 1319 05e2 2095      		com r18
+ 1320 05e4 322F      		mov r19,r18
+ 1321 05e6 A901      		movw r20,r18
+ 1322 05e8 9801      		movw r18,r16
+ 1323 05ea 2C0D      		add r18,r12
+ 1324 05ec 3D1D      		adc r19,r13
+ 1325 05ee 4E1D      		adc r20,r14
+ 1326 05f0 5F1D      		adc r21,r15
+ 1327 05f2 0E94 0000 		call __divmodsi4
+ 1328 05f6 2093 0000 		sts X2,r18
+ 1329 05fa 3093 0000 		sts X2+1,r19
+ 1330 05fe 4093 0000 		sts X2+2,r20
+ 1331 0602 5093 0000 		sts X2+3,r21
+ 565:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** if(DEBUG) printf("X2 %li\r\n", X2);
+ 566:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     B5 = X1 + X2;
+ 1333               	.LM92:
+ 1334 0606 D701      		movw r26,r14
+ 1335 0608 C601      		movw r24,r12
+ 1336 060a 820F      		add r24,r18
+ 1337 060c 931F      		adc r25,r19
+ 1338 060e A41F      		adc r26,r20
+ 1339 0610 B51F      		adc r27,r21
+ 1340 0612 8093 0000 		sts B5,r24
+ 1341 0616 9093 0000 		sts B5+1,r25
+ 1342 061a A093 0000 		sts B5+2,r26
+ 1343 061e B093 0000 		sts B5+3,r27
+ 567:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** if(DEBUG) printf("B5 %li\r\n", B5);
+ 568:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** //    T = (B5 + 8) / pow(2,4);
+ 569:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     T = (B5 + 8) / 16;
+ 1345               	.LM93:
+ 1346 0622 BC01      		movw r22,r24
+ 1347 0624 CD01      		movw r24,r26
+ 1348 0626 685F      		subi r22,-8
+ 1349 0628 7F4F      		sbci r23,-1
+ 1350 062a 8F4F      		sbci r24,-1
+ 1351 062c 9F4F      		sbci r25,-1
+ 1352 062e 20E1      		ldi r18,lo8(16)
+ 1353 0630 30E0      		ldi r19,0
+ 1354 0632 40E0      		ldi r20,0
+ 1355 0634 50E0      		ldi r21,0
+ 1356 0636 0E94 0000 		call __divmodsi4
+ 1357 063a 2093 0000 		sts T,r18
+ 1358 063e 3093 0000 		sts T+1,r19
+ 1359 0642 4093 0000 		sts T+2,r20
+ 1360 0646 5093 0000 		sts T+3,r21
+ 570:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** if(DEBUG) printf("XT %li\r\n", T);
+ 571:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 572:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     if(DEBUG) printf("Temperature is %li /10 degrees Celcius.\r\n", T);
+ 573:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 574:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     return T;
+ 575:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** }
+ 1362               	.LM94:
+ 1363 064a CA01      		movw r24,r20
+ 1364 064c B901      		movw r22,r18
+ 1365               	/* epilogue start */
+ 1366 064e DF91      		pop r29
+ 1367 0650 CF91      		pop r28
+ 1368 0652 1F91      		pop r17
+ 1369 0654 0F91      		pop r16
+ 1370 0656 FF90      		pop r15
+ 1371 0658 EF90      		pop r14
+ 1372 065a DF90      		pop r13
+ 1373 065c CF90      		pop r12
+ 1374 065e 0895      		ret
+ 1376               	.Lscope11:
+ 1378               		.stabd	78,0,0
+ 1380               	.global	read_uncomp_temp
+ 1382               	read_uncomp_temp:
+ 1383               		.stabd	46,0,0
+ 576:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 577:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** void read_uncomp_temp(){
+ 1385               	.LM95:
+ 1386               	.LFBB12:
+ 1387 0660 CF93      		push r28
+ 1388 0662 DF93      		push r29
+ 1389 0664 00D0      		rcall .
+ 1390 0666 1F92      		push __zero_reg__
+ 1391 0668 CDB7      		in r28,__SP_L__
+ 1392 066a DEB7      		in r29,__SP_H__
+ 1393               	/* prologue: function */
+ 1394               	/* frame size = 3 */
+ 1395               	/* stack size = 5 */
+ 1396               	.L__stack_usage = 5
+ 578:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 579:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     uint8_t write_buf[1];
+ 580:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     uint8_t rx_buf[2];
+ 581:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     uint8_t i;
+ 582:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 583:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     write_buf[0] = 0x2E;
+ 1398               	.LM96:
+ 1399 066c 8EE2      		ldi r24,lo8(46)
+ 1400 066e 8B83      		std Y+3,r24
+ 584:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 585:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     // Step 1: Write 0x2E into register 0xF4
+ 586:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     ee24xx_write_bytes(0xF4, 1, write_buf);
+ 1402               	.LM97:
+ 1403 0670 AE01      		movw r20,r28
+ 1404 0672 4D5F      		subi r20,-3
+ 1405 0674 5F4F      		sbci r21,-1
+ 1406 0676 61E0      		ldi r22,lo8(1)
+ 1407 0678 70E0      		ldi r23,0
+ 1408 067a 84EF      		ldi r24,lo8(-12)
+ 1409 067c 90E0      		ldi r25,0
+ 1410 067e 0E94 0000 		call ee24xx_write_bytes
+ 587:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 588:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     // Step 2: Wait 4.5 ms
+ 589:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****  //   nrk_wait_ticks(1000); // 1 tick is 1 ms I believe
+ 590:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     nrk_spin_wait_us(4500);
+ 1412               	.LM98:
+ 1413 0682 84E9      		ldi r24,lo8(-108)
+ 1414 0684 91E1      		ldi r25,lo8(17)
+ 1415 0686 0E94 0000 		call nrk_spin_wait_us
+ 591:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 592:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     // Step 3: Read registers 0xF6, 0xF7
+ 593:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     ee24xx_read_bytes(0xF6, 2, rx_buf);
+ 1417               	.LM99:
+ 1418 068a AE01      		movw r20,r28
+ 1419 068c 4F5F      		subi r20,-1
+ 1420 068e 5F4F      		sbci r21,-1
+ 1421 0690 62E0      		ldi r22,lo8(2)
+ 1422 0692 70E0      		ldi r23,0
+ 1423 0694 86EF      		ldi r24,lo8(-10)
+ 1424 0696 90E0      		ldi r25,0
+ 1425 0698 0E94 0000 		call ee24xx_read_bytes
+ 594:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 595:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** //    if(DEBUG){
+ 596:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****   //      for(i = 0; i < 2; i++)
+ 597:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****   //          printf("uncomp_temp[%i] is %u\r\n", i, rx_buf[i]);
+ 598:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****   //  }
+ 599:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 600:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     UT = (((uint16_t)rx_buf[0] | 0x0000) << 8) | ((uint16_t)rx_buf[1]);
+ 1427               	.LM100:
+ 1428 069c 8981      		ldd r24,Y+1
+ 1429 069e 90E0      		ldi r25,0
+ 1430 06a0 982F      		mov r25,r24
+ 1431 06a2 8827      		clr r24
+ 1432 06a4 2A81      		ldd r18,Y+2
+ 1433 06a6 822B      		or r24,r18
+ 1434 06a8 A0E0      		ldi r26,0
+ 1435 06aa B0E0      		ldi r27,0
+ 1436 06ac 8093 0000 		sts UT,r24
+ 1437 06b0 9093 0000 		sts UT+1,r25
+ 1438 06b4 A093 0000 		sts UT+2,r26
+ 1439 06b8 B093 0000 		sts UT+3,r27
+ 1440               	/* epilogue start */
+ 601:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 602:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** //    if(DEBUG)
+ 603:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****   //   printf("UT is %i\r\n", UT);
+ 604:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 605:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** }
+ 1442               	.LM101:
+ 1443 06bc 0F90      		pop __tmp_reg__
+ 1444 06be 0F90      		pop __tmp_reg__
+ 1445 06c0 0F90      		pop __tmp_reg__
+ 1446 06c2 DF91      		pop r29
+ 1447 06c4 CF91      		pop r28
+ 1448 06c6 0895      		ret
+ 1454               	.Lscope12:
+ 1456               		.stabd	78,0,0
+ 1458               	.global	calc_temp
+ 1460               	calc_temp:
+ 1461               		.stabd	46,0,0
+ 606:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 607:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 608:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** int32_t calc_temp(){
+ 1463               	.LM102:
+ 1464               	.LFBB13:
+ 1465               	/* prologue: function */
+ 1466               	/* frame size = 0 */
+ 1467               	/* stack size = 0 */
+ 1468               	.L__stack_usage = 0
+ 609:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     read_uncomp_temp();
+ 1470               	.LM103:
+ 1471 06c8 0E94 0000 		call read_uncomp_temp
+ 610:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     return calc_true_temp();
+ 1473               	.LM104:
+ 1474 06cc 0C94 0000 		jmp calc_true_temp
+ 1476               	.Lscope13:
+ 1478               		.stabd	78,0,0
+ 1481               	.global	read_uncomp_press
+ 1483               	read_uncomp_press:
+ 1484               		.stabd	46,0,0
+ 611:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** }
+ 612:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 613:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 614:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** int32_t calc_press(uint8_t oss){
+ 615:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     read_uncomp_press(oss);
+ 616:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     return calc_true_press(oss);
+ 617:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** }
+ 618:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 619:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** void read_uncomp_press(uint8_t oss){
+ 1486               	.LM105:
+ 1487               	.LFBB14:
+ 1488 06d0 1F93      		push r17
+ 1489 06d2 CF93      		push r28
+ 1490 06d4 DF93      		push r29
+ 1491 06d6 00D0      		rcall .
+ 1492 06d8 00D0      		rcall .
+ 1493 06da CDB7      		in r28,__SP_L__
+ 1494 06dc DEB7      		in r29,__SP_H__
+ 1495               	/* prologue: function */
+ 1496               	/* frame size = 4 */
+ 1497               	/* stack size = 7 */
+ 1498               	.L__stack_usage = 7
+ 1499 06de 182F      		mov r17,r24
+ 620:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 621:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     uint8_t write_buf[1]; // Used to send a value to the Bosch sensor
+ 622:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     uint8_t rx_buf[3]; // Used to store the received values from the sensor
+ 623:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     uint8_t i;
+ 624:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 625:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     write_buf[0] = 0x34 + (oss << 6);
+ 1501               	.LM106:
+ 1502 06e0 8295      		swap r24
+ 1503 06e2 880F      		lsl r24
+ 1504 06e4 880F      		lsl r24
+ 1505 06e6 807C      		andi r24,lo8(-64)
+ 1506 06e8 8C5C      		subi r24,lo8(-(52))
+ 1507 06ea 8C83      		std Y+4,r24
+ 626:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 627:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     // Step 1: Write 0x2E into register 0xF4
+ 628:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     ee24xx_write_bytes(0xF4, sizeof(write_buf), write_buf);
+ 1509               	.LM107:
+ 1510 06ec AE01      		movw r20,r28
+ 1511 06ee 4C5F      		subi r20,-4
+ 1512 06f0 5F4F      		sbci r21,-1
+ 1513 06f2 61E0      		ldi r22,lo8(1)
+ 1514 06f4 70E0      		ldi r23,0
+ 1515 06f6 84EF      		ldi r24,lo8(-12)
+ 1516 06f8 90E0      		ldi r25,0
+ 1517 06fa 0E94 0000 		call ee24xx_write_bytes
+ 629:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 630:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     // Step 2: Wait 4.5 ms
+ 631:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** //    nrk_wait_ticks(1000); // 1 tick is 1 ms I believe
+ 632:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     nrk_spin_wait_us(4500);
+ 1519               	.LM108:
+ 1520 06fe 84E9      		ldi r24,lo8(-108)
+ 1521 0700 91E1      		ldi r25,lo8(17)
+ 1522 0702 0E94 0000 		call nrk_spin_wait_us
+ 633:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 634:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     // Step 3: Read registers 0xF6, 0xF7, 0xF8
+ 635:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     ee24xx_read_bytes(PRESS_BASE_REGISTER, sizeof(rx_buf), rx_buf);
+ 1524               	.LM109:
+ 1525 0706 AE01      		movw r20,r28
+ 1526 0708 4F5F      		subi r20,-1
+ 1527 070a 5F4F      		sbci r21,-1
+ 1528 070c 63E0      		ldi r22,lo8(3)
+ 1529 070e 70E0      		ldi r23,0
+ 1530 0710 86EF      		ldi r24,lo8(-10)
+ 1531 0712 90E0      		ldi r25,0
+ 1532 0714 0E94 0000 		call ee24xx_read_bytes
+ 636:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 637:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****    /* if(DEBUG){
+ 638:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         for(i = 0; i < 3; i++)
+ 639:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             printf("uncomp_press[%i] is %u\r\n", i, rx_buf[i]);
+ 640:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     }
+ 641:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** */
+ 642:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****      // Assemble the raw pressure value
+ 643:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 644:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****      UP = ((uint32_t) rx_buf[0]) << 16;
+ 645:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****      UP = UP  | ((uint32_t)(rx_buf[1]) << 8);
+ 1534               	.LM110:
+ 1535 0718 2A81      		ldd r18,Y+2
+ 644:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****      UP = UP  | ((uint32_t)(rx_buf[1]) << 8);
+ 1537               	.LM111:
+ 1538 071a 8981      		ldd r24,Y+1
+ 1539 071c 90E0      		ldi r25,0
+ 1540 071e A0E0      		ldi r26,0
+ 1541 0720 B0E0      		ldi r27,0
+ 1542 0722 DC01      		movw r26,r24
+ 1543 0724 9927      		clr r25
+ 1544 0726 8827      		clr r24
+ 1546               	.LM112:
+ 1547 0728 922B      		or r25,r18
+ 646:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****      UP = UP  + rx_buf[2];
+ 1549               	.LM113:
+ 1550 072a 2B81      		ldd r18,Y+3
+ 1551 072c 820F      		add r24,r18
+ 1552 072e 911D      		adc r25,__zero_reg__
+ 1553 0730 A11D      		adc r26,__zero_reg__
+ 1554 0732 B11D      		adc r27,__zero_reg__
+ 647:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****      UP = UP >> (8-oss);
+ 1556               	.LM114:
+ 1557 0734 28E0      		ldi r18,lo8(8)
+ 1558 0736 30E0      		ldi r19,0
+ 1559 0738 211B      		sub r18,r17
+ 1560 073a 3109      		sbc r19,__zero_reg__
+ 1561 073c 00C0      		rjmp 2f
+ 1562               		1:
+ 1563 073e B595      		asr r27
+ 1564 0740 A795      		ror r26
+ 1565 0742 9795      		ror r25
+ 1566 0744 8795      		ror r24
+ 1567               		2:
+ 1568 0746 2A95      		dec r18
+ 1569 0748 02F4      		brpl 1b
+ 1570 074a 8093 0000 		sts UP,r24
+ 1571 074e 9093 0000 		sts UP+1,r25
+ 1572 0752 A093 0000 		sts UP+2,r26
+ 1573 0756 B093 0000 		sts UP+3,r27
+ 1574               	/* epilogue start */
+ 648:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 649:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****  //    if(DEBUG)
+ 650:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****  //    printf("UP is %li\r\n", UP);
+ 651:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 652:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** }
+ 1576               	.LM115:
+ 1577 075a 0F90      		pop __tmp_reg__
+ 1578 075c 0F90      		pop __tmp_reg__
+ 1579 075e 0F90      		pop __tmp_reg__
+ 1580 0760 0F90      		pop __tmp_reg__
+ 1581 0762 DF91      		pop r29
+ 1582 0764 CF91      		pop r28
+ 1583 0766 1F91      		pop r17
+ 1584 0768 0895      		ret
+ 1590               	.Lscope14:
+ 1592               		.stabd	78,0,0
+ 1595               	.global	calc_press
+ 1597               	calc_press:
+ 1598               		.stabd	46,0,0
+ 614:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     read_uncomp_press(oss);
+ 1600               	.LM116:
+ 1601               	.LFBB15:
+ 1602 076a CF93      		push r28
+ 1603               	/* prologue: function */
+ 1604               	/* frame size = 0 */
+ 1605               	/* stack size = 1 */
+ 1606               	.L__stack_usage = 1
+ 1607 076c C82F      		mov r28,r24
+ 615:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     return calc_true_press(oss);
+ 1609               	.LM117:
+ 1610 076e 0E94 0000 		call read_uncomp_press
+ 616:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** }
+ 1612               	.LM118:
+ 1613 0772 8C2F      		mov r24,r28
+ 1614               	/* epilogue start */
+ 617:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 1616               	.LM119:
+ 1617 0774 CF91      		pop r28
+ 616:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** }
+ 1619               	.LM120:
+ 1620 0776 0C94 0000 		jmp calc_true_press
+ 1622               	.Lscope15:
+ 1624               		.stabd	78,0,0
+ 1630               	.global	read
+ 1632               	read:
+ 1633               		.stabd	46,0,0
+ 224:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 1635               	.LM121:
+ 1636               	.LFBB16:
+ 1637 077a AF92      		push r10
+ 1638 077c BF92      		push r11
+ 1639 077e CF92      		push r12
+ 1640 0780 DF92      		push r13
+ 1641 0782 EF92      		push r14
+ 1642 0784 FF92      		push r15
+ 1643 0786 1F93      		push r17
+ 1644 0788 CF93      		push r28
+ 1645 078a DF93      		push r29
+ 1646               	/* prologue: function */
+ 1647               	/* frame size = 0 */
+ 1648               	/* stack size = 9 */
+ 1649               	.L__stack_usage = 9
+ 230:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     uint8_t count = 0;
+ 1651               	.LM122:
+ 1652 078c 8091 7A00 		lds r24,122
+ 1653 0790 8068      		ori r24,lo8(-128)
+ 1654 0792 8093 7A00 		sts 122,r24
+ 236:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     if ((channel != TEMP2) && (channel != PRESS) && channel <= 7) {
+ 1656               	.LM123:
+ 1657 0796 8FEF      		ldi r24,lo8(-1)
+ 1658 0798 820F      		add r24,r18
+ 1659 079a 8230      		cpi r24,lo8(2)
+ 1660 079c 00F0      		brlo .L40
+ 236:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     if ((channel != TEMP2) && (channel != PRESS) && channel <= 7) {
+ 1662               	.LM124:
+ 1663 079e 2430      		cpi r18,lo8(4)
+ 1664 07a0 01F0      		breq .+2
+ 1665 07a2 00C0      		rjmp .L62
+ 1666               	.L40:
+ 1667 07a4 122F      		mov r17,r18
+ 1668 07a6 EA01      		movw r28,r20
+ 1669               	.LBB18:
+ 1670               	.LBB19:
+ 237:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         /* Conversion to 8-bit value*/
+ 1672               	.LM125:
+ 1673 07a8 8091 0000 		lds r24,channel
+ 1674 07ac 8830      		cpi r24,lo8(8)
+ 1675 07ae 00F4      		brsh .L42
+ 1676               	.LBB20:
+ 239:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 1678               	.LM126:
+ 1679 07b0 0E94 0000 		call get_adc_val
+ 241:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             buffer[count] = val & 0xFF;
+ 1681               	.LM127:
+ 1682 07b4 1230      		cpi r17,lo8(2)
+ 1683 07b6 01F4      		brne .L43
+ 242:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             count++;
+ 1685               	.LM128:
+ 1686 07b8 8883      		st Y,r24
+ 244:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         }
+ 1688               	.LM129:
+ 1689 07ba 9983      		std Y+1,r25
+ 1690 07bc 00C0      		rjmp .L71
+ 1691               	.L43:
+ 247:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             buffer[count] = (val >> 2) & 0xFF;
+ 1693               	.LM130:
+ 1694 07be 1130      		cpi r17,lo8(1)
+ 1695 07c0 01F0      		breq .+2
+ 1696 07c2 00C0      		rjmp .L72
+ 248:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         }
+ 1698               	.LM131:
+ 1699 07c4 9695      		lsr r25
+ 1700 07c6 8795      		ror r24
+ 1701 07c8 9695      		lsr r25
+ 1702 07ca 8795      		ror r24
+ 1703 07cc 00C0      		rjmp .L73
+ 1704               	.L42:
+ 1705               	.LBE20:
+ 252:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 1707               	.LM132:
+ 1708 07ce 8D30      		cpi r24,lo8(13)
+ 1709 07d0 01F4      		brne .L46
+ 256:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         nrk_gpio_clr(NRK_PORTE_2);
+ 1711               	.LM133:
+ 1712 07d2 F090 0000 		lds r15,NRK_PORTE_2
+ 1713 07d6 61E0      		ldi r22,lo8(1)
+ 1714 07d8 8F2D      		mov r24,r15
+ 1715 07da 0E94 0000 		call nrk_gpio_direction
+ 257:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         nrk_gpio_direction(NRK_PORTE_2, NRK_PIN_INPUT);
+ 1717               	.LM134:
+ 1718 07de 8F2D      		mov r24,r15
+ 1719 07e0 0E94 0000 		call nrk_gpio_clr
+ 258:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	if(size==2) {buffer[count]=nrk_gpio_get(NRK_PORTE_2); count++; buffer[count]=0;  }
+ 1721               	.LM135:
+ 1722 07e4 60E0      		ldi r22,0
+ 1723 07e6 8F2D      		mov r24,r15
+ 1724 07e8 0E94 0000 		call nrk_gpio_direction
+ 259:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	if(size==1) {buffer[count]=nrk_gpio_get(NRK_PORTE_2); }
+ 1726               	.LM136:
+ 1727 07ec 1230      		cpi r17,lo8(2)
+ 1728 07ee 01F4      		brne .L47
+ 1729 07f0 8F2D      		mov r24,r15
+ 1730 07f2 0E94 0000 		call nrk_gpio_get
+ 1731 07f6 8883      		st Y,r24
+ 1732 07f8 1982      		std Y+1,__zero_reg__
+ 1733               	.L71:
+ 1734 07fa 81E0      		ldi r24,lo8(1)
+ 1735 07fc 00C0      		rjmp .L44
+ 1736               	.L47:
+ 260:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****      } 
+ 1738               	.LM137:
+ 1739 07fe 1130      		cpi r17,lo8(1)
+ 1740 0800 01F0      		breq .+2
+ 1741 0802 00C0      		rjmp .L72
+ 1742 0804 8F2D      		mov r24,r15
+ 1743 0806 0E94 0000 		call nrk_gpio_get
+ 1744               	.L73:
+ 1745 080a 8883      		st Y,r24
+ 1746 080c 00C0      		rjmp .L72
+ 1747               	.L46:
+ 262:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         /* Conversion to 8-bit value*/
+ 1749               	.LM138:
+ 1750 080e 8C30      		cpi r24,lo8(12)
+ 1751 0810 01F4      		brne .L49
+ 1752 0812 A12C      		mov r10,__zero_reg__
+ 1753 0814 BB24      		clr r11
+ 1754 0816 B394      		inc r11
+ 1755 0818 E12C      		mov r14,__zero_reg__
+ 1756 081a F12C      		mov r15,__zero_reg__
+ 1757 081c CC24      		clr r12
+ 1758 081e C394      		inc r12
+ 1759 0820 24E0      		ldi r18,lo8(4)
+ 1760 0822 D22E      		mov r13,r18
+ 1761               	.L53:
+ 1762               	.LBB21:
+ 271:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             nrk_spin_wait_us(32);
+ 1764               	.LM139:
+ 1765 0824 8091 7A00 		lds r24,122
+ 1766 0828 8064      		ori r24,lo8(64)
+ 1767 082a 8093 7A00 		sts 122,r24
+ 1768               	.L50:
+ 1769 082e 8091 7A00 		lds r24,122
+ 1770 0832 84FF      		sbrs r24,4
+ 1771 0834 00C0      		rjmp .L50
+ 272:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     	    ADC_GET_SAMPLE_10(val);
+ 1773               	.LM140:
+ 1774 0836 80E2      		ldi r24,lo8(32)
+ 1775 0838 90E0      		ldi r25,0
+ 1776 083a 0E94 0000 		call nrk_spin_wait_us
+ 273:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             if (val < min)min = val;
+ 1778               	.LM141:
+ 1779 083e 8091 7800 		lds r24,120
+ 1780 0842 2091 7900 		lds r18,121
+ 1781 0846 90E0      		ldi r25,0
+ 1782 0848 922B      		or r25,r18
+ 1783 084a 8C15      		cp r24,r12
+ 1784 084c 9D05      		cpc r25,r13
+ 1785 084e 00F4      		brsh .L51
+ 1786 0850 6C01      		movw r12,r24
+ 1787               	.L51:
+ 1788 0852 E816      		cp r14,r24
+ 1789 0854 F906      		cpc r15,r25
+ 1790 0856 00F4      		brsh .L52
+ 1791 0858 7C01      		movw r14,r24
+ 1792               	.L52:
+ 1793 085a 81E0      		ldi r24,1
+ 1794 085c A81A      		sub r10,r24
+ 1795 085e B108      		sbc r11,__zero_reg__
+ 269:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             // 10ms snapshot at around 11KHz measured on scope
+ 1797               	.LM142:
+ 1798 0860 01F4      		brne .L53
+ 277:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         if (size == 2) {
+ 1800               	.LM143:
+ 1801 0862 EC18      		sub r14,r12
+ 1802 0864 FD08      		sbc r15,r13
+ 278:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             buffer[count] = val & 0xFF;
+ 1804               	.LM144:
+ 1805 0866 1230      		cpi r17,lo8(2)
+ 1806 0868 01F4      		brne .L54
+ 279:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             count++;
+ 1808               	.LM145:
+ 1809 086a E882      		st Y,r14
+ 281:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         }
+ 1811               	.LM146:
+ 1812 086c F982      		std Y+1,r15
+ 1813 086e 00C0      		rjmp .L71
+ 1814               	.L54:
+ 284:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             buffer[count] = (val >> 2) & 0xFF;
+ 1816               	.LM147:
+ 1817 0870 1130      		cpi r17,lo8(1)
+ 1818 0872 01F4      		brne .L72
+ 285:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         }
+ 1820               	.LM148:
+ 1821 0874 F694      		lsr r15
+ 1822 0876 E794      		ror r14
+ 1823 0878 F694      		lsr r15
+ 1824 087a E794      		ror r14
+ 1825 087c E882      		st Y,r14
+ 1826 087e 00C0      		rjmp .L72
+ 1827               	.L49:
+ 1828               	.LBE21:
+ 288:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     {
+ 1830               	.LM149:
+ 1831 0880 8B30      		cpi r24,lo8(11)
+ 1832 0882 01F4      		brne .L55
+ 290:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	// Port F.2
+ 1834               	.LM150:
+ 1835 0884 1092 0000 		sts h_cnt,__zero_reg__
+ 293:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	do{
+ 1837               	.LM151:
+ 1838 0888 0E94 0000 		call nrk_int_disable
+ 1839               	.L56:
+ 295:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	// Wait while pin is low
+ 1841               	.LM152:
+ 1842 088c 6499      		sbic 0xc,4
+ 1843 088e 00C0      		rjmp .L56
+ 1844               	.L57:
+ 298:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	// Time how long pin stays high
+ 1846               	.LM153:
+ 1847 0890 649B      		sbis 0xc,4
+ 1848 0892 00C0      		rjmp .L57
+ 1849               	.L65:
+ 305:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	}while((PINE & 0x10) == 0x10 );
+ 1851               	.LM154:
+ 1852 0894 8091 0000 		lds r24,h_cnt
+ 1853 0898 8F5F      		subi r24,lo8(-(1))
+ 1854 089a 8093 0000 		sts h_cnt,r24
+ 306:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	nrk_int_enable();
+ 1856               	.LM155:
+ 1857 089e 6499      		sbic 0xc,4
+ 1858 08a0 00C0      		rjmp .L65
+ 307:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** //	h_cnt=_nrk_high_speed_timer_get();
+ 1860               	.LM156:
+ 1861 08a2 0E94 0000 		call nrk_int_enable
+ 309:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	buffer[1]=0;
+ 1863               	.LM157:
+ 1864 08a6 8091 0000 		lds r24,h_cnt
+ 1865 08aa 8883      		st Y,r24
+ 310:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	buffer[2]=0;
+ 1867               	.LM158:
+ 1868 08ac 1982      		std Y+1,__zero_reg__
+ 311:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	buffer[3]=0;
+ 1870               	.LM159:
+ 1871 08ae 1A82      		std Y+2,__zero_reg__
+ 312:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	//buffer[1]=h_cnt >> 8;
+ 1873               	.LM160:
+ 1874 08b0 1B82      		std Y+3,__zero_reg__
+ 1875               	.L72:
+ 231:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     // key and value get passed as opt and size
+ 1877               	.LM161:
+ 1878 08b2 80E0      		ldi r24,0
+ 1879 08b4 00C0      		rjmp .L44
+ 1880               	.L55:
+ 320:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         // Size must be 2 for these measurements. If the user has specified 1,
+ 1882               	.LM162:
+ 1883 08b6 97EF      		ldi r25,lo8(-9)
+ 1884 08b8 980F      		add r25,r24
+ 1885 08ba 9230      		cpi r25,lo8(2)
+ 1886 08bc 00F4      		brsh .L72
+ 323:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             return 0;
+ 1888               	.LM163:
+ 1889 08be 2430      		cpi r18,lo8(4)
+ 1890 08c0 01F4      		brne .L62
+ 326:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	{
+ 1892               	.LM164:
+ 1893 08c2 8A30      		cpi r24,lo8(10)
+ 1894 08c4 01F4      		brne .L59
+ 328:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 	}
+ 1896               	.LM165:
+ 1897 08c6 0E94 0000 		call calc_temp
+ 1898 08ca 00C0      		rjmp .L60
+ 1899               	.L59:
+ 331:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****              raw temperature values*/
+ 1901               	.LM166:
+ 1902 08cc 0E94 0000 		call calc_temp
+ 333:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         }
+ 1904               	.LM167:
+ 1905 08d0 80E0      		ldi r24,0
+ 1906 08d2 0E94 0000 		call calc_press
+ 1907               	.L60:
+ 336:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         count++;
+ 1909               	.LM168:
+ 1910 08d6 6883      		st Y,r22
+ 338:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         count++;
+ 1912               	.LM169:
+ 1913 08d8 7983      		std Y+1,r23
+ 340:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         count++;
+ 1915               	.LM170:
+ 1916 08da 8A83      		std Y+2,r24
+ 342:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 1918               	.LM171:
+ 1919 08dc 9B83      		std Y+3,r25
+ 341:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****         buffer[count] = (value_from_sensor >> 24 ) & 0xFF;
+ 1921               	.LM172:
+ 1922 08de 83E0      		ldi r24,lo8(3)
+ 1923               	.L44:
+ 346:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     count++;
+ 1925               	.LM173:
+ 1926 08e0 9091 7A00 		lds r25,122
+ 1927 08e4 9F77      		andi r25,lo8(127)
+ 1928 08e6 9093 7A00 		sts 122,r25
+ 347:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     return count;
+ 1930               	.LM174:
+ 1931 08ea 8F5F      		subi r24,lo8(-(1))
+ 1932 08ec 00C0      		rjmp .L41
+ 1933               	.L62:
+ 1934               	.LBE19:
+ 1935               	.LBE18:
+ 236:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     if ((channel != TEMP2) && (channel != PRESS) && channel <= 7) {
+ 1937               	.LM175:
+ 1938 08ee 80E0      		ldi r24,0
+ 1939               	.L41:
+ 1940               	/* epilogue start */
+ 351:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 1942               	.LM176:
+ 1943 08f0 DF91      		pop r29
+ 1944 08f2 CF91      		pop r28
+ 1945 08f4 1F91      		pop r17
+ 1946 08f6 FF90      		pop r15
+ 1947 08f8 EF90      		pop r14
+ 1948 08fa DF90      		pop r13
+ 1949 08fc CF90      		pop r12
+ 1950 08fe BF90      		pop r11
+ 1951 0900 AF90      		pop r10
+ 1952 0902 0895      		ret
+ 1957               	.Lscope16:
+ 1959               		.stabd	78,0,0
+ 1965               	.global	dev_manager_ff3_sensors
+ 1967               	dev_manager_ff3_sensors:
+ 1968               		.stabd	46,0,0
+ 134:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 1970               	.LM177:
+ 1971               	.LFBB17:
+ 1972               	/* prologue: function */
+ 1973               	/* frame size = 0 */
+ 1974               	/* stack size = 0 */
+ 1975               	.L__stack_usage = 0
+ 136:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 1977               	.LM178:
+ 1978 0904 8230      		cpi r24,lo8(2)
+ 1979 0906 01F0      		breq .L76
+ 1980 0908 00F4      		brsh .L77
+ 1981 090a 8823      		tst r24
+ 1982 090c 01F0      		breq .L78
+ 1983 090e 8130      		cpi r24,lo8(1)
+ 1984 0910 01F4      		brne .L75
+ 148:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 1986               	.LM179:
+ 1987 0912 81E0      		ldi r24,lo8(1)
+ 1988 0914 0C94 0000 		jmp open
+ 1989               	.L77:
+ 136:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 1991               	.LM180:
+ 1992 0918 8430      		cpi r24,lo8(4)
+ 1993 091a 01F0      		breq .L80
+ 1994 091c 00F0      		brlo .L81
+ 1995 091e 8530      		cpi r24,lo8(5)
+ 1996 0920 01F4      		brne .L75
+ 151:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 1998               	.LM181:
+ 1999 0922 85E0      		ldi r24,lo8(5)
+ 2000 0924 0C94 0000 		jmp read
+ 2001               	.L78:
+ 145:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 2003               	.LM182:
+ 2004 0928 80E0      		ldi r24,0
+ 2005 092a 0C94 0000 		jmp init
+ 2006               	.L76:
+ 154:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 2008               	.LM183:
+ 2009 092e 82E0      		ldi r24,lo8(2)
+ 2010 0930 0C94 0000 		jmp close
+ 2011               	.L81:
+ 2012               	.LBB22:
+ 2013               	.LBB23:
+ 372:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     return NRK_ERROR;
+ 2015               	.LM184:
+ 2016 0934 6130      		cpi r22,lo8(1)
+ 2017 0936 01F4      		brne .L84
+ 2018 0938 8091 0000 		lds r24,channel
+ 2019 093c 0895      		ret
+ 2020               	.L80:
+ 2021               	.LBE23:
+ 2022               	.LBE22:
+ 160:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 2024               	.LM185:
+ 2025 093e 84E0      		ldi r24,lo8(4)
+ 2026 0940 0C94 0000 		jmp set_status
+ 2027               	.L75:
+ 163:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****             return 0;
+ 2029               	.LM186:
+ 2030 0944 60E0      		ldi r22,0
+ 2031 0946 8CE0      		ldi r24,lo8(12)
+ 2032 0948 0E94 0000 		call nrk_kernel_error_add
+ 164:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c ****     }
+ 2034               	.LM187:
+ 2035 094c 80E0      		ldi r24,0
+ 2036 094e 0895      		ret
+ 2037               	.L84:
+ 2038               	.LBB25:
+ 2039               	.LBB24:
+ 373:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** }
+ 2041               	.LM188:
+ 2042 0950 8FEF      		ldi r24,lo8(-1)
+ 2043               	.LBE24:
+ 2044               	.LBE25:
+ 166:../../../src/drivers/platform/firefly3_x2/source/ff_basic_sensor.c **** 
+ 2046               	.LM189:
+ 2047 0952 0895      		ret
+ 2049               	.Lscope17:
+ 2051               		.stabd	78,0,0
+ 2052               		.comm	is_open,1,1
+ 2053               		.comm	channel,1,1
+ 2054               		.comm	h_cnt,1,1
+ 2055               		.comm	B7,4,1
+ 2056               		.comm	B4,4,1
+ 2057               		.comm	T,4,1
+ 2058               		.comm	P,4,1
+ 2059               		.comm	B6,4,1
+ 2060               		.comm	B5,4,1
+ 2061               		.comm	B3,4,1
+ 2062               		.comm	X3,4,1
+ 2063               		.comm	X2,4,1
+ 2064               		.comm	X1,4,1
+ 2065               		.comm	UP,4,1
+ 2066               		.comm	UT,4,1
+ 2067               		.comm	eeprom_values,22,1
+ 2068               		.comm	app_timer0_prescale,1,1
+ 2069               		.comm	app_timer0_callback,2,1
+ 2070               		.comm	_nrk_time_trigger,1,1
+ 2071               		.comm	_nrk_prev_timer_val,1,1
+ 2072               		.comm	nrk_kernel_stk_ptr,2,1
+ 2073               		.comm	nrk_idle_task_stk,128,1
+ 2074               		.comm	error_num,1,1
+ 2075               		.comm	error_task,1,1
+ 2076               		.comm	_nrk_signal_list,4,1
+ 2103               	.Letext0:
+ 2104               		.ident	"GCC: (GNU) 4.9.1"
+ 2105               	.global __do_clear_bss
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 ff_basic_sensor.c
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccB3jkDn.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccB3jkDn.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccB3jkDn.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccB3jkDn.s:5      *ABS*:000000000000003b __RAMPZ__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccB3jkDn.s:6      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccB3jkDn.s:7      *ABS*:0000000000000001 __zero_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccB3jkDn.s:333    .text:0000000000000000 open
+                            *COM*:0000000000000001 is_open
+                            *COM*:0000000000000001 channel
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccB3jkDn.s:414    .text:0000000000000054 close
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccB3jkDn.s:455    .text:0000000000000072 get_status
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccB3jkDn.s:490    .text:0000000000000080 set_status
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccB3jkDn.s:578    .text:00000000000000ec get_eeprom_values
+                            *COM*:0000000000000016 eeprom_values
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccB3jkDn.s:653    .text:000000000000014a init_adc
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccB3jkDn.s:705    .text:0000000000000178 init
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccB3jkDn.s:773    .text:00000000000001ca delay
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccB3jkDn.s:794    .text:00000000000001d2 get_adc_val
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccB3jkDn.s:834    .text:00000000000001f6 calc_true_press
+                            *COM*:0000000000000004 B5
+                            *COM*:0000000000000004 B6
+                            *COM*:0000000000000004 B3
+                            *COM*:0000000000000004 X3
+                            *COM*:0000000000000004 B4
+                            *COM*:0000000000000004 UP
+                            *COM*:0000000000000004 B7
+                            *COM*:0000000000000004 P
+                            *COM*:0000000000000004 X1
+                            *COM*:0000000000000004 X2
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccB3jkDn.s:1249   .text:000000000000055e calc_true_temp
+                            *COM*:0000000000000004 UT
+                            *COM*:0000000000000004 T
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccB3jkDn.s:1382   .text:0000000000000660 read_uncomp_temp
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccB3jkDn.s:1460   .text:00000000000006c8 calc_temp
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccB3jkDn.s:1483   .text:00000000000006d0 read_uncomp_press
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccB3jkDn.s:1597   .text:000000000000076a calc_press
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccB3jkDn.s:1632   .text:000000000000077a read
+                            *COM*:0000000000000001 h_cnt
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccB3jkDn.s:1967   .text:0000000000000904 dev_manager_ff3_sensors
+                            *COM*:0000000000000001 app_timer0_prescale
+                            *COM*:0000000000000002 app_timer0_callback
+                            *COM*:0000000000000001 _nrk_time_trigger
+                            *COM*:0000000000000001 _nrk_prev_timer_val
+                            *COM*:0000000000000002 nrk_kernel_stk_ptr
+                            *COM*:0000000000000080 nrk_idle_task_stk
+                            *COM*:0000000000000001 error_num
+                            *COM*:0000000000000001 error_task
+                            *COM*:0000000000000004 _nrk_signal_list
+
+UNDEFINED SYMBOLS
+NRK_PORTE_3
+nrk_gpio_set
+nrk_spin_wait_us
+nrk_gpio_clr
+close_i2c
+_nrk_errno_set
+ee24xx_read_bytes
+nrk_gpio_direction
+NRK_PORTE_4
+NRK_PORTE_2
+nrk_gpio_pullups
+init_i2c
+set_i2c_device
+__mulsi3
+__mulshisi3
+__divmodsi4
+__muluhisi3
+__udivmodsi4
+__mulohisi3
+ee24xx_write_bytes
+nrk_gpio_get
+nrk_int_disable
+nrk_int_enable
+nrk_kernel_error_add
+__do_clear_bss
