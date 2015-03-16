@@ -1,6 +1,6 @@
 /******************************************************************************
 *  Nano-RK, a real-time operating system for sensor networks.
-*  Copyright (C) 2007, Real-Time and Multimedia Lab, Carnegie Mellon University
+*  Copyright (C) 2015, Real-Time and Multimedia Lab, Carnegie Mellon University
 *  All rights reserved.
 *
 *  This is the Open Source Version of Nano-RK included as part of a Dual

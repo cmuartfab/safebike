@@ -31,6 +31,8 @@
 #include <nrk_stack_check.h>
 #include <nrk_stats.h>
 #include <pcf_tdma.h>
+#include <slip.h>
+#include <tdma_cons.h>
 
 
 NRK_STK rx_task_stack[NRK_APP_STACKSIZE];
@@ -48,6 +50,8 @@ tdma_info rx_tdma_fd;
 
 uint8_t rx_buf[TDMA_MAX_PKT_SIZE];
 uint8_t tx_buf[TDMA_MAX_PKT_SIZE];
+
+uint8_t aes_key[16] = {0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xaa,0xbb,0xcc,0xdd,0xee, 0xff}; 
 
 int main ()
 {
@@ -76,6 +80,7 @@ void tx_task ()
 
   printf ("Gateway Tx Task PID=%u\r\n", nrk_get_pid ());
 
+
   while (!tdma_started ())
     nrk_wait_until_next_period ();
 
@@ -93,7 +98,7 @@ void tx_task ()
     if (v == NRK_OK) {
       // printf ("Host Packet Sent\r\n");
     }
-    // nrk_wait_until_next_period();
+    nrk_wait_until_next_period();
 
   }
 }
@@ -108,12 +113,19 @@ void rx_task ()
 
   cnt = 0;
 
-  printf("%d",tdma_init (TDMA_HOST, 13, 0));
+// init tdma
+tdma_init (TDMA_HOST, DEFAULT_CHANNEL, HOST_MAC);
 
+// init slipstream
+slip_init (stdin, stdout, 0, 0);
 
 // Change these parameters at runtime...
-  tdma_set_slot_len_ms (25);
-  tdma_set_slots_per_cycle (1);
+tdma_set_slot_len_ms (5);
+tdma_set_slots_per_cycle (2);
+
+// tdma_aes_setkey(aes_key);
+// tdma_aes_enable();
+
 
   while (!tdma_started ())
     nrk_wait_until_next_period ();
@@ -121,17 +133,21 @@ void rx_task ()
 
   while (1) {
     v = tdma_recv (&rx_tdma_fd, &rx_buf, &len, TDMA_BLOCKING);
-    printf("v = %d\r\n", v);
+    // printf("v = %d\r\n", v);
     if (v == NRK_OK) {
-      printf ("src: %u rssi: %d ", rx_tdma_fd.src, rx_tdma_fd.rssi);
-      printf ("slot: %u ", rx_tdma_fd.slot);
-      printf ("len: %u\r\npayload: ", len);
-      for (i = 0; i < len; i++)
-        printf ("%c", rx_buf[i]);
-      printf ("\r\n");
+      /*DEBUGGING
+      // printf ("src: %u rssi: %d ", rx_tdma_fd.src, rx_tdma_fd.rssi);
+      // printf ("slot: %u ", rx_tdma_fd.slot);
+      // printf ("len: %u\r\npayload: ", len);
+      // for (i = 0; i < len; i++)
+      //   printf ("%c", rx_buf[i]);
+      //printf ("\r\n");
+      */
+      //send the packet to the SLIPstream client
+      slip_tx (rx_buf,len);
+      // nrk_wait_until_next_period();
     }
-
-     nrk_wait_until_next_period();
+     // nrk_wait_until_next_period();
   }
 }
 
@@ -144,9 +160,9 @@ void nrk_create_taskset ()
   rx_task_info.Type = BASIC_TASK;
   rx_task_info.SchType = PREEMPTIVE;
   rx_task_info.period.secs = 0;
-  rx_task_info.period.nano_secs = 250 * NANOS_PER_MS;
+  rx_task_info.period.nano_secs = 25 * NANOS_PER_MS;
   rx_task_info.cpu_reserve.secs = 0;
-  rx_task_info.cpu_reserve.nano_secs = 100 * NANOS_PER_MS;
+  rx_task_info.cpu_reserve.nano_secs = 20 * NANOS_PER_MS;
   rx_task_info.offset.secs = 0;
   rx_task_info.offset.nano_secs = 0;
   nrk_activate_task (&rx_task_info);
@@ -158,9 +174,9 @@ void nrk_create_taskset ()
   tx_task_info.Type = BASIC_TASK;
   tx_task_info.SchType = PREEMPTIVE;
   tx_task_info.period.secs = 0;
-  tx_task_info.period.nano_secs = 250 * NANOS_PER_MS;
+  tx_task_info.period.nano_secs = 25 * NANOS_PER_MS;
   tx_task_info.cpu_reserve.secs = 0;
-  tx_task_info.cpu_reserve.nano_secs = 100 * NANOS_PER_MS;
+  tx_task_info.cpu_reserve.nano_secs = 20 * NANOS_PER_MS;
   tx_task_info.offset.secs = 0;
   tx_task_info.offset.nano_secs = 0;
   nrk_activate_task (&tx_task_info);

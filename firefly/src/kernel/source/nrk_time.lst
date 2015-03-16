@@ -1047,20 +1047,20 @@
  1264               	.global __do_clear_bss
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 nrk_time.c
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccQjRvMq.s:2      *ABS*:000000000000003e __SP_H__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccQjRvMq.s:3      *ABS*:000000000000003d __SP_L__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccQjRvMq.s:4      *ABS*:000000000000003f __SREG__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccQjRvMq.s:5      *ABS*:000000000000003b __RAMPZ__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccQjRvMq.s:6      *ABS*:0000000000000000 __tmp_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccQjRvMq.s:7      *ABS*:0000000000000001 __zero_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccQjRvMq.s:325    .text:0000000000000000 nrk_time_get
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccQjRvMq.s:446    .text:00000000000000ba nrk_time_sub
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccQjRvMq.s:638    .text:00000000000001d2 nrk_time_compact_nanos
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccQjRvMq.s:701    .text:0000000000000214 nrk_time_add
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccQjRvMq.s:818    .text:00000000000002ca nrk_time_set
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccQjRvMq.s:851    .text:00000000000002e0 _nrk_time_to_ticks
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccQjRvMq.s:1014   .text:00000000000003ca _nrk_ticks_to_time
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccQjRvMq.s:1097   .text:0000000000000438 _nrk_time_to_ticks_long
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmcn6Tk.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmcn6Tk.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmcn6Tk.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmcn6Tk.s:5      *ABS*:000000000000003b __RAMPZ__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmcn6Tk.s:6      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmcn6Tk.s:7      *ABS*:0000000000000001 __zero_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmcn6Tk.s:325    .text:0000000000000000 nrk_time_get
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmcn6Tk.s:446    .text:00000000000000ba nrk_time_sub
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmcn6Tk.s:638    .text:00000000000001d2 nrk_time_compact_nanos
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmcn6Tk.s:701    .text:0000000000000214 nrk_time_add
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmcn6Tk.s:818    .text:00000000000002ca nrk_time_set
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmcn6Tk.s:851    .text:00000000000002e0 _nrk_time_to_ticks
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmcn6Tk.s:1014   .text:00000000000003ca _nrk_ticks_to_time
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmcn6Tk.s:1097   .text:0000000000000438 _nrk_time_to_ticks_long
                             *COM*:0000000000000001 error_num
                             *COM*:0000000000000001 error_task
                             *COM*:0000000000000001 app_timer0_prescale

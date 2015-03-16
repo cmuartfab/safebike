@@ -100,8 +100,8 @@
   37:../../src/kernel/source/nrk_stack_check.c **** 
   38:../../src/kernel/source/nrk_stack_check.c ****     nrk_kprintf( PSTR("\r\nSTACK DUMP\r\n"));
  359               	.LM1:
- 360 001c 80E0      		ldi r24,lo8(__c.3249)
- 361 001e 90E0      		ldi r25,hi8(__c.3249)
+ 360 001c 80E0      		ldi r24,lo8(__c.3246)
+ 361 001e 90E0      		ldi r25,hi8(__c.3246)
  362 0020 0E94 0000 		call nrk_kprintf
   39:../../src/kernel/source/nrk_stack_check.c **** 
   40:../../src/kernel/source/nrk_stack_check.c ****     printf( "cur: %d ",nrk_cur_task_TCB->task_ID);
@@ -267,7 +267,7 @@
  515 0130 FEBF      		out __SP_H__,r31
  516 0132 0FBE      		out __SREG__,__tmp_reg__
  517 0134 EDBF      		out __SP_L__,r30
- 518 0136 0530      		cpi r16,5
+ 518 0136 0430      		cpi r16,4
  519 0138 1105      		cpc r17,__zero_reg__
  520 013a 01F4      		brne .L2
  521               	/* epilogue start */
@@ -465,7 +465,7 @@
  675               	.Lscope3:
  677               		.stabd	78,0,0
  678               		.section	.progmem.data,"a",@progbits
- 681               	__c.3249:
+ 681               	__c.3246:
  682 0000 0D0A 5354 		.string	"\r\nSTACK DUMP\r\n"
  682      4143 4B20 
  682      4455 4D50 
@@ -482,16 +482,16 @@
  698               	.global __do_clear_bss
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 nrk_stack_check.c
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc7yFOz6.s:2      *ABS*:000000000000003e __SP_H__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc7yFOz6.s:3      *ABS*:000000000000003d __SP_L__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc7yFOz6.s:4      *ABS*:000000000000003f __SREG__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc7yFOz6.s:5      *ABS*:000000000000003b __RAMPZ__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc7yFOz6.s:6      *ABS*:0000000000000000 __tmp_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc7yFOz6.s:7      *ABS*:0000000000000001 __zero_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc7yFOz6.s:335    .text:0000000000000000 dump_stack_info
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc7yFOz6.s:681    .progmem.data:0000000000000000 __c.3249
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc7yFOz6.s:546    .text:000000000000015a nrk_stack_check
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc7yFOz6.s:620    .text:00000000000001a4 nrk_stack_check_pid
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccGfDEJ0.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccGfDEJ0.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccGfDEJ0.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccGfDEJ0.s:5      *ABS*:000000000000003b __RAMPZ__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccGfDEJ0.s:6      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccGfDEJ0.s:7      *ABS*:0000000000000001 __zero_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccGfDEJ0.s:335    .text:0000000000000000 dump_stack_info
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccGfDEJ0.s:681    .progmem.data:0000000000000000 __c.3246
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccGfDEJ0.s:546    .text:000000000000015a nrk_stack_check
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccGfDEJ0.s:620    .text:00000000000001a4 nrk_stack_check_pid
                             *COM*:0000000000000001 error_num
                             *COM*:0000000000000001 error_task
                             *COM*:0000000000000002 nrk_kernel_stk_ptr

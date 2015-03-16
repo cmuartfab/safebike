@@ -7,10 +7,10 @@ TARGET = main
 
 # Set the Port that you programmer is connected to 
 #PROGRAMMING_PORT = /dev/ttyUSB0
-# PROGRAMMING_PORT = /dev/ttyUSB0
+PROGRAMMING_PORT = /dev/tty.usbserial-AE00BUKC
 
 
-PROGRAMMING_PORT = `ls /dev/tty.* | grep usb | head -n 1` # programmer connected to serial device
+# PROGRAMMING_PORT = `ls /dev/tty.* | grep usb | head -n 1` # programmer connected to serial device
 
 # Set this such that the nano-RK directory is the base path
 ROOT_DIR = ../..
@@ -36,6 +36,7 @@ SRC += $(ROOT_DIR)/src/net/pcf_tdma/$(RADIO)/pcf_tdma.c
 # For example:
 EXTRAINCDIRS =
 EXTRAINCDIRS += $(ROOT_DIR)/src/net/pcf_tdma
+EXTRAINCDIRS += $(ROOT_DIR)/safe_cyclist/constants
 
 
 
