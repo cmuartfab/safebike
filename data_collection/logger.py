@@ -18,7 +18,7 @@ class DataDriver:
   be used to make a folder, name files with suffixes, or generate a .csv file.
   """
 
-  def __init__(self, name, exec_path, exec_args):
+  def __init__(self, name, exec_path, exec_args, read_only=False):
     """
     Initialize by providing required information.
     name: For identification. Also used to name the data folder
@@ -29,6 +29,7 @@ class DataDriver:
     self.name = name
     self.exec_path = exec_path
     self.exec_args = exec_args
+    self.read_only = read_only
 
     self.subprocess_handle = None
     self.newly_ended = False
@@ -37,7 +38,10 @@ class DataDriver:
     return "./%s/%s/%s" % (g_data_directory, data_timestamp, self.name)
 
   def run(self, data_base_path):
-    process_args = [self.exec_path] + [data_base_path] + self.exec_args
+    if(self.read_only == True):
+      process_args = [self.exec_path] + self.exec_args
+    else:
+      process_args = [self.exec_path] + [data_base_path] + self.exec_args
     self.subprocess_handle = subprocess.Popen(process_args,
                                               stdout=subprocess.PIPE,
                                               stderr=subprocess.PIPE)
@@ -67,7 +71,8 @@ class DataDriver:
 
 g_data_directory = "./data"
 g_driver_list = [
-  DataDriver("piksi", "./driver_piksi/driver_piksi", ["/dev/tty.asdf"])
+  DataDriver("piksi", "./driver_piksi/driver_piksi", ["/dev/tty.asdf"]),
+  DataDriver("accelerometers", "./driver_accelerometers/launch.sh", ["/dev/tty.asdf3"])
 ]
 
 
