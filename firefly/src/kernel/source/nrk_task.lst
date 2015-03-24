@@ -1811,29 +1811,29 @@
  1764               	.global __do_clear_bss
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 nrk_task.c
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccdYoGg4.s:2      *ABS*:000000000000003e __SP_H__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccdYoGg4.s:3      *ABS*:000000000000003d __SP_L__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccdYoGg4.s:4      *ABS*:000000000000003f __SREG__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccdYoGg4.s:5      *ABS*:000000000000003b __RAMPZ__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccdYoGg4.s:6      *ABS*:0000000000000000 __tmp_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccdYoGg4.s:7      *ABS*:0000000000000001 __zero_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccdYoGg4.s:324    .text:0000000000000000 nrk_get_high_ready_task_ID
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccdYoGg4.s:348    .text:000000000000000c nrk_print_readyQ
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccdYoGg4.s:388    .text:0000000000000022 nrk_add_to_readyQ
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccdYoGg4.s:651    .text:0000000000000182 nrk_rem_from_readyQ
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccdYoGg4.s:781    .text:0000000000000222 nrk_activate_task
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccdYoGg4.s:903    .text:00000000000002b8 nrk_set_next_wakeup
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccdYoGg4.s:998    .text:0000000000000332 _nrk_wait_for_scheduler
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccdYoGg4.s:1029   .text:0000000000000346 nrk_wait_until_next_period
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cctCf7Jf.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cctCf7Jf.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cctCf7Jf.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cctCf7Jf.s:5      *ABS*:000000000000003b __RAMPZ__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cctCf7Jf.s:6      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cctCf7Jf.s:7      *ABS*:0000000000000001 __zero_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cctCf7Jf.s:324    .text:0000000000000000 nrk_get_high_ready_task_ID
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cctCf7Jf.s:348    .text:000000000000000c nrk_print_readyQ
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cctCf7Jf.s:388    .text:0000000000000022 nrk_add_to_readyQ
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cctCf7Jf.s:651    .text:0000000000000182 nrk_rem_from_readyQ
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cctCf7Jf.s:781    .text:0000000000000222 nrk_activate_task
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cctCf7Jf.s:903    .text:00000000000002b8 nrk_set_next_wakeup
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cctCf7Jf.s:998    .text:0000000000000332 _nrk_wait_for_scheduler
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cctCf7Jf.s:1029   .text:0000000000000346 nrk_wait_until_next_period
                             *COM*:0000000000000001 _nrk_prev_timer_val
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccdYoGg4.s:1105   .text:000000000000039a nrk_terminate_task
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccdYoGg4.s:1141   .text:00000000000003bc nrk_wait_until_next_n_periods
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccdYoGg4.s:1229   .text:000000000000041c nrk_wait_ticks
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccdYoGg4.s:1321   .text:0000000000000494 nrk_wait_until_ticks
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccdYoGg4.s:1401   .text:00000000000004f2 nrk_wait_until_nw
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccdYoGg4.s:1473   .text:000000000000053e nrk_wait
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccdYoGg4.s:1599   .text:00000000000005ec nrk_wait_until
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccdYoGg4.s:1718   .text:0000000000000698 nrk_get_pid
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cctCf7Jf.s:1105   .text:000000000000039a nrk_terminate_task
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cctCf7Jf.s:1141   .text:00000000000003bc nrk_wait_until_next_n_periods
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cctCf7Jf.s:1229   .text:000000000000041c nrk_wait_ticks
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cctCf7Jf.s:1321   .text:0000000000000494 nrk_wait_until_ticks
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cctCf7Jf.s:1401   .text:00000000000004f2 nrk_wait_until_nw
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cctCf7Jf.s:1473   .text:000000000000053e nrk_wait
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cctCf7Jf.s:1599   .text:00000000000005ec nrk_wait_until
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cctCf7Jf.s:1718   .text:0000000000000698 nrk_get_pid
                             *COM*:0000000000000001 error_num
                             *COM*:0000000000000001 error_task
                             *COM*:0000000000000002 next_next_wakeup

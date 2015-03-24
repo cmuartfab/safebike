@@ -6,11 +6,11 @@ PLATFORM = firefly3
 TARGET = main
 
 # Set the Port that you programmer is connected to 
-#PROGRAMMING_PORT = /dev/ttyUSB0
-PROGRAMMING_PORT = /dev/tty.usbserial-AE00BUKC
+# PROGRAMMING_PORT = /dev/ttyUSB0
+# PROGRAMMING_PORT = /dev/tty.usbserial-AE00BUKC
 
 
-# PROGRAMMING_PORT = `ls /dev/tty.* | grep usb | head -n 1` # programmer connected to serial device
+PROGRAMMING_PORT = `ls /dev/tty.* | grep usb | head -n 1` # programmer connected to serial device
 
 # Set this such that the nano-RK directory is the base path
 ROOT_DIR = ../..
@@ -22,6 +22,10 @@ ROOT_DIR = ../..
 # RADIO (e.g. cc2420)
 include $(ROOT_DIR)/include/platform.mk
 
+ifndef CLIENT_MAC
+CLIENT_MAC = 1
+endif
+
 
 SRC = $(TARGET).c
 SRC += TWI_Master.c
@@ -30,6 +34,7 @@ SRC += TWI_Master.c
 # For example:
 SRC += $(ROOT_DIR)/src/net/pcf_tdma/$(RADIO)/pcf_tdma.c
 
+CFLAGS += -D CLIENT_MAC=$(CLIENT_MAC)
 
 
 # Add extra includes files. 

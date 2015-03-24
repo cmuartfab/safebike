@@ -310,8 +310,8 @@
  566 013e BB96      		adiw r30,43
   72:../../src/kernel/source/nrk_events.c **** 		if(nrk_task_TCB[task_ID].task_ID==-1) continue;
  568               	.LM23:
- 569 0140 D0E0      		ldi r29,hi8(nrk_task_TCB+181)
- 570 0142 E030      		cpi r30,lo8(nrk_task_TCB+181)
+ 569 0140 D0E0      		ldi r29,hi8(nrk_task_TCB+224)
+ 570 0142 E030      		cpi r30,lo8(nrk_task_TCB+224)
  571 0144 FD07      		cpc r31,r29
  572 0146 01F4      		brne .L12
   86:../../src/kernel/source/nrk_events.c **** 
@@ -723,8 +723,8 @@
  953 033c 9B96      		adiw r26,43
  140:../../src/kernel/source/nrk_events.c **** 
  955               	.LM64:
- 956 033e 90E0      		ldi r25,hi8(nrk_task_TCB+179)
- 957 0340 E030      		cpi r30,lo8(nrk_task_TCB+179)
+ 956 033e 90E0      		ldi r25,hi8(nrk_task_TCB+222)
+ 957 0340 E030      		cpi r30,lo8(nrk_task_TCB+222)
  958 0342 F907      		cpc r31,r25
  959 0344 01F4      		brne .L29
  168:../../src/kernel/source/nrk_events.c **** 				}   
@@ -1399,8 +1399,8 @@
  1546 05c8 BB96      		adiw r30,43
  272:../../src/kernel/source/nrk_events.c **** 			if(nrk_task_TCB[task_ID].event_suspend==RSRC_EVENT_SUSPENDED)
  1548               	.LM144:
- 1549 05ca 30E0      		ldi r19,hi8(nrk_task_TCB+179)
- 1550 05cc E030      		cpi r30,lo8(nrk_task_TCB+179)
+ 1549 05ca 30E0      		ldi r19,hi8(nrk_task_TCB+222)
+ 1550 05cc E030      		cpi r30,lo8(nrk_task_TCB+222)
  1551 05ce F307      		cpc r31,r19
  1552 05d0 01F4      		brne .L70
  283:../../src/kernel/source/nrk_events.c **** 	}
@@ -1499,8 +1499,8 @@
  1659               		.comm	nrk_wakeup_signal,1,1
  1660               		.comm	_head_node,2,1
  1661               		.comm	_free_node,2,1
- 1662               		.comm	_nrk_readyQ,25,1
- 1663               		.comm	nrk_task_TCB,172,1
+ 1662               		.comm	_nrk_readyQ,30,1
+ 1663               		.comm	nrk_task_TCB,215,1
  1664               		.comm	app_timer0_prescale,1,1
  1665               		.comm	app_timer0_callback,2,1
  1666               		.comm	_nrk_time_trigger,1,1
@@ -1517,38 +1517,38 @@
  1701               	.global __do_clear_bss
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 nrk_events.c
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccNuXOC3.s:2      *ABS*:000000000000003e __SP_H__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccNuXOC3.s:3      *ABS*:000000000000003d __SP_L__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccNuXOC3.s:4      *ABS*:000000000000003f __SREG__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccNuXOC3.s:5      *ABS*:000000000000003b __RAMPZ__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccNuXOC3.s:6      *ABS*:0000000000000000 __tmp_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccNuXOC3.s:7      *ABS*:0000000000000001 __zero_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccNuXOC3.s:324    .text:0000000000000000 nrk_signal_create
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjG3KOm.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjG3KOm.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjG3KOm.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjG3KOm.s:5      *ABS*:000000000000003b __RAMPZ__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjG3KOm.s:6      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjG3KOm.s:7      *ABS*:0000000000000001 __zero_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjG3KOm.s:324    .text:0000000000000000 nrk_signal_create
                             *COM*:0000000000000004 _nrk_signal_list
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccNuXOC3.s:412    .text:0000000000000072 nrk_signal_get_registered_mask
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjG3KOm.s:412    .text:0000000000000072 nrk_signal_get_registered_mask
                             *COM*:0000000000000002 nrk_cur_task_TCB
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccNuXOC3.s:440    .text:0000000000000084 nrk_signal_delete
-                            *COM*:00000000000000ac nrk_task_TCB
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccNuXOC3.s:635    .text:00000000000001a2 nrk_signal_unregister
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccNuXOC3.s:735    .text:0000000000000220 nrk_signal_register
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccNuXOC3.s:811    .text:0000000000000284 nrk_event_signal
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccNuXOC3.s:1002   .text:0000000000000366 nrk_event_wait
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjG3KOm.s:440    .text:0000000000000084 nrk_signal_delete
+                            *COM*:00000000000000d7 nrk_task_TCB
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjG3KOm.s:635    .text:00000000000001a2 nrk_signal_unregister
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjG3KOm.s:735    .text:0000000000000220 nrk_signal_register
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjG3KOm.s:811    .text:0000000000000284 nrk_event_signal
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjG3KOm.s:1002   .text:0000000000000366 nrk_event_wait
                             *COM*:0000000000000001 nrk_wakeup_signal
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccNuXOC3.s:1093   .text:00000000000003da nrk_sem_create
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjG3KOm.s:1093   .text:00000000000003da nrk_sem_create
                             *COM*:0000000000000001 _nrk_resource_cnt
                             *COM*:0000000000000006 nrk_sem_list
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccNuXOC3.s:1175   .text:0000000000000422 nrk_get_resource_index
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccNuXOC3.s:1220   .text:000000000000043c nrk_sem_query
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccNuXOC3.s:1280   .text:000000000000046e nrk_sem_pend
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccNuXOC3.s:1424   .text:000000000000052a nrk_sem_post
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccNuXOC3.s:1581   .text:00000000000005e4 nrk_sem_delete
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjG3KOm.s:1175   .text:0000000000000422 nrk_get_resource_index
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjG3KOm.s:1220   .text:000000000000043c nrk_sem_query
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjG3KOm.s:1280   .text:000000000000046e nrk_sem_pend
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjG3KOm.s:1424   .text:000000000000052a nrk_sem_post
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjG3KOm.s:1581   .text:00000000000005e4 nrk_sem_delete
                             *COM*:0000000000000008 nrk_system_time
                             *COM*:0000000000000002 nrk_high_ready_TCB
                             *COM*:0000000000000001 nrk_high_ready_prio
                             *COM*:0000000000000001 nrk_cur_task_prio
                             *COM*:0000000000000002 _head_node
                             *COM*:0000000000000002 _free_node
-                            *COM*:0000000000000019 _nrk_readyQ
+                            *COM*:000000000000001e _nrk_readyQ
                             *COM*:0000000000000001 app_timer0_prescale
                             *COM*:0000000000000002 app_timer0_callback
                             *COM*:0000000000000001 _nrk_time_trigger

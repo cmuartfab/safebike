@@ -127,10 +127,10 @@ main ()
   nrk_setup_ports();
   nrk_setup_uart(UART_BAUDRATE_115K2);
 
-    tdma_init (TDMA_CLIENT, DEFAULT_CHANNEL, mac_address);
+  tdma_init (TDMA_CLIENT, DEFAULT_CHANNEL, mac_address);
 
-  // tdma_aes_setkey(aes_key);
-  // tdma_aes_enable();
+  //tdma_aes_setkey(aes_key);
+  //tdma_aes_enable();
 
   tdma_tx_slot_add (mac_address&0xFFFF);
 
@@ -147,12 +147,7 @@ main ()
   
   nrk_init();
 
-  mac_address = DEFAULT_CLIENT_MAC;
-
-  // if a mac address is defined during compilation
-  #ifdef CLIENT_MAC
   mac_address = CLIENT_MAC;
-  #endif
 
   nrk_led_clr(ORANGE_LED);
   nrk_led_clr(BLUE_LED);
@@ -213,6 +208,7 @@ void task_imu(){
   while(1){
     packetReady = false;
     i = 0;
+    tx_buf[i++] = NODE_ADDR;
     tx_buf[i++] = sequenceNo++;
 
     i2c_buf[0] = (ADXL345_ADDRESS) | (FALSE<<TWI_READ_BIT);
@@ -261,9 +257,17 @@ void tx_task ()
 {
   int8_t v;
   uint8_t len, cnt;
+  nrk_time_t t;
 
 
   printf ("Tx Task PID=%u\r\n", nrk_get_pid ());
+  t.secs = 5;
+  t.nano_secs = 0;
+
+  // // setup a software watch dog timer
+  nrk_sw_wdt_init(0, &t, NULL);
+  nrk_sw_wdt_start(0);
+
 
   while (!tdma_started())
     nrk_wait_until_next_period ();
@@ -271,19 +275,22 @@ void tx_task ()
   cnt = 0;
 
   while (1) {
+    // Update watchdog timer
+    nrk_sw_wdt_update(0);
 
     // if sensor data hasn't been gathered yet
-    // if (!packetReady)
-    //   nrk_wait_until_next_period();
+    if (!packetReady)
+      nrk_wait_until_next_period();
 
-    sprintf(tx_buf,"Hey guys\r\n",8);
-    tx_len = 8;
+    sprintf(tx_buf,"Hello from %d\r\n",mac_address);
+    tx_len = strlen(tx_buf);
+    
     v = tdma_send (&tx_tdma_fd, &tx_buf, tx_len, TDMA_BLOCKING);
     if (v == NRK_OK) {
       nrk_kprintf (PSTR ("App tx_buf Sent\r\n"));
     }
     else
-      printf("packet receiving error!\r\n");
+      printf("packet sending error!\r\n");
   }
 }
 
@@ -301,13 +308,6 @@ void rx_task ()
 
 
   printf ("RX Task PID=%u\r\n", nrk_get_pid ());
-  // t.secs = 5;
-  // t.nano_secs = 0;
-
-  // // setup a software watch dog timer
-  // nrk_sw_wdt_init(0, &t, NULL);
-  // nrk_sw_wdt_start(0);
-
 
   tdma_init (TDMA_CLIENT, DEFAULT_CHANNEL, mac_address);
 
@@ -325,8 +325,7 @@ void rx_task ()
     nrk_kprintf (PSTR ("Could not add slot!\r\n"));
 
   while (1) {
-    // Update watchdog timer
-    // nrk_sw_wdt_update(0);
+
     v = tdma_recv (&rx_tdma_fd, &rx_buf, &len, TDMA_BLOCKING);
     if (v == NRK_OK) {
       // printf ("src: %u\r\nrssi: %d\r\n", rx_tdma_fd.src, rx_tdma_fd.rssi);

@@ -7,22 +7,581 @@
    7               	__zero_reg__ = 1
   10               		.text
   11               	.Ltext0:
- 318               		.comm	error_num,1,1
- 319               		.comm	error_task,1,1
- 320               		.comm	nrk_kernel_stk_ptr,2,1
- 321               		.comm	nrk_idle_task_stk,128,1
- 322               		.comm	_nrk_signal_list,4,1
- 329               	.Letext0:
- 330               		.ident	"GCC: (GNU) 4.9.1"
- 331               	.global __do_clear_bss
+ 323               	.global	_nrk_sw_wdt_check
+ 325               	_nrk_sw_wdt_check:
+ 326               		.stabd	46,0,0
+   1:../../src/kernel/source/nrk_sw_wdt.c **** /******************************************************************************
+   2:../../src/kernel/source/nrk_sw_wdt.c **** *  Nano-RK, a real-time operating system for sensor networks.
+   3:../../src/kernel/source/nrk_sw_wdt.c **** *  Copyright (C) 2007, Real-Time and Multimedia Lab, Carnegie Mellon University
+   4:../../src/kernel/source/nrk_sw_wdt.c **** *  All rights reserved.
+   5:../../src/kernel/source/nrk_sw_wdt.c **** *
+   6:../../src/kernel/source/nrk_sw_wdt.c **** *  This is the Open Source Version of Nano-RK included as part of a Dual
+   7:../../src/kernel/source/nrk_sw_wdt.c **** *  Licensing Model. If you are unsure which license to use please refer to:
+   8:../../src/kernel/source/nrk_sw_wdt.c **** *  http://www.nanork.org/nano-RK/wiki/Licensing
+   9:../../src/kernel/source/nrk_sw_wdt.c **** *
+  10:../../src/kernel/source/nrk_sw_wdt.c **** *  This program is free software: you can redistribute it and/or modify
+  11:../../src/kernel/source/nrk_sw_wdt.c **** *  it under the terms of the GNU General Public License as published by
+  12:../../src/kernel/source/nrk_sw_wdt.c **** *  the Free Software Foundation, version 2.0 of the License.
+  13:../../src/kernel/source/nrk_sw_wdt.c **** *
+  14:../../src/kernel/source/nrk_sw_wdt.c **** *  This program is distributed in the hope that it will be useful,
+  15:../../src/kernel/source/nrk_sw_wdt.c **** *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  16:../../src/kernel/source/nrk_sw_wdt.c **** *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  17:../../src/kernel/source/nrk_sw_wdt.c **** *  GNU General Public License for more details.
+  18:../../src/kernel/source/nrk_sw_wdt.c **** *
+  19:../../src/kernel/source/nrk_sw_wdt.c **** *  You should have received a copy of the GNU General Public License
+  20:../../src/kernel/source/nrk_sw_wdt.c **** *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  21:../../src/kernel/source/nrk_sw_wdt.c **** *
+  22:../../src/kernel/source/nrk_sw_wdt.c **** *  Contributing Authors (specific to this file):
+  23:../../src/kernel/source/nrk_sw_wdt.c **** *  Anthony Rowe
+  24:../../src/kernel/source/nrk_sw_wdt.c **** *******************************************************************************/
+  25:../../src/kernel/source/nrk_sw_wdt.c **** 
+  26:../../src/kernel/source/nrk_sw_wdt.c **** #include <nrk.h>
+  27:../../src/kernel/source/nrk_sw_wdt.c **** #include <include.h>
+  28:../../src/kernel/source/nrk_sw_wdt.c **** #include <nrk_error.h>
+  29:../../src/kernel/source/nrk_sw_wdt.c **** #include <nrk_time.h>
+  30:../../src/kernel/source/nrk_sw_wdt.c **** #include <nrk_sw_wdt.h>
+  31:../../src/kernel/source/nrk_sw_wdt.c **** #include <stdio.h>
+  32:../../src/kernel/source/nrk_sw_wdt.c **** 
+  33:../../src/kernel/source/nrk_sw_wdt.c **** #ifdef NRK_SW_WDT
+  34:../../src/kernel/source/nrk_sw_wdt.c **** 
+  35:../../src/kernel/source/nrk_sw_wdt.c **** void _nrk_sw_wdt_check()
+  36:../../src/kernel/source/nrk_sw_wdt.c **** {
+ 328               	.LM0:
+ 329               	.LFBB1:
+ 330 0000 3F92      		push r3
+ 331 0002 4F92      		push r4
+ 332 0004 5F92      		push r5
+ 333 0006 6F92      		push r6
+ 334 0008 7F92      		push r7
+ 335 000a 8F92      		push r8
+ 336 000c 9F92      		push r9
+ 337 000e AF92      		push r10
+ 338 0010 BF92      		push r11
+ 339 0012 CF92      		push r12
+ 340 0014 DF92      		push r13
+ 341 0016 EF92      		push r14
+ 342 0018 FF92      		push r15
+ 343 001a 0F93      		push r16
+ 344 001c 1F93      		push r17
+ 345 001e CF93      		push r28
+ 346 0020 DF93      		push r29
+ 347 0022 CDB7      		in r28,__SP_L__
+ 348 0024 DEB7      		in r29,__SP_H__
+ 349 0026 6097      		sbiw r28,16
+ 350 0028 0FB6      		in __tmp_reg__,__SREG__
+ 351 002a F894      		cli
+ 352 002c DEBF      		out __SP_H__,r29
+ 353 002e 0FBE      		out __SREG__,__tmp_reg__
+ 354 0030 CDBF      		out __SP_L__,r28
+ 355               	/* prologue: function */
+ 356               	/* frame size = 16 */
+ 357               	/* stack size = 33 */
+ 358               	.L__stack_usage = 33
+  37:../../src/kernel/source/nrk_sw_wdt.c ****     uint8_t i;
+  38:../../src/kernel/source/nrk_sw_wdt.c ****     nrk_time_t now;
+  39:../../src/kernel/source/nrk_sw_wdt.c ****     nrk_time_t sub;
+  40:../../src/kernel/source/nrk_sw_wdt.c ****     nrk_time_get(&now);
+ 360               	.LM1:
+ 361 0032 CE01      		movw r24,r28
+ 362 0034 0996      		adiw r24,9
+ 363 0036 0E94 0000 		call nrk_time_get
+ 364 003a 80E0      		ldi r24,lo8(sw_wdts)
+ 365 003c 482E      		mov r4,r24
+ 366 003e 80E0      		ldi r24,hi8(sw_wdts)
+ 367 0040 582E      		mov r5,r24
+ 368 0042 612C      		mov r6,__zero_reg__
+ 369 0044 712C      		mov r7,__zero_reg__
+  41:../../src/kernel/source/nrk_sw_wdt.c ****     for(i=0; i<NRK_MAX_SW_WDT; i++ )
+  42:../../src/kernel/source/nrk_sw_wdt.c ****     {
+  43:../../src/kernel/source/nrk_sw_wdt.c ****         if(sw_wdts[i].active==1 && (nrk_time_sub(&sub,sw_wdts[i].next_period,now)==NRK_ERROR))
+ 371               	.LM2:
+ 372 0046 93E1      		ldi r25,lo8(19)
+ 373 0048 392E      		mov r3,r25
+ 374               	.L6:
+ 375 004a D201      		movw r26,r4
+ 376 004c 1296      		adiw r26,2
+ 377 004e 8C91      		ld r24,X
+ 378 0050 8130      		cpi r24,lo8(1)
+ 379 0052 01F4      		brne .L3
+ 381               	.LM3:
+ 382 0054 369C      		mul r3,r6
+ 383 0056 F001      		movw r30,r0
+ 384 0058 379C      		mul r3,r7
+ 385 005a F00D      		add r31,r0
+ 386 005c 1124      		clr __zero_reg__
+ 387 005e E050      		subi r30,lo8(-(sw_wdts+11))
+ 388 0060 F040      		sbci r31,hi8(-(sw_wdts+11))
+ 389 0062 8984      		ldd r8,Y+9
+ 390 0064 9A84      		ldd r9,Y+10
+ 391 0066 AB84      		ldd r10,Y+11
+ 392 0068 BC84      		ldd r11,Y+12
+ 393 006a CD84      		ldd r12,Y+13
+ 394 006c DE84      		ldd r13,Y+14
+ 395 006e EF84      		ldd r14,Y+15
+ 396 0070 F888      		ldd r15,Y+16
+ 397 0072 0081      		ld r16,Z
+ 398 0074 1181      		ldd r17,Z+1
+ 399 0076 2281      		ldd r18,Z+2
+ 400 0078 3381      		ldd r19,Z+3
+ 401 007a 4481      		ldd r20,Z+4
+ 402 007c 5581      		ldd r21,Z+5
+ 403 007e 6681      		ldd r22,Z+6
+ 404 0080 7781      		ldd r23,Z+7
+ 405 0082 CE01      		movw r24,r28
+ 406 0084 0196      		adiw r24,1
+ 407 0086 0E94 0000 		call nrk_time_sub
+ 408 008a 8F3F      		cpi r24,lo8(-1)
+ 409 008c 01F4      		brne .L3
+  44:../../src/kernel/source/nrk_sw_wdt.c ****         {
+  45:../../src/kernel/source/nrk_sw_wdt.c ****             nrk_kernel_error_add(NRK_SW_WATCHDOG_ERROR,i );
+ 411               	.LM4:
+ 412 008e 662D      		mov r22,r6
+ 413 0090 85E1      		ldi r24,lo8(21)
+ 414 0092 0E94 0000 		call nrk_kernel_error_add
+  46:../../src/kernel/source/nrk_sw_wdt.c ****             if(sw_wdts[i].error_func==NULL)
+ 416               	.LM5:
+ 417 0096 D201      		movw r26,r4
+ 418 0098 ED91      		ld r30,X+
+ 419 009a FC91      		ld r31,X
+ 420 009c 3097      		sbiw r30,0
+ 421 009e 01F4      		brne .L5
+  47:../../src/kernel/source/nrk_sw_wdt.c ****                 // if hw wtd set, this will reboot node
+  48:../../src/kernel/source/nrk_sw_wdt.c ****                 nrk_halt();
+ 423               	.LM6:
+ 424 00a0 0E94 0000 		call nrk_halt
+ 425 00a4 00C0      		rjmp .L3
+ 426               	.L5:
+  49:../../src/kernel/source/nrk_sw_wdt.c ****             else
+  50:../../src/kernel/source/nrk_sw_wdt.c ****                 sw_wdts[i].error_func();
+ 428               	.LM7:
+ 429 00a6 0995      		icall
+ 430               	.L3:
+ 431 00a8 BFEF      		ldi r27,-1
+ 432 00aa 6B1A      		sub r6,r27
+ 433 00ac 7B0A      		sbc r7,r27
+ 434 00ae E3E1      		ldi r30,19
+ 435 00b0 4E0E      		add r4,r30
+ 436 00b2 511C      		adc r5,__zero_reg__
+  41:../../src/kernel/source/nrk_sw_wdt.c ****     {
+ 438               	.LM8:
+ 439 00b4 F3E0      		ldi r31,3
+ 440 00b6 6F16      		cp r6,r31
+ 441 00b8 7104      		cpc r7,__zero_reg__
+ 442 00ba 01F4      		brne .L6
+ 443               	/* epilogue start */
+  51:../../src/kernel/source/nrk_sw_wdt.c ****             // call func
+  52:../../src/kernel/source/nrk_sw_wdt.c ****         }
+  53:../../src/kernel/source/nrk_sw_wdt.c ****     }
+  54:../../src/kernel/source/nrk_sw_wdt.c **** 
+  55:../../src/kernel/source/nrk_sw_wdt.c **** }
+ 445               	.LM9:
+ 446 00bc 6096      		adiw r28,16
+ 447 00be 0FB6      		in __tmp_reg__,__SREG__
+ 448 00c0 F894      		cli
+ 449 00c2 DEBF      		out __SP_H__,r29
+ 450 00c4 0FBE      		out __SREG__,__tmp_reg__
+ 451 00c6 CDBF      		out __SP_L__,r28
+ 452 00c8 DF91      		pop r29
+ 453 00ca CF91      		pop r28
+ 454 00cc 1F91      		pop r17
+ 455 00ce 0F91      		pop r16
+ 456 00d0 FF90      		pop r15
+ 457 00d2 EF90      		pop r14
+ 458 00d4 DF90      		pop r13
+ 459 00d6 CF90      		pop r12
+ 460 00d8 BF90      		pop r11
+ 461 00da AF90      		pop r10
+ 462 00dc 9F90      		pop r9
+ 463 00de 8F90      		pop r8
+ 464 00e0 7F90      		pop r7
+ 465 00e2 6F90      		pop r6
+ 466 00e4 5F90      		pop r5
+ 467 00e6 4F90      		pop r4
+ 468 00e8 3F90      		pop r3
+ 469 00ea 0895      		ret
+ 475               	.Lscope1:
+ 477               		.stabd	78,0,0
+ 479               	.global	_nrk_sw_wdt_init
+ 481               	_nrk_sw_wdt_init:
+ 482               		.stabd	46,0,0
+  56:../../src/kernel/source/nrk_sw_wdt.c **** 
+  57:../../src/kernel/source/nrk_sw_wdt.c **** void _nrk_sw_wdt_init()
+  58:../../src/kernel/source/nrk_sw_wdt.c **** {
+ 484               	.LM10:
+ 485               	.LFBB2:
+ 486               	/* prologue: function */
+ 487               	/* frame size = 0 */
+ 488               	/* stack size = 0 */
+ 489               	.L__stack_usage = 0
+  59:../../src/kernel/source/nrk_sw_wdt.c ****     uint8_t i;
+  60:../../src/kernel/source/nrk_sw_wdt.c ****     for(i=0; i<NRK_MAX_SW_WDT; i++ )
+  61:../../src/kernel/source/nrk_sw_wdt.c ****         sw_wdts[i].active=0;
+ 491               	.LM11:
+ 492 00ec E0E0      		ldi r30,lo8(sw_wdts)
+ 493 00ee F0E0      		ldi r31,hi8(sw_wdts)
+ 494 00f0 1282      		std Z+2,__zero_reg__
+ 495 00f2 158A      		std Z+21,__zero_reg__
+ 496 00f4 10A6      		std Z+40,__zero_reg__
+ 497 00f6 0895      		ret
+ 499               	.Lscope2:
+ 501               		.stabd	78,0,0
+ 506               	.global	nrk_sw_wdt_init
+ 508               	nrk_sw_wdt_init:
+ 509               		.stabd	46,0,0
+  62:../../src/kernel/source/nrk_sw_wdt.c **** }
+  63:../../src/kernel/source/nrk_sw_wdt.c **** 
+  64:../../src/kernel/source/nrk_sw_wdt.c **** int8_t nrk_sw_wdt_init(uint8_t id, nrk_time_t *period, void *func)
+  65:../../src/kernel/source/nrk_sw_wdt.c **** {
+ 511               	.LM12:
+ 512               	.LFBB3:
+ 513 00f8 CF93      		push r28
+ 514 00fa DF93      		push r29
+ 515               	/* prologue: function */
+ 516               	/* frame size = 0 */
+ 517               	/* stack size = 2 */
+ 518               	.L__stack_usage = 2
+  66:../../src/kernel/source/nrk_sw_wdt.c ****     if(id>=NRK_MAX_SW_WDT) return NRK_ERROR;
+ 520               	.LM13:
+ 521 00fc 8330      		cpi r24,lo8(3)
+ 522 00fe 00F4      		brsh .L12
+  67:../../src/kernel/source/nrk_sw_wdt.c ****     sw_wdts[id].error_func=func;
+ 524               	.LM14:
+ 525 0100 93E1      		ldi r25,lo8(19)
+ 526 0102 899F      		mul r24,r25
+ 527 0104 F001      		movw r30,r0
+ 528 0106 1124      		clr __zero_reg__
+ 529 0108 E050      		subi r30,lo8(-(sw_wdts))
+ 530 010a F040      		sbci r31,hi8(-(sw_wdts))
+ 531 010c 5183      		std Z+1,r21
+ 532 010e 4083      		st Z,r20
+  68:../../src/kernel/source/nrk_sw_wdt.c ****     sw_wdts[id].period.secs=period->secs;
+ 534               	.LM15:
+ 535 0110 EB01      		movw r28,r22
+ 536 0112 8881      		ld r24,Y
+ 537 0114 9981      		ldd r25,Y+1
+ 538 0116 AA81      		ldd r26,Y+2
+ 539 0118 BB81      		ldd r27,Y+3
+ 540 011a 8383      		std Z+3,r24
+ 541 011c 9483      		std Z+4,r25
+ 542 011e A583      		std Z+5,r26
+ 543 0120 B683      		std Z+6,r27
+  69:../../src/kernel/source/nrk_sw_wdt.c ****     sw_wdts[id].period.nano_secs=period->nano_secs;
+ 545               	.LM16:
+ 546 0122 8C81      		ldd r24,Y+4
+ 547 0124 9D81      		ldd r25,Y+5
+ 548 0126 AE81      		ldd r26,Y+6
+ 549 0128 BF81      		ldd r27,Y+7
+ 550 012a 8783      		std Z+7,r24
+ 551 012c 9087      		std Z+8,r25
+ 552 012e A187      		std Z+9,r26
+ 553 0130 B287      		std Z+10,r27
+  70:../../src/kernel/source/nrk_sw_wdt.c ****     sw_wdts[id].active=0;
+ 555               	.LM17:
+ 556 0132 1282      		std Z+2,__zero_reg__
+  71:../../src/kernel/source/nrk_sw_wdt.c ****     return NRK_OK;
+ 558               	.LM18:
+ 559 0134 81E0      		ldi r24,lo8(1)
+ 560 0136 00C0      		rjmp .L11
+ 561               	.L12:
+  66:../../src/kernel/source/nrk_sw_wdt.c ****     sw_wdts[id].error_func=func;
+ 563               	.LM19:
+ 564 0138 8FEF      		ldi r24,lo8(-1)
+ 565               	.L11:
+ 566               	/* epilogue start */
+  72:../../src/kernel/source/nrk_sw_wdt.c **** }
+ 568               	.LM20:
+ 569 013a DF91      		pop r29
+ 570 013c CF91      		pop r28
+ 571 013e 0895      		ret
+ 573               	.Lscope3:
+ 575               		.stabd	78,0,0
+ 578               	.global	nrk_sw_wdt_update
+ 580               	nrk_sw_wdt_update:
+ 581               		.stabd	46,0,0
+  73:../../src/kernel/source/nrk_sw_wdt.c **** 
+  74:../../src/kernel/source/nrk_sw_wdt.c **** int8_t nrk_sw_wdt_update(uint8_t id)
+  75:../../src/kernel/source/nrk_sw_wdt.c **** {
+ 583               	.LM21:
+ 584               	.LFBB4:
+ 585 0140 CF92      		push r12
+ 586 0142 DF92      		push r13
+ 587 0144 EF92      		push r14
+ 588 0146 FF92      		push r15
+ 589 0148 0F93      		push r16
+ 590 014a 1F93      		push r17
+ 591 014c CF93      		push r28
+ 592 014e DF93      		push r29
+ 593 0150 CDB7      		in r28,__SP_L__
+ 594 0152 DEB7      		in r29,__SP_H__
+ 595 0154 2897      		sbiw r28,8
+ 596 0156 0FB6      		in __tmp_reg__,__SREG__
+ 597 0158 F894      		cli
+ 598 015a DEBF      		out __SP_H__,r29
+ 599 015c 0FBE      		out __SREG__,__tmp_reg__
+ 600 015e CDBF      		out __SP_L__,r28
+ 601               	/* prologue: function */
+ 602               	/* frame size = 8 */
+ 603               	/* stack size = 16 */
+ 604               	.L__stack_usage = 16
+  76:../../src/kernel/source/nrk_sw_wdt.c ****     nrk_time_t now;
+  77:../../src/kernel/source/nrk_sw_wdt.c ****     if(id>=NRK_MAX_SW_WDT) return NRK_ERROR;
+ 606               	.LM22:
+ 607 0160 8330      		cpi r24,lo8(3)
+ 608 0162 00F4      		brsh .L15
+ 609 0164 182F      		mov r17,r24
+  78:../../src/kernel/source/nrk_sw_wdt.c ****     nrk_time_get(&now);
+ 611               	.LM23:
+ 612 0166 CE01      		movw r24,r28
+ 613 0168 0196      		adiw r24,1
+ 614 016a 0E94 0000 		call nrk_time_get
+  79:../../src/kernel/source/nrk_sw_wdt.c ****     sw_wdts[id].next_period.secs=now.secs+sw_wdts[id].period.secs;
+ 616               	.LM24:
+ 617 016e 23E1      		ldi r18,lo8(19)
+ 618 0170 129F      		mul r17,r18
+ 619 0172 C001      		movw r24,r0
+ 620 0174 1124      		clr __zero_reg__
+ 621 0176 8C01      		movw r16,r24
+ 622 0178 0050      		subi r16,lo8(-(sw_wdts))
+ 623 017a 1040      		sbci r17,hi8(-(sw_wdts))
+ 624 017c F801      		movw r30,r16
+ 625 017e C380      		ldd r12,Z+3
+ 626 0180 D480      		ldd r13,Z+4
+ 627 0182 E580      		ldd r14,Z+5
+ 628 0184 F680      		ldd r15,Z+6
+ 629 0186 4981      		ldd r20,Y+1
+ 630 0188 5A81      		ldd r21,Y+2
+ 631 018a 6B81      		ldd r22,Y+3
+ 632 018c 7C81      		ldd r23,Y+4
+ 633 018e 4C0D      		add r20,r12
+ 634 0190 5D1D      		adc r21,r13
+ 635 0192 6E1D      		adc r22,r14
+ 636 0194 7F1D      		adc r23,r15
+ 637 0196 4387      		std Z+11,r20
+ 638 0198 5487      		std Z+12,r21
+ 639 019a 6587      		std Z+13,r22
+ 640 019c 7687      		std Z+14,r23
+  80:../../src/kernel/source/nrk_sw_wdt.c ****     sw_wdts[id].next_period.nano_secs=now.nano_secs+sw_wdts[id].period.nano_secs;
+ 642               	.LM25:
+ 643 019e C780      		ldd r12,Z+7
+ 644 01a0 D084      		ldd r13,Z+8
+ 645 01a2 E184      		ldd r14,Z+9
+ 646 01a4 F284      		ldd r15,Z+10
+ 647 01a6 4D81      		ldd r20,Y+5
+ 648 01a8 5E81      		ldd r21,Y+6
+ 649 01aa 6F81      		ldd r22,Y+7
+ 650 01ac 7885      		ldd r23,Y+8
+ 651 01ae 4C0D      		add r20,r12
+ 652 01b0 5D1D      		adc r21,r13
+ 653 01b2 6E1D      		adc r22,r14
+ 654 01b4 7F1D      		adc r23,r15
+ 655 01b6 4787      		std Z+15,r20
+ 656 01b8 508B      		std Z+16,r21
+ 657 01ba 618B      		std Z+17,r22
+ 658 01bc 728B      		std Z+18,r23
+  81:../../src/kernel/source/nrk_sw_wdt.c ****     nrk_time_compact_nanos(&(sw_wdts[id].next_period));
+ 660               	.LM26:
+ 661 01be 8050      		subi r24,lo8(-(sw_wdts+11))
+ 662 01c0 9040      		sbci r25,hi8(-(sw_wdts+11))
+ 663 01c2 0E94 0000 		call nrk_time_compact_nanos
+  82:../../src/kernel/source/nrk_sw_wdt.c ****     sw_wdts[id].active=1;
+ 665               	.LM27:
+ 666 01c6 81E0      		ldi r24,lo8(1)
+ 667 01c8 F801      		movw r30,r16
+ 668 01ca 8283      		std Z+2,r24
+  83:../../src/kernel/source/nrk_sw_wdt.c ****     return NRK_OK;
+ 670               	.LM28:
+ 671 01cc 00C0      		rjmp .L14
+ 672               	.L15:
+  77:../../src/kernel/source/nrk_sw_wdt.c ****     nrk_time_get(&now);
+ 674               	.LM29:
+ 675 01ce 8FEF      		ldi r24,lo8(-1)
+ 676               	.L14:
+ 677               	/* epilogue start */
+  84:../../src/kernel/source/nrk_sw_wdt.c **** }
+ 679               	.LM30:
+ 680 01d0 2896      		adiw r28,8
+ 681 01d2 0FB6      		in __tmp_reg__,__SREG__
+ 682 01d4 F894      		cli
+ 683 01d6 DEBF      		out __SP_H__,r29
+ 684 01d8 0FBE      		out __SREG__,__tmp_reg__
+ 685 01da CDBF      		out __SP_L__,r28
+ 686 01dc DF91      		pop r29
+ 687 01de CF91      		pop r28
+ 688 01e0 1F91      		pop r17
+ 689 01e2 0F91      		pop r16
+ 690 01e4 FF90      		pop r15
+ 691 01e6 EF90      		pop r14
+ 692 01e8 DF90      		pop r13
+ 693 01ea CF90      		pop r12
+ 694 01ec 0895      		ret
+ 699               	.Lscope4:
+ 701               		.stabd	78,0,0
+ 704               	.global	nrk_sw_wdt_start
+ 706               	nrk_sw_wdt_start:
+ 707               		.stabd	46,0,0
+  85:../../src/kernel/source/nrk_sw_wdt.c **** 
+  86:../../src/kernel/source/nrk_sw_wdt.c **** int8_t nrk_sw_wdt_start(uint8_t id)
+  87:../../src/kernel/source/nrk_sw_wdt.c **** {
+ 709               	.LM31:
+ 710               	.LFBB5:
+ 711 01ee 1F93      		push r17
+ 712 01f0 CF93      		push r28
+ 713 01f2 DF93      		push r29
+ 714 01f4 CDB7      		in r28,__SP_L__
+ 715 01f6 DEB7      		in r29,__SP_H__
+ 716 01f8 2897      		sbiw r28,8
+ 717 01fa 0FB6      		in __tmp_reg__,__SREG__
+ 718 01fc F894      		cli
+ 719 01fe DEBF      		out __SP_H__,r29
+ 720 0200 0FBE      		out __SREG__,__tmp_reg__
+ 721 0202 CDBF      		out __SP_L__,r28
+ 722               	/* prologue: function */
+ 723               	/* frame size = 8 */
+ 724               	/* stack size = 11 */
+ 725               	.L__stack_usage = 11
+  88:../../src/kernel/source/nrk_sw_wdt.c ****     nrk_time_t now;
+  89:../../src/kernel/source/nrk_sw_wdt.c ****     if(id>=NRK_MAX_SW_WDT) return NRK_ERROR;
+ 727               	.LM32:
+ 728 0204 8330      		cpi r24,lo8(3)
+ 729 0206 00F4      		brsh .L18
+ 730 0208 182F      		mov r17,r24
+  90:../../src/kernel/source/nrk_sw_wdt.c ****     nrk_time_get(&now);
+ 732               	.LM33:
+ 733 020a CE01      		movw r24,r28
+ 734 020c 0196      		adiw r24,1
+ 735 020e 0E94 0000 		call nrk_time_get
+  91:../../src/kernel/source/nrk_sw_wdt.c ****     sw_wdts[id].next_period.secs=now.secs+sw_wdts[id].period.secs;
+ 737               	.LM34:
+ 738 0212 83E1      		ldi r24,lo8(19)
+ 739 0214 189F      		mul r17,r24
+ 740 0216 F001      		movw r30,r0
+ 741 0218 1124      		clr __zero_reg__
+ 742 021a E050      		subi r30,lo8(-(sw_wdts))
+ 743 021c F040      		sbci r31,hi8(-(sw_wdts))
+ 744 021e 4381      		ldd r20,Z+3
+ 745 0220 5481      		ldd r21,Z+4
+ 746 0222 6581      		ldd r22,Z+5
+ 747 0224 7681      		ldd r23,Z+6
+ 748 0226 8981      		ldd r24,Y+1
+ 749 0228 9A81      		ldd r25,Y+2
+ 750 022a AB81      		ldd r26,Y+3
+ 751 022c BC81      		ldd r27,Y+4
+ 752 022e 840F      		add r24,r20
+ 753 0230 951F      		adc r25,r21
+ 754 0232 A61F      		adc r26,r22
+ 755 0234 B71F      		adc r27,r23
+ 756 0236 8387      		std Z+11,r24
+ 757 0238 9487      		std Z+12,r25
+ 758 023a A587      		std Z+13,r26
+ 759 023c B687      		std Z+14,r27
+  92:../../src/kernel/source/nrk_sw_wdt.c ****     sw_wdts[id].next_period.nano_secs=now.nano_secs+sw_wdts[id].period.nano_secs;
+ 761               	.LM35:
+ 762 023e 4781      		ldd r20,Z+7
+ 763 0240 5085      		ldd r21,Z+8
+ 764 0242 6185      		ldd r22,Z+9
+ 765 0244 7285      		ldd r23,Z+10
+ 766 0246 8D81      		ldd r24,Y+5
+ 767 0248 9E81      		ldd r25,Y+6
+ 768 024a AF81      		ldd r26,Y+7
+ 769 024c B885      		ldd r27,Y+8
+ 770 024e 840F      		add r24,r20
+ 771 0250 951F      		adc r25,r21
+ 772 0252 A61F      		adc r26,r22
+ 773 0254 B71F      		adc r27,r23
+ 774 0256 8787      		std Z+15,r24
+ 775 0258 908B      		std Z+16,r25
+ 776 025a A18B      		std Z+17,r26
+ 777 025c B28B      		std Z+18,r27
+  93:../../src/kernel/source/nrk_sw_wdt.c ****     sw_wdts[id].active=1;
+ 779               	.LM36:
+ 780 025e 81E0      		ldi r24,lo8(1)
+ 781 0260 8283      		std Z+2,r24
+  94:../../src/kernel/source/nrk_sw_wdt.c **** 
+  95:../../src/kernel/source/nrk_sw_wdt.c ****     return NRK_OK;
+ 783               	.LM37:
+ 784 0262 00C0      		rjmp .L17
+ 785               	.L18:
+  89:../../src/kernel/source/nrk_sw_wdt.c ****     nrk_time_get(&now);
+ 787               	.LM38:
+ 788 0264 8FEF      		ldi r24,lo8(-1)
+ 789               	.L17:
+ 790               	/* epilogue start */
+  96:../../src/kernel/source/nrk_sw_wdt.c **** }
+ 792               	.LM39:
+ 793 0266 2896      		adiw r28,8
+ 794 0268 0FB6      		in __tmp_reg__,__SREG__
+ 795 026a F894      		cli
+ 796 026c DEBF      		out __SP_H__,r29
+ 797 026e 0FBE      		out __SREG__,__tmp_reg__
+ 798 0270 CDBF      		out __SP_L__,r28
+ 799 0272 DF91      		pop r29
+ 800 0274 CF91      		pop r28
+ 801 0276 1F91      		pop r17
+ 802 0278 0895      		ret
+ 807               	.Lscope5:
+ 809               		.stabd	78,0,0
+ 812               	.global	nrk_sw_wdt_stop
+ 814               	nrk_sw_wdt_stop:
+ 815               		.stabd	46,0,0
+  97:../../src/kernel/source/nrk_sw_wdt.c **** 
+  98:../../src/kernel/source/nrk_sw_wdt.c **** int8_t nrk_sw_wdt_stop(uint8_t id)
+  99:../../src/kernel/source/nrk_sw_wdt.c **** {
+ 817               	.LM40:
+ 818               	.LFBB6:
+ 819               	/* prologue: function */
+ 820               	/* frame size = 0 */
+ 821               	/* stack size = 0 */
+ 822               	.L__stack_usage = 0
+ 100:../../src/kernel/source/nrk_sw_wdt.c ****     if(id>=NRK_MAX_SW_WDT) return NRK_ERROR;
+ 824               	.LM41:
+ 825 027a 8330      		cpi r24,lo8(3)
+ 826 027c 00F4      		brsh .L21
+ 101:../../src/kernel/source/nrk_sw_wdt.c ****     sw_wdts[id].active=0;
+ 828               	.LM42:
+ 829 027e 93E1      		ldi r25,lo8(19)
+ 830 0280 899F      		mul r24,r25
+ 831 0282 F001      		movw r30,r0
+ 832 0284 1124      		clr __zero_reg__
+ 833 0286 E050      		subi r30,lo8(-(sw_wdts))
+ 834 0288 F040      		sbci r31,hi8(-(sw_wdts))
+ 835 028a 1282      		std Z+2,__zero_reg__
+ 102:../../src/kernel/source/nrk_sw_wdt.c ****     return NRK_OK;
+ 837               	.LM43:
+ 838 028c 81E0      		ldi r24,lo8(1)
+ 839 028e 0895      		ret
+ 840               	.L21:
+ 100:../../src/kernel/source/nrk_sw_wdt.c ****     if(id>=NRK_MAX_SW_WDT) return NRK_ERROR;
+ 842               	.LM44:
+ 843 0290 8FEF      		ldi r24,lo8(-1)
+ 103:../../src/kernel/source/nrk_sw_wdt.c **** }
+ 845               	.LM45:
+ 846 0292 0895      		ret
+ 848               	.Lscope6:
+ 850               		.stabd	78,0,0
+ 851               		.comm	sw_wdts,57,1
+ 852               		.comm	error_num,1,1
+ 853               		.comm	error_task,1,1
+ 854               		.comm	nrk_kernel_stk_ptr,2,1
+ 855               		.comm	nrk_idle_task_stk,128,1
+ 856               		.comm	_nrk_signal_list,4,1
+ 864               	.Letext0:
+ 865               		.ident	"GCC: (GNU) 4.9.1"
+ 866               	.global __do_clear_bss
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 nrk_sw_wdt.c
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccexgm4N.s:2      *ABS*:000000000000003e __SP_H__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccexgm4N.s:3      *ABS*:000000000000003d __SP_L__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccexgm4N.s:4      *ABS*:000000000000003f __SREG__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccexgm4N.s:5      *ABS*:000000000000003b __RAMPZ__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccexgm4N.s:6      *ABS*:0000000000000000 __tmp_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccexgm4N.s:7      *ABS*:0000000000000001 __zero_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccaZOecp.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccaZOecp.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccaZOecp.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccaZOecp.s:5      *ABS*:000000000000003b __RAMPZ__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccaZOecp.s:6      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccaZOecp.s:7      *ABS*:0000000000000001 __zero_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccaZOecp.s:325    .text:0000000000000000 _nrk_sw_wdt_check
+                            *COM*:0000000000000039 sw_wdts
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccaZOecp.s:481    .text:00000000000000ec _nrk_sw_wdt_init
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccaZOecp.s:508    .text:00000000000000f8 nrk_sw_wdt_init
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccaZOecp.s:580    .text:0000000000000140 nrk_sw_wdt_update
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccaZOecp.s:706    .text:00000000000001ee nrk_sw_wdt_start
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccaZOecp.s:814    .text:000000000000027a nrk_sw_wdt_stop
                             *COM*:0000000000000001 error_num
                             *COM*:0000000000000001 error_task
                             *COM*:0000000000000002 nrk_kernel_stk_ptr
@@ -30,4 +589,9 @@ DEFINED SYMBOLS
                             *COM*:0000000000000004 _nrk_signal_list
 
 UNDEFINED SYMBOLS
+nrk_time_get
+nrk_time_sub
+nrk_kernel_error_add
+nrk_halt
+nrk_time_compact_nanos
 __do_clear_bss
