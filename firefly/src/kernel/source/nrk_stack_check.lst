@@ -482,16 +482,16 @@
  698               	.global __do_clear_bss
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 nrk_stack_check.c
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccvBGyBd.s:2      *ABS*:000000000000003e __SP_H__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccvBGyBd.s:3      *ABS*:000000000000003d __SP_L__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccvBGyBd.s:4      *ABS*:000000000000003f __SREG__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccvBGyBd.s:5      *ABS*:000000000000003b __RAMPZ__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccvBGyBd.s:6      *ABS*:0000000000000000 __tmp_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccvBGyBd.s:7      *ABS*:0000000000000001 __zero_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccvBGyBd.s:335    .text:0000000000000000 dump_stack_info
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccvBGyBd.s:681    .progmem.data:0000000000000000 __c.3249
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccvBGyBd.s:546    .text:000000000000015a nrk_stack_check
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccvBGyBd.s:620    .text:00000000000001a4 nrk_stack_check_pid
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTU7U8T.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTU7U8T.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTU7U8T.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTU7U8T.s:5      *ABS*:000000000000003b __RAMPZ__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTU7U8T.s:6      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTU7U8T.s:7      *ABS*:0000000000000001 __zero_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTU7U8T.s:335    .text:0000000000000000 dump_stack_info
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTU7U8T.s:681    .progmem.data:0000000000000000 __c.3249
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTU7U8T.s:546    .text:000000000000015a nrk_stack_check
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccTU7U8T.s:620    .text:00000000000001a4 nrk_stack_check_pid
                             *COM*:0000000000000001 error_num
                             *COM*:0000000000000001 error_task
                             *COM*:0000000000000002 nrk_kernel_stk_ptr

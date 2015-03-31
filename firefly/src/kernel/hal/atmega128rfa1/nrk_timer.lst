@@ -1332,45 +1332,45 @@
  1522               	.global __do_clear_bss
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 nrk_timer.c
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:2      *ABS*:000000000000003e __SP_H__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:3      *ABS*:000000000000003d __SP_L__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:4      *ABS*:000000000000003f __SREG__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:5      *ABS*:000000000000003b __RAMPZ__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:6      *ABS*:0000000000000000 __tmp_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:7      *ABS*:0000000000000001 __zero_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:323    .text:0000000000000000 nrk_spin_wait_us
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:422    .text:000000000000001e _nrk_precision_os_timer_stop
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:442    .text:0000000000000024 _nrk_precision_os_timer_start
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:469    .text:0000000000000038 _nrk_precision_os_timer_reset
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:490    .text:0000000000000042 _nrk_precision_os_timer_get
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:532    .text:0000000000000066 _nrk_high_speed_timer_stop
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:552    .text:000000000000006c _nrk_high_speed_timer_start
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:573    .text:0000000000000074 _nrk_high_speed_timer_reset
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:599    .text:0000000000000084 _nrk_high_speed_timer_get
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:643    .text:00000000000000a8 nrk_high_speed_timer_wait
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:728    .text:0000000000000108 _nrk_os_timer_stop
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:761    .text:000000000000011e _nrk_os_timer_set
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:781    .text:0000000000000124 _nrk_os_timer_start
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:809    .text:0000000000000136 _nrk_os_timer_reset
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:5      *ABS*:000000000000003b __RAMPZ__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:6      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:7      *ABS*:0000000000000001 __zero_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:323    .text:0000000000000000 nrk_spin_wait_us
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:422    .text:000000000000001e _nrk_precision_os_timer_stop
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:442    .text:0000000000000024 _nrk_precision_os_timer_start
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:469    .text:0000000000000038 _nrk_precision_os_timer_reset
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:490    .text:0000000000000042 _nrk_precision_os_timer_get
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:532    .text:0000000000000066 _nrk_high_speed_timer_stop
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:552    .text:000000000000006c _nrk_high_speed_timer_start
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:573    .text:0000000000000074 _nrk_high_speed_timer_reset
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:599    .text:0000000000000084 _nrk_high_speed_timer_get
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:643    .text:00000000000000a8 nrk_high_speed_timer_wait
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:728    .text:0000000000000108 _nrk_os_timer_stop
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:761    .text:000000000000011e _nrk_os_timer_set
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:781    .text:0000000000000124 _nrk_os_timer_start
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:809    .text:0000000000000136 _nrk_os_timer_reset
                             *COM*:0000000000000001 _nrk_time_trigger
                             *COM*:0000000000000001 _nrk_prev_timer_val
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:840    .text:000000000000014a _nrk_setup_timer
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:963    .text:00000000000001d0 _nrk_get_next_wakeup
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:987    .text:00000000000001d8 _nrk_set_next_wakeup
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:1009   .text:00000000000001e0 nrk_timer_int_stop
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:1038   .text:00000000000001ec nrk_timer_int_reset
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:1074   .text:0000000000000200 nrk_timer_int_read
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:1108   .text:0000000000000214 nrk_timer_int_start
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:1146   .text:0000000000000226 nrk_timer_int_configure
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:840    .text:000000000000014a _nrk_setup_timer
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:963    .text:00000000000001d0 _nrk_get_next_wakeup
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:987    .text:00000000000001d8 _nrk_set_next_wakeup
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:1009   .text:00000000000001e0 nrk_timer_int_stop
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:1038   .text:00000000000001ec nrk_timer_int_reset
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:1074   .text:0000000000000200 nrk_timer_int_read
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:1108   .text:0000000000000214 nrk_timer_int_start
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:1146   .text:0000000000000226 nrk_timer_int_configure
                             *COM*:0000000000000001 app_timer0_prescale
                             *COM*:0000000000000002 app_timer0_callback
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:1257   .text:000000000000029c _nrk_os_timer_get
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:1279   .text:00000000000002a2 __vector_default
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:1309   .text:00000000000002b6 __vector_15
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:1328   .text:00000000000002b6 __vector_13
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:1257   .text:000000000000029c _nrk_os_timer_get
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:1279   .text:00000000000002a2 __vector_default
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:1309   .text:00000000000002b6 __vector_15
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:1328   .text:00000000000002b6 __vector_13
                             *COM*:0000000000000002 nrk_kernel_stk_ptr
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:1401   .text:000000000000031c __vector_32
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc83tpxE.s:1475   .text:0000000000000380 SIG_OUTPUT_COMPARE1A
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:1401   .text:000000000000031c __vector_32
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc6grmJH.s:1475   .text:0000000000000380 SIG_OUTPUT_COMPARE1A
                             *COM*:0000000000000001 error_num
                             *COM*:0000000000000001 error_task
                             *COM*:0000000000000080 nrk_idle_task_stk

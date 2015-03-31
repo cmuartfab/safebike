@@ -395,22 +395,22 @@
  704               	.global __do_clear_bss
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 nrk_eeprom.c
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cclgJAUg.s:2      *ABS*:000000000000003e __SP_H__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cclgJAUg.s:3      *ABS*:000000000000003d __SP_L__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cclgJAUg.s:4      *ABS*:000000000000003f __SREG__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cclgJAUg.s:5      *ABS*:000000000000003b __RAMPZ__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cclgJAUg.s:6      *ABS*:0000000000000000 __tmp_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cclgJAUg.s:7      *ABS*:0000000000000001 __zero_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cclgJAUg.s:311    .text:0000000000000000 nrk_eeprom_read_byte
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cclgJAUg.s:332    .text:0000000000000004 nrk_eeprom_write_byte
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cclgJAUg.s:355    .text:000000000000000a read_eeprom_mac_address
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cclgJAUg.s:444    .text:0000000000000076 read_eeprom_channel
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cclgJAUg.s:477    .text:000000000000008e write_eeprom_load_img_pages
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cclgJAUg.s:505    .text:000000000000009e read_eeprom_load_img_pages
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cclgJAUg.s:538    .text:00000000000000b6 read_eeprom_aes_key
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cclgJAUg.s:588    .text:00000000000000e6 write_eeprom_aes_key
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cclgJAUg.s:638    .text:0000000000000116 read_eeprom_current_image_checksum
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cclgJAUg.s:671    .text:000000000000012e write_eeprom_current_image_checksum
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccuaOMHP.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccuaOMHP.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccuaOMHP.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccuaOMHP.s:5      *ABS*:000000000000003b __RAMPZ__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccuaOMHP.s:6      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccuaOMHP.s:7      *ABS*:0000000000000001 __zero_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccuaOMHP.s:311    .text:0000000000000000 nrk_eeprom_read_byte
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccuaOMHP.s:332    .text:0000000000000004 nrk_eeprom_write_byte
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccuaOMHP.s:355    .text:000000000000000a read_eeprom_mac_address
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccuaOMHP.s:444    .text:0000000000000076 read_eeprom_channel
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccuaOMHP.s:477    .text:000000000000008e write_eeprom_load_img_pages
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccuaOMHP.s:505    .text:000000000000009e read_eeprom_load_img_pages
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccuaOMHP.s:538    .text:00000000000000b6 read_eeprom_aes_key
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccuaOMHP.s:588    .text:00000000000000e6 write_eeprom_aes_key
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccuaOMHP.s:638    .text:0000000000000116 read_eeprom_current_image_checksum
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccuaOMHP.s:671    .text:000000000000012e write_eeprom_current_image_checksum
                             *COM*:0000000000000001 error_num
                             *COM*:0000000000000001 error_task
                             *COM*:0000000000000004 _nrk_signal_list

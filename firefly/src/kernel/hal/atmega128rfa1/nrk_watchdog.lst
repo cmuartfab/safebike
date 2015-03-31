@@ -332,16 +332,16 @@
  544               	.global __do_clear_bss
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 nrk_watchdog.c
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc7t9WKr.s:2      *ABS*:000000000000003e __SP_H__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc7t9WKr.s:3      *ABS*:000000000000003d __SP_L__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc7t9WKr.s:4      *ABS*:000000000000003f __SREG__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc7t9WKr.s:5      *ABS*:000000000000003b __RAMPZ__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc7t9WKr.s:6      *ABS*:0000000000000000 __tmp_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc7t9WKr.s:7      *ABS*:0000000000000001 __zero_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc7t9WKr.s:319    .text:0000000000000000 nrk_watchdog_disable
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc7t9WKr.s:396    .text:000000000000001c nrk_watchdog_enable
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc7t9WKr.s:476    .text:000000000000003a nrk_watchdog_check
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc7t9WKr.s:510    .text:0000000000000048 nrk_watchdog_reset
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccLhu0z.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccLhu0z.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccLhu0z.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccLhu0z.s:5      *ABS*:000000000000003b __RAMPZ__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccLhu0z.s:6      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccLhu0z.s:7      *ABS*:0000000000000001 __zero_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccLhu0z.s:319    .text:0000000000000000 nrk_watchdog_disable
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccLhu0z.s:396    .text:000000000000001c nrk_watchdog_enable
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccLhu0z.s:476    .text:000000000000003a nrk_watchdog_check
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cccLhu0z.s:510    .text:0000000000000048 nrk_watchdog_reset
                             *COM*:0000000000000002 nrk_kernel_stk_ptr
                             *COM*:0000000000000080 nrk_idle_task_stk
                             *COM*:0000000000000001 error_num

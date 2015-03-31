@@ -1,0 +1,643 @@
+   1               		.file	"main.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__RAMPZ__ = 0x3b
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+  10               		.text
+  11               	.Ltext0:
+ 334               	.global	timer_callback
+ 336               	timer_callback:
+ 337               		.stabd	46,0,0
+   1:main.c        **** /******************************************************************************
+   2:main.c        **** *  Nano-RK, a real-time operating system for sensor networks.
+   3:main.c        **** *  Copyright (C) 2007, Real-Time and Multimedia Lab, Carnegie Mellon University
+   4:main.c        **** *  All rights reserved.
+   5:main.c        **** *
+   6:main.c        **** *  This is the Open Source Version of Nano-RK included as part of a Dual
+   7:main.c        **** *  Licensing Model. If you are unsure which license to use please refer to:
+   8:main.c        **** *  http://www.nanork.org/nano-RK/wiki/Licensing
+   9:main.c        **** *
+  10:main.c        **** *  This program is free software: you can redistribute it and/or modify
+  11:main.c        **** *  it under the terms of the GNU General Public License as published by
+  12:main.c        **** *  the Free Software Foundation, version 2.0 of the License.
+  13:main.c        **** *
+  14:main.c        **** *  This program is distributed in the hope that it will be useful,
+  15:main.c        **** *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  16:main.c        **** *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  17:main.c        **** *  GNU General Public License for more details.
+  18:main.c        **** *
+  19:main.c        **** *  You should have received a copy of the GNU General Public License
+  20:main.c        **** *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  21:main.c        **** *
+  22:main.c        **** *******************************************************************************/
+  23:main.c        **** 
+  24:main.c        **** #include <nrk.h>
+  25:main.c        **** #include <include.h>
+  26:main.c        **** #include <ulib.h>
+  27:main.c        **** #include <stdio.h>
+  28:main.c        **** #include <hal.h>
+  29:main.c        **** #include <nrk_error.h>
+  30:main.c        **** #include <nrk_timer.h>
+  31:main.c        **** #include <nrk_stack_check.h>
+  32:main.c        **** #include <nrk_stats.h>
+  33:main.c        **** #include <pcf_tdma.h>
+  34:main.c        **** #include <tdma_cons.h>
+  35:main.c        **** 
+  36:main.c        **** // Constants for the accelrometer
+  37:main.c        **** //There are 6 data registers, they are sequential starting 
+  38:main.c        **** //with the LSB of X.  We'll read all 6 in a burst and won't
+  39:main.c        **** //address them individually
+  40:main.c        **** #define ADXL345_REGISTER_XLSB 0x32
+  41:main.c        **** 
+  42:main.c        **** //Need to set power control bit to wake up the adxl345
+  43:main.c        **** #define ADXL_REGISTER_PWRCTL 0x2D
+  44:main.c        **** #define ADXL_REGISTER_FIFOCTL 0x38
+  45:main.c        **** #define ADXL_FIFOCTL_STREAM 1<<7
+  46:main.c        **** #define ADXL_PWRCTL_MEASURE 1 << 3
+  47:main.c        **** #define ADXL_PWRCTL_STBY 0
+  48:main.c        **** #define ADXL345_ADDRESS 0xA6
+  49:main.c        **** #define ADXL_SIZE 6
+  50:main.c        **** 
+  51:main.c        **** 
+  52:main.c        **** //Constants for the gyroscope
+  53:main.c        **** #define ITG3200_ADDRESS 0xD0
+  54:main.c        **** //request burst of 6 bytes from this address
+  55:main.c        **** #define ITG3200_REGISTER_XMSB 0x1D
+  56:main.c        **** #define ITG3200_REGISTER_DLPF 0x16
+  57:main.c        **** #define ITG3200_FULLSCALE 0x03 << 3
+  58:main.c        **** #define ITG3200_42HZ 0x03
+  59:main.c        **** #define ITG3200_SIZE 6
+  60:main.c        **** 
+  61:main.c        **** 
+  62:main.c        **** #define HMC5843_ADDRESS 0x3C
+  63:main.c        **** //First data address of 6 is XMSB.  Also need to set a configuration register for
+  64:main.c        **** //continuous measurement
+  65:main.c        **** #define HMC5843_REGISTER_XMSB 0x03
+  66:main.c        **** #define HMC5843_REGISTER_MEASMODE 0x02
+  67:main.c        **** #define HMC5843_MEASMODE_CONT 0x00
+  68:main.c        **** #define HMC5843_SIZE 6
+  69:main.c        **** 
+  70:main.c        **** 
+  71:main.c        **** tdma_info tx_tdma_fd;
+  72:main.c        **** 
+  73:main.c        **** uint8_t tx_buf[TDMA_MAX_PKT_SIZE];
+  74:main.c        **** 
+  75:main.c        **** uint16_t mac_address;
+  76:main.c        **** 
+  77:main.c        **** uint8_t aes_key[] = {0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xaa,0xbb,0xcc,0xdd,0xee, 0x
+  78:main.c        **** 
+  79:main.c        **** NRK_STK Stack1[NRK_APP_STACKSIZE];
+  80:main.c        **** nrk_task_type TaskOne;
+  81:main.c        **** void task_cadence(void);
+  82:main.c        **** 
+  83:main.c        **** NRK_STK tx_task_stack[NRK_APP_STACKSIZE];
+  84:main.c        **** nrk_task_type tx_task_info;
+  85:main.c        **** void tx_task (void);
+  86:main.c        **** 
+  87:main.c        **** void nrk_create_taskset();
+  88:main.c        **** 
+  89:main.c        **** int
+  90:main.c        **** main ()
+  91:main.c        **** {
+  92:main.c        ****   nrk_setup_ports();
+  93:main.c        ****   nrk_setup_uart(UART_BAUDRATE_115K2);
+  94:main.c        **** 
+  95:main.c        ****   tdma_init (TDMA_CLIENT, DEFAULT_CHANNEL, mac_address);
+  96:main.c        **** 
+  97:main.c        ****   tdma_aes_setkey(aes_key);
+  98:main.c        ****   tdma_aes_enable();
+  99:main.c        **** 
+ 100:main.c        ****   tdma_tx_slot_add (mac_address&0xFFFF);
+ 101:main.c        ****   
+ 102:main.c        ****   nrk_init();
+ 103:main.c        **** 
+ 104:main.c        ****   mac_address = CLIENT_MAC;
+ 105:main.c        **** 
+ 106:main.c        ****   nrk_led_clr(ORANGE_LED);
+ 107:main.c        ****   nrk_led_clr(BLUE_LED);
+ 108:main.c        ****   nrk_led_clr(GREEN_LED);
+ 109:main.c        ****   nrk_led_clr(RED_LED);
+ 110:main.c        ****  
+ 111:main.c        ****   nrk_time_set(0,0);
+ 112:main.c        ****   nrk_create_taskset();
+ 113:main.c        ****   nrk_start();
+ 114:main.c        ****   
+ 115:main.c        ****   return 0;
+ 116:main.c        **** }
+ 117:main.c        **** 
+ 118:main.c        **** void timer_callback(){
+ 339               	.LM0:
+ 340               	.LFBB1:
+ 341               	/* prologue: function */
+ 342               	/* frame size = 0 */
+ 343               	/* stack size = 0 */
+ 344               	.L__stack_usage = 0
+ 119:main.c        ****   nrk_led_toggle(RED_LED);
+ 346               	.LM1:
+ 347 0000 80E0      		ldi r24,0
+ 348 0002 90E0      		ldi r25,0
+ 349 0004 0C94 0000 		jmp nrk_led_toggle
+ 351               	.Lscope1:
+ 353               		.stabd	78,0,0
+ 354               		.section	.rodata.str1.1,"aMS",@progbits,1
+ 355               	.LC0:
+ 356 0000 5461 736B 		.string	"Task1 timer = %u\r\n"
+ 356      3120 7469 
+ 356      6D65 7220 
+ 356      3D20 2575 
+ 356      0D0A 00
+ 357               		.text
+ 359               	.global	task_cadence
+ 361               	task_cadence:
+ 362               		.stabd	46,0,0
+ 120:main.c        **** }
+ 121:main.c        **** 
+ 122:main.c        **** void task_cadence()
+ 123:main.c        **** {
+ 364               	.LM2:
+ 365               	.LFBB2:
+ 366 0008 CF93      		push r28
+ 367 000a DF93      		push r29
+ 368 000c CDB7      		in r28,__SP_L__
+ 369 000e DEB7      		in r29,__SP_H__
+ 370 0010 2A97      		sbiw r28,10
+ 371 0012 0FB6      		in __tmp_reg__,__SREG__
+ 372 0014 F894      		cli
+ 373 0016 DEBF      		out __SP_H__,r29
+ 374 0018 0FBE      		out __SREG__,__tmp_reg__
+ 375 001a CDBF      		out __SP_L__,r28
+ 376               	/* prologue: function */
+ 377               	/* frame size = 10 */
+ 378               	/* stack size = 12 */
+ 379               	.L__stack_usage = 12
+ 124:main.c        ****   nrk_time_t t;
+ 125:main.c        ****   uint8_t val,v;
+ 126:main.c        ****   uint16_t time;  
+ 127:main.c        **** 
+ 128:main.c        ****   // // setup a software watch dog timer
+ 129:main.c        ****   nrk_sw_wdt_init(0, &t, NULL);
+ 381               	.LM3:
+ 382 001c 40E0      		ldi r20,0
+ 383 001e 50E0      		ldi r21,0
+ 384 0020 BE01      		movw r22,r28
+ 385 0022 6F5F      		subi r22,-1
+ 386 0024 7F4F      		sbci r23,-1
+ 387 0026 80E0      		ldi r24,0
+ 388 0028 90E0      		ldi r25,0
+ 389 002a 0E94 0000 		call nrk_sw_wdt_init
+ 130:main.c        ****   nrk_sw_wdt_start(0);
+ 391               	.LM4:
+ 392 002e 80E0      		ldi r24,0
+ 393 0030 90E0      		ldi r25,0
+ 394 0032 0E94 0000 		call nrk_sw_wdt_start
+ 131:main.c        **** 
+ 132:main.c        ****   //set 400 Hz timer
+ 133:main.c        ****   if (nrk_timer_int_configure
+ 396               	.LM5:
+ 397 0036 20E0      		ldi r18,lo8(gs(timer_callback))
+ 398 0038 30E0      		ldi r19,hi8(gs(timer_callback))
+ 399 003a 40ED      		ldi r20,lo8(-48)
+ 400 003c 57E0      		ldi r21,lo8(7)
+ 401 003e 62E0      		ldi r22,lo8(2)
+ 402 0040 70E0      		ldi r23,0
+ 403 0042 80E0      		ldi r24,0
+ 404 0044 0E94 0000 		call nrk_timer_int_configure
+ 405 0048 8130      		cpi r24,lo8(1)
+ 406 004a 01F0      		breq .L3
+ 134:main.c        ****       (NRK_APP_TIMER_0,2,2000, &timer_callback) != NRK_OK)
+ 135:main.c        ****     nrk_kprintf(PSTR("ERROR setting up timer\r\n"));
+ 408               	.LM6:
+ 409 004c 80E0      		ldi r24,lo8(__c.3496)
+ 410 004e 90E0      		ldi r25,hi8(__c.3496)
+ 411 0050 0E94 0000 		call nrk_kprintf
+ 412               	.L3:
+ 136:main.c        **** 
+ 137:main.c        ****   nrk_timer_int_reset(NRK_APP_TIMER_0);
+ 414               	.LM7:
+ 415 0054 80E0      		ldi r24,0
+ 416 0056 0E94 0000 		call nrk_timer_int_reset
+ 138:main.c        **** 
+ 139:main.c        ****   nrk_gpio_direction(NRK_PORTD_0, NRK_PIN_INPUT);
+ 418               	.LM8:
+ 419 005a F090 0000 		lds r15,NRK_PORTD_0
+ 420 005e 60E0      		ldi r22,0
+ 421 0060 8F2D      		mov r24,r15
+ 422 0062 0E94 0000 		call nrk_gpio_direction
+ 140:main.c        **** 
+ 141:main.c        ****   nrk_timer_int_start(NRK_APP_TIMER_0);
+ 424               	.LM9:
+ 425 0066 80E0      		ldi r24,0
+ 426 0068 0E94 0000 		call nrk_timer_int_start
+ 427               	.LBB2:
+ 142:main.c        **** 
+ 143:main.c        ****   while (1) {
+ 144:main.c        ****     // Update watchdog timer
+ 145:main.c        ****     nrk_sw_wdt_update(0);
+ 146:main.c        ****     nrk_led_toggle(RED_LED);
+ 147:main.c        **** 
+ 148:main.c        ****     val = nrk_gpio_get(NRK_PORTD_0);
+ 149:main.c        ****     if (val)
+ 150:main.c        ****     {
+ 151:main.c        ****       time = nrk_timer_int_read(NRK_APP_TIMER_0);
+ 152:main.c        ****       nrk_timer_int_reset(NRK_APP_TIMER_0);
+ 153:main.c        ****       
+ 154:main.c        ****       v = tdma_send (&tx_tdma_fd, &time, 2, TDMA_BLOCKING);
+ 155:main.c        ****       if (!v)
+ 156:main.c        ****       {
+ 157:main.c        ****         nrk_kprintf(PSTR("tx error\r\n"));
+ 158:main.c        ****       }
+ 159:main.c        **** 
+ 160:main.c        ****       printf("Task1 timer = %u\r\n",time);
+ 429               	.LM10:
+ 430 006c 00E0      		ldi r16,lo8(.LC0)
+ 431 006e 10E0      		ldi r17,hi8(.LC0)
+ 432               	.L4:
+ 145:main.c        ****     nrk_led_toggle(RED_LED);
+ 434               	.LM11:
+ 435 0070 80E0      		ldi r24,0
+ 436 0072 90E0      		ldi r25,0
+ 437 0074 0E94 0000 		call nrk_sw_wdt_update
+ 146:main.c        **** 
+ 439               	.LM12:
+ 440 0078 80E0      		ldi r24,0
+ 441 007a 90E0      		ldi r25,0
+ 442 007c 0E94 0000 		call nrk_led_toggle
+ 148:main.c        ****     if (val)
+ 444               	.LM13:
+ 445 0080 8F2D      		mov r24,r15
+ 446 0082 0E94 0000 		call nrk_gpio_get
+ 149:main.c        ****     {
+ 448               	.LM14:
+ 449 0086 8823      		tst r24
+ 450 0088 01F0      		breq .L4
+ 151:main.c        ****       nrk_timer_int_reset(NRK_APP_TIMER_0);
+ 452               	.LM15:
+ 453 008a 80E0      		ldi r24,0
+ 454 008c 0E94 0000 		call nrk_timer_int_read
+ 455 0090 9A87      		std Y+10,r25
+ 456 0092 8987      		std Y+9,r24
+ 152:main.c        ****       
+ 458               	.LM16:
+ 459 0094 80E0      		ldi r24,0
+ 460 0096 0E94 0000 		call nrk_timer_int_reset
+ 154:main.c        ****       if (!v)
+ 462               	.LM17:
+ 463 009a 20E0      		ldi r18,0
+ 464 009c 42E0      		ldi r20,lo8(2)
+ 465 009e BE01      		movw r22,r28
+ 466 00a0 675F      		subi r22,-9
+ 467 00a2 7F4F      		sbci r23,-1
+ 468 00a4 80E0      		ldi r24,lo8(tx_tdma_fd)
+ 469 00a6 90E0      		ldi r25,hi8(tx_tdma_fd)
+ 470 00a8 0E94 0000 		call tdma_send
+ 155:main.c        ****       {
+ 472               	.LM18:
+ 473 00ac 8111      		cpse r24,__zero_reg__
+ 474 00ae 00C0      		rjmp .L5
+ 157:main.c        ****       }
+ 476               	.LM19:
+ 477 00b0 80E0      		ldi r24,lo8(__c.3499)
+ 478 00b2 90E0      		ldi r25,hi8(__c.3499)
+ 479 00b4 0E94 0000 		call nrk_kprintf
+ 480               	.L5:
+ 482               	.LM20:
+ 483 00b8 8A85      		ldd r24,Y+10
+ 484 00ba 8F93      		push r24
+ 485 00bc 8985      		ldd r24,Y+9
+ 486 00be 8F93      		push r24
+ 487 00c0 1F93      		push r17
+ 488 00c2 0F93      		push r16
+ 489 00c4 0E94 0000 		call printf
+ 490 00c8 0F90      		pop __tmp_reg__
+ 491 00ca 0F90      		pop __tmp_reg__
+ 492 00cc 0F90      		pop __tmp_reg__
+ 493 00ce 0F90      		pop __tmp_reg__
+ 494 00d0 00C0      		rjmp .L4
+ 495               	.LBE2:
+ 501               	.Lscope2:
+ 503               		.stabd	78,0,0
+ 505               	.global	nrk_create_taskset
+ 507               	nrk_create_taskset:
+ 508               		.stabd	46,0,0
+ 161:main.c        ****     }
+ 162:main.c        ****   }
+ 163:main.c        **** }
+ 164:main.c        **** 
+ 165:main.c        **** 
+ 166:main.c        **** 
+ 167:main.c        **** 
+ 168:main.c        **** void
+ 169:main.c        **** nrk_create_taskset()
+ 170:main.c        **** {
+ 510               	.LM21:
+ 511               	.LFBB3:
+ 512               	/* prologue: function */
+ 513               	/* frame size = 0 */
+ 514               	/* stack size = 0 */
+ 515               	.L__stack_usage = 0
+ 171:main.c        ****   nrk_task_set_entry_function( &TaskOne, task_cadence);
+ 517               	.LM22:
+ 518 00d2 60E0      		ldi r22,lo8(gs(task_cadence))
+ 519 00d4 70E0      		ldi r23,hi8(gs(task_cadence))
+ 520 00d6 80E0      		ldi r24,lo8(TaskOne)
+ 521 00d8 90E0      		ldi r25,hi8(TaskOne)
+ 522 00da 0E94 0000 		call nrk_task_set_entry_function
+ 172:main.c        ****   nrk_task_set_stk( &TaskOne, Stack1, NRK_APP_STACKSIZE);
+ 524               	.LM23:
+ 525 00de 40E8      		ldi r20,lo8(-128)
+ 526 00e0 50E0      		ldi r21,0
+ 527 00e2 60E0      		ldi r22,lo8(Stack1)
+ 528 00e4 70E0      		ldi r23,hi8(Stack1)
+ 529 00e6 80E0      		ldi r24,lo8(TaskOne)
+ 530 00e8 90E0      		ldi r25,hi8(TaskOne)
+ 531 00ea 0E94 0000 		call nrk_task_set_stk
+ 173:main.c        ****   TaskOne.prio = 2;
+ 533               	.LM24:
+ 534 00ee E0E0      		ldi r30,lo8(TaskOne)
+ 535 00f0 F0E0      		ldi r31,hi8(TaskOne)
+ 536 00f2 82E0      		ldi r24,lo8(2)
+ 537 00f4 8087      		std Z+8,r24
+ 174:main.c        ****   TaskOne.FirstActivation = TRUE;
+ 539               	.LM25:
+ 540 00f6 81E0      		ldi r24,lo8(1)
+ 541 00f8 8783      		std Z+7,r24
+ 175:main.c        ****   TaskOne.Type = BASIC_TASK;
+ 543               	.LM26:
+ 544 00fa 8187      		std Z+9,r24
+ 176:main.c        ****   TaskOne.SchType = PREEMPTIVE;
+ 546               	.LM27:
+ 547 00fc 8287      		std Z+10,r24
+ 177:main.c        ****   TaskOne.period.secs = 0;
+ 549               	.LM28:
+ 550 00fe 1386      		std Z+11,__zero_reg__
+ 551 0100 1486      		std Z+12,__zero_reg__
+ 552 0102 1586      		std Z+13,__zero_reg__
+ 553 0104 1686      		std Z+14,__zero_reg__
+ 178:main.c        ****   TaskOne.period.nano_secs = 250 * NANOS_PER_MS;
+ 555               	.LM29:
+ 556 0106 80E8      		ldi r24,lo8(-128)
+ 557 0108 92EB      		ldi r25,lo8(-78)
+ 558 010a A6EE      		ldi r26,lo8(-26)
+ 559 010c BEE0      		ldi r27,lo8(14)
+ 560 010e 8787      		std Z+15,r24
+ 561 0110 908B      		std Z+16,r25
+ 562 0112 A18B      		std Z+17,r26
+ 563 0114 B28B      		std Z+18,r27
+ 179:main.c        ****   TaskOne.cpu_reserve.secs = 0;
+ 565               	.LM30:
+ 566 0116 138A      		std Z+19,__zero_reg__
+ 567 0118 148A      		std Z+20,__zero_reg__
+ 568 011a 158A      		std Z+21,__zero_reg__
+ 569 011c 168A      		std Z+22,__zero_reg__
+ 180:main.c        ****   TaskOne.cpu_reserve.nano_secs = 0;
+ 571               	.LM31:
+ 572 011e 178A      		std Z+23,__zero_reg__
+ 573 0120 108E      		std Z+24,__zero_reg__
+ 574 0122 118E      		std Z+25,__zero_reg__
+ 575 0124 128E      		std Z+26,__zero_reg__
+ 181:main.c        ****   TaskOne.offset.secs = 1;
+ 577               	.LM32:
+ 578 0126 81E0      		ldi r24,lo8(1)
+ 579 0128 90E0      		ldi r25,0
+ 580 012a A0E0      		ldi r26,0
+ 581 012c B0E0      		ldi r27,0
+ 582 012e 838F      		std Z+27,r24
+ 583 0130 948F      		std Z+28,r25
+ 584 0132 A58F      		std Z+29,r26
+ 585 0134 B68F      		std Z+30,r27
+ 182:main.c        ****   TaskOne.offset.nano_secs= 0;
+ 587               	.LM33:
+ 588 0136 178E      		std Z+31,__zero_reg__
+ 589 0138 10A2      		std Z+32,__zero_reg__
+ 590 013a 11A2      		std Z+33,__zero_reg__
+ 591 013c 12A2      		std Z+34,__zero_reg__
+ 183:main.c        ****   nrk_activate_task (&TaskOne);
+ 593               	.LM34:
+ 594 013e CF01      		movw r24,r30
+ 595 0140 0E94 0000 		call nrk_activate_task
+ 184:main.c        **** 
+ 185:main.c        ****   tdma_task_config ();
+ 597               	.LM35:
+ 598 0144 0C94 0000 		jmp tdma_task_config
+ 600               	.Lscope3:
+ 602               		.stabd	78,0,0
+ 603               		.section	.text.startup,"ax",@progbits
+ 605               	.global	main
+ 607               	main:
+ 608               		.stabd	46,0,0
+  91:main.c        ****   nrk_setup_ports();
+ 610               	.LM36:
+ 611               	.LFBB4:
+ 612               	/* prologue: function */
+ 613               	/* frame size = 0 */
+ 614               	/* stack size = 0 */
+ 615               	.L__stack_usage = 0
+  92:main.c        ****   nrk_setup_uart(UART_BAUDRATE_115K2);
+ 617               	.LM37:
+ 618 0000 0E94 0000 		call nrk_setup_ports
+  93:main.c        **** 
+ 620               	.LM38:
+ 621 0004 80E1      		ldi r24,lo8(16)
+ 622 0006 90E0      		ldi r25,0
+ 623 0008 0E94 0000 		call nrk_setup_uart
+  95:main.c        **** 
+ 625               	.LM39:
+ 626 000c 4091 0000 		lds r20,mac_address
+ 627 0010 5091 0000 		lds r21,mac_address+1
+ 628 0014 6DE0      		ldi r22,lo8(13)
+ 629 0016 82E0      		ldi r24,lo8(2)
+ 630 0018 0E94 0000 		call tdma_init
+  97:main.c        ****   tdma_aes_enable();
+ 632               	.LM40:
+ 633 001c 80E0      		ldi r24,lo8(aes_key)
+ 634 001e 90E0      		ldi r25,hi8(aes_key)
+ 635 0020 0E94 0000 		call tdma_aes_setkey
+  98:main.c        **** 
+ 637               	.LM41:
+ 638 0024 0E94 0000 		call tdma_aes_enable
+ 100:main.c        ****   
+ 640               	.LM42:
+ 641 0028 8091 0000 		lds r24,mac_address
+ 642 002c 9091 0000 		lds r25,mac_address+1
+ 643 0030 0E94 0000 		call tdma_tx_slot_add
+ 102:main.c        **** 
+ 645               	.LM43:
+ 646 0034 0E94 0000 		call nrk_init
+ 104:main.c        **** 
+ 648               	.LM44:
+ 649 0038 81E0      		ldi r24,lo8(1)
+ 650 003a 90E0      		ldi r25,0
+ 651 003c 9093 0000 		sts mac_address+1,r25
+ 652 0040 8093 0000 		sts mac_address,r24
+ 106:main.c        ****   nrk_led_clr(BLUE_LED);
+ 654               	.LM45:
+ 655 0044 82E0      		ldi r24,lo8(2)
+ 656 0046 90E0      		ldi r25,0
+ 657 0048 0E94 0000 		call nrk_led_clr
+ 107:main.c        ****   nrk_led_clr(GREEN_LED);
+ 659               	.LM46:
+ 660 004c 83E0      		ldi r24,lo8(3)
+ 661 004e 90E0      		ldi r25,0
+ 662 0050 0E94 0000 		call nrk_led_clr
+ 108:main.c        ****   nrk_led_clr(RED_LED);
+ 664               	.LM47:
+ 665 0054 81E0      		ldi r24,lo8(1)
+ 666 0056 90E0      		ldi r25,0
+ 667 0058 0E94 0000 		call nrk_led_clr
+ 109:main.c        ****  
+ 669               	.LM48:
+ 670 005c 80E0      		ldi r24,0
+ 671 005e 90E0      		ldi r25,0
+ 672 0060 0E94 0000 		call nrk_led_clr
+ 111:main.c        ****   nrk_create_taskset();
+ 674               	.LM49:
+ 675 0064 20E0      		ldi r18,0
+ 676 0066 30E0      		ldi r19,0
+ 677 0068 A901      		movw r20,r18
+ 678 006a 60E0      		ldi r22,0
+ 679 006c 70E0      		ldi r23,0
+ 680 006e CB01      		movw r24,r22
+ 681 0070 0E94 0000 		call nrk_time_set
+ 112:main.c        ****   nrk_start();
+ 683               	.LM50:
+ 684 0074 0E94 0000 		call nrk_create_taskset
+ 113:main.c        ****   
+ 686               	.LM51:
+ 687 0078 0E94 0000 		call nrk_start
+ 116:main.c        **** 
+ 689               	.LM52:
+ 690 007c 80E0      		ldi r24,0
+ 691 007e 90E0      		ldi r25,0
+ 692 0080 0895      		ret
+ 694               	.Lscope4:
+ 696               		.stabd	78,0,0
+ 697               		.section	.progmem.data,"a",@progbits
+ 700               	__c.3499:
+ 701 0000 7478 2065 		.string	"tx error\r\n"
+ 701      7272 6F72 
+ 701      0D0A 00
+ 704               	__c.3496:
+ 705 000b 4552 524F 		.string	"ERROR setting up timer\r\n"
+ 705      5220 7365 
+ 705      7474 696E 
+ 705      6720 7570 
+ 705      2074 696D 
+ 706               		.comm	tx_task_info,35,1
+ 707               		.comm	tx_task_stack,128,1
+ 708               		.comm	TaskOne,35,1
+ 709               		.comm	Stack1,128,1
+ 710               	.global	aes_key
+ 711               		.data
+ 714               	aes_key:
+ 715 0000 00        		.byte	0
+ 716 0001 11        		.byte	17
+ 717 0002 22        		.byte	34
+ 718 0003 33        		.byte	51
+ 719 0004 44        		.byte	68
+ 720 0005 55        		.byte	85
+ 721 0006 66        		.byte	102
+ 722 0007 77        		.byte	119
+ 723 0008 88        		.byte	-120
+ 724 0009 99        		.byte	-103
+ 725 000a AA        		.byte	-86
+ 726 000b BB        		.byte	-69
+ 727 000c CC        		.byte	-52
+ 728 000d DD        		.byte	-35
+ 729 000e EE        		.byte	-18
+ 730 000f FF        		.byte	-1
+ 731               		.comm	mac_address,2,1
+ 732               		.comm	tx_buf,112,1
+ 733               		.comm	tx_tdma_fd,18,1
+ 734               		.comm	tdma_rfTxInfo,7,1
+ 735               		.comm	tdma_rfRxInfo,12,1
+ 736               		.comm	tdma_enable_signal,1,1
+ 737               		.comm	tdma_tx_pkt_done_signal,1,1
+ 738               		.comm	tdma_rx_pkt_signal,1,1
+ 739               		.comm	_nrk_stats_sleep_time,8,1
+ 740               		.comm	cur_task_stats,150,1
+ 741               		.comm	app_timer0_prescale,1,1
+ 742               		.comm	app_timer0_callback,2,1
+ 743               		.comm	_nrk_time_trigger,1,1
+ 744               		.comm	_nrk_prev_timer_val,1,1
+ 745               		.comm	error_num,1,1
+ 746               		.comm	error_task,1,1
+ 747               		.comm	nrk_kernel_stk_ptr,2,1
+ 748               		.comm	nrk_idle_task_stk,128,1
+ 749               		.comm	_nrk_signal_list,4,1
+ 774               		.text
+ 776               	.Letext0:
+ 777               		.ident	"GCC: (GNU) 4.9.1"
+ 778               	.global __do_copy_data
+ 779               	.global __do_clear_bss
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 main.c
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmy9uzb.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmy9uzb.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmy9uzb.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmy9uzb.s:5      *ABS*:000000000000003b __RAMPZ__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmy9uzb.s:6      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmy9uzb.s:7      *ABS*:0000000000000001 __zero_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmy9uzb.s:336    .text:0000000000000000 timer_callback
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmy9uzb.s:361    .text:0000000000000008 task_cadence
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmy9uzb.s:704    .progmem.data:000000000000000b __c.3496
+                            *COM*:0000000000000012 tx_tdma_fd
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmy9uzb.s:700    .progmem.data:0000000000000000 __c.3499
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmy9uzb.s:507    .text:00000000000000d2 nrk_create_taskset
+                            *COM*:0000000000000023 TaskOne
+                            *COM*:0000000000000080 Stack1
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmy9uzb.s:607    .text.startup:0000000000000000 main
+                            *COM*:0000000000000002 mac_address
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmy9uzb.s:714    .data:0000000000000000 aes_key
+                            *COM*:0000000000000023 tx_task_info
+                            *COM*:0000000000000080 tx_task_stack
+                            *COM*:0000000000000070 tx_buf
+                            *COM*:0000000000000007 tdma_rfTxInfo
+                            *COM*:000000000000000c tdma_rfRxInfo
+                            *COM*:0000000000000001 tdma_enable_signal
+                            *COM*:0000000000000001 tdma_tx_pkt_done_signal
+                            *COM*:0000000000000001 tdma_rx_pkt_signal
+                            *COM*:0000000000000008 _nrk_stats_sleep_time
+                            *COM*:0000000000000096 cur_task_stats
+                            *COM*:0000000000000001 app_timer0_prescale
+                            *COM*:0000000000000002 app_timer0_callback
+                            *COM*:0000000000000001 _nrk_time_trigger
+                            *COM*:0000000000000001 _nrk_prev_timer_val
+                            *COM*:0000000000000001 error_num
+                            *COM*:0000000000000001 error_task
+                            *COM*:0000000000000002 nrk_kernel_stk_ptr
+                            *COM*:0000000000000080 nrk_idle_task_stk
+                            *COM*:0000000000000004 _nrk_signal_list
+
+UNDEFINED SYMBOLS
+nrk_led_toggle
+nrk_sw_wdt_init
+nrk_sw_wdt_start
+nrk_timer_int_configure
+nrk_kprintf
+nrk_timer_int_reset
+NRK_PORTD_0
+nrk_gpio_direction
+nrk_timer_int_start
+nrk_sw_wdt_update
+nrk_gpio_get
+nrk_timer_int_read
+tdma_send
+printf
+nrk_task_set_entry_function
+nrk_task_set_stk
+nrk_activate_task
+tdma_task_config
+nrk_setup_ports
+nrk_setup_uart
+tdma_init
+tdma_aes_setkey
+tdma_aes_enable
+tdma_tx_slot_add
+nrk_init
+nrk_led_clr
+nrk_time_set
+nrk_start
+__do_copy_data
+__do_clear_bss

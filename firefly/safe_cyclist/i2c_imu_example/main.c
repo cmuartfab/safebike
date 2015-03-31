@@ -98,9 +98,10 @@ unsigned char TWI_Act_On_Failure_In_Last_Transmission ( unsigned char TWIerrorMs
                     // Here is a simple sample, where if received a NACK on the slave address,
                     // then a retransmission will be initiated.
 if ( (TWIerrorMsg == TWI_MTX_ADR_NACK) | (TWIerrorMsg == TWI_MRX_ADR_NACK) ){
-    TWI_Start_Transceiver();
+  printf("%c \n",TWIerrorMsg);  
+  TWI_Start_Transceiver();
 }
-printf("%c \n",TWIerrorMsg);
+
     
   return TWIerrorMsg; 
 }
@@ -131,11 +132,11 @@ main ()
 
   TWI_Master_Initialise();
   sei();
+  nrk_led_set(RED_LED);
   /* initialize the adxl345 */
   init_adxl345();
   init_itg3200();
   init_hmc5843();
-  
   nrk_init();
 
   nrk_led_clr(ORANGE_LED);
@@ -175,7 +176,6 @@ void init_adxl345() {
   messageBuf[1] = ADXL_REGISTER_PWRCTL;
   messageBuf[2] = ADXL_PWRCTL_STBY;
   TWI_Start_Transceiver_With_Data(messageBuf, 3);
-
   /* set the fifo mode to stream */
   messageBuf[0] = ADXL345_ADDRESS | FALSE<<TWI_READ_BIT;
   messageBuf[1] = ADXL_REGISTER_FIFOCTL;
@@ -188,7 +188,6 @@ void init_adxl345() {
   messageBuf[1] = ADXL_REGISTER_PWRCTL;
   messageBuf[2] = ADXL_PWRCTL_MEASURE;
   TWI_Start_Transceiver_With_Data(messageBuf, 3);
-
     /* set the data format */
   messageBuf[0] = ADXL345_ADDRESS | FALSE<<TWI_READ_BIT;
   messageBuf[1] = ADXL_REGISTER_DATAFMT;
@@ -268,6 +267,7 @@ void Task_Magneto()
     if (TWI_Get_Data_From_Transceiver(messageBuf, 7)){
       printf("HMC: %x %x %x %x %x %x \r\n",messageBuf[1],messageBuf[2],messageBuf[3],messageBuf[4],messageBuf[5],messageBuf[6]);
     }
+    
     nrk_wait_until_next_period();
   }
 }
@@ -314,7 +314,7 @@ nrk_create_taskset()
   TaskThree.period.secs = 0;
   TaskThree.period.nano_secs = 250*NANOS_PER_MS;
   TaskThree.cpu_reserve.secs = 0;
-  TaskThree.cpu_reserve.nano_secs = 250*NANOS_PER_MS;
+  TaskThree.cpu_reserve.nano_secs = 0*NANOS_PER_MS;
   TaskThree.offset.secs = 1;
   TaskThree.offset.nano_secs= 0;
   nrk_activate_task (&TaskThree);

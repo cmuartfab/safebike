@@ -18,9 +18,9 @@ static uint32_t sequences[MAX_NODES];
 typedef struct imu_pkt{
 uint8_t seq_no;
 uint8_t mac;
-uint8_t adxl345 [6];
-uint8_t itg3200 [6];
-uint8_t hmc5843 [6];
+uint16_t adxl345 [3];
+uint16_t itg3200 [3];
+uint16_t hmc5843 [3];
 } IMU_PKT;
 
 void init()
@@ -34,16 +34,26 @@ void init()
 int unpack(IMU_PKT* pkt, int len, uint8_t* buffer)
 {
   int i;
-  if (len != 20)
+  uint8_t mac,seq;
+  mac = buffer[0];
+  seq = buffer[1];
+  if (len != 20){
+    printf("wrong length:%d\n",len);
     return -1;
-  pkt->seq_no = buffer[0];
-  pkt->mac = buffer[1];
-  for(i = 2; i < 8; i++)
-    pkt->adxl345[i-2] = buffer[i];
-  for(i = 8; i < 14; i++)
-    pkt->itg3200[i-8] = buffer[i];
-  for(i = 14; i < 20; i++)
-    pkt->hmc5843[i-14] = buffer[i];
+  }
+  else if  (seq < sequences[mac] && seq != 0){
+    printf("sequence seen\n");
+    return -1;
+  }
+  sequences[mac] = seq;
+  pkt->mac = mac;
+  pkt->seq_no = seq;
+  for(i = 2; i < 8; i+=2)
+    pkt->adxl345[i-2] =  buffer[i]<<8+ buffer[i+1];
+  for(i = 8; i < 14; i+=2)
+    pkt->itg3200[i-8] =  buffer[i]<<8+ buffer[i+1];
+  for(i = 14; i < 20; i+=2)
+    pkt->hmc5843[i-14] = buffer[i]<<8+ buffer[i+1];
   return 0;
 }
 
@@ -54,6 +64,7 @@ int main (int argc, char *argv[])
   int v,cnt,i,p,verbose;
   IMU_PKT pkt;
   time_t ts;
+  struct timeval tsub;
 
   verbose = 0;
 
@@ -88,7 +99,7 @@ int main (int argc, char *argv[])
     printf("[ERROR] fopen returned '%s'.\n", strerror(errno));
     exit(-1);
   }
-
+  
   v=slipstream_open(slipstream_host, slipstream_port, BLOCKING);
   
   while (1) {
@@ -100,23 +111,32 @@ int main (int argc, char *argv[])
       printf("[ERROR] Could not send slipstream test message.\n");
       exit(-1);
     }
-
+ 
     v = slipstream_receive(buffer);
     if (v > 0) {
       p = unpack(&pkt,v,buffer);
+      printf("v = %d\n",v);
       if (p != -1){
-        ts = time(NULL);
+        gettimeofday(&tsub,NULL);
         if (verbose)
         {
-          //fprintf(" (time,sequence,mac,
-            //         accX,accY,accZ,
-              //       gyrX,gyrY,gyrZ,
-                //     hmcX,hmcY,hmcZ): 
-                  //   %u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u");
+          fprintf(data_file,"(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): %u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u\n", 
+                     tsub.tv_sec,tsub.tv_usec,pkt.seq_no,pkt.mac,
+                     pkt.adxl345[0],pkt.adxl345[1],pkt.adxl345[2],
+                     pkt.itg3200[0],pkt.itg3200[1],pkt.itg3200[2],
+                     pkt.hmc5843[0],pkt.hmc5843[1],pkt.hmc5843[2]);
 
         }
-        fprintf(data_file, "%s\n", buffer);
+        else
+          fprintf(data_file,"%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u\n", 
+                     ts,pkt.seq_no,pkt.mac,
+                     pkt.adxl345[0],pkt.adxl345[1],pkt.adxl345[2],
+                     pkt.itg3200[0],pkt.itg3200[1],pkt.itg3200[2],
+                     pkt.hmc5843[0],pkt.hmc5843[1],pkt.hmc5843[2]);
       }
+      //else{
+        //fprintf(data_file, "%s\n",buffer);
+      //}
     }
   }
 

@@ -63,6 +63,20 @@
   45:../../src/kernel/source/nrk_idle_task.c ****   if(_nrk_get_next_wakeup()<=NRK_SLEEP_WAKEUP_TIME) 
   46:../../src/kernel/source/nrk_idle_task.c ****     {
   47:../../src/kernel/source/nrk_idle_task.c **** 	    _nrk_cpu_state=CPU_IDLE;
+ 334               	.LM1:
+ 335 0000 C1E0      		ldi r28,lo8(1)
+ 336               	.L5:
+  43:../../src/kernel/source/nrk_idle_task.c ****   
+ 338               	.LM2:
+ 339 0002 0E94 0000 		call nrk_stack_check
+  45:../../src/kernel/source/nrk_idle_task.c ****     {
+ 341               	.LM3:
+ 342 0006 0E94 0000 		call _nrk_get_next_wakeup
+ 343 000a 8430      		cpi r24,lo8(4)
+ 344 000c 00F4      		brsh .L2
+ 346               	.LM4:
+ 347 000e C093 0000 		sts _nrk_cpu_state,r28
+ 348               	.L2:
   48:../../src/kernel/source/nrk_idle_task.c **** 	    nrk_idle();
   49:../../src/kernel/source/nrk_idle_task.c ****     }
   50:../../src/kernel/source/nrk_idle_task.c ****     else {
@@ -70,92 +84,62 @@
   52:../../src/kernel/source/nrk_idle_task.c **** 	    // Allow last UART byte to get out
   53:../../src/kernel/source/nrk_idle_task.c ****     	    nrk_spin_wait_us(10);  
   54:../../src/kernel/source/nrk_idle_task.c **** 	    _nrk_cpu_state=CPU_SLEEP;
- 334               	.LM1:
- 335 0000 C2E0      		ldi r28,lo8(2)
-  47:../../src/kernel/source/nrk_idle_task.c **** 	    nrk_idle();
- 337               	.LM2:
- 338 0002 D1E0      		ldi r29,lo8(1)
- 339               	.L5:
-  43:../../src/kernel/source/nrk_idle_task.c ****   
- 341               	.LM3:
- 342 0004 0E94 0000 		call nrk_stack_check
-  45:../../src/kernel/source/nrk_idle_task.c ****     {
- 344               	.LM4:
- 345 0008 0E94 0000 		call _nrk_get_next_wakeup
- 346 000c 8430      		cpi r24,lo8(4)
- 347 000e 00F4      		brsh .L2
-  47:../../src/kernel/source/nrk_idle_task.c **** 	    nrk_idle();
- 349               	.LM5:
- 350 0010 D093 0000 		sts _nrk_cpu_state,r29
-  48:../../src/kernel/source/nrk_idle_task.c ****     }
- 352               	.LM6:
- 353 0014 0E94 0000 		call nrk_idle
- 354 0018 00C0      		rjmp .L3
- 355               	.L2:
-  53:../../src/kernel/source/nrk_idle_task.c **** 	    _nrk_cpu_state=CPU_SLEEP;
- 357               	.LM7:
- 358 001a 8AE0      		ldi r24,lo8(10)
- 359 001c 90E0      		ldi r25,0
- 360 001e 0E94 0000 		call nrk_spin_wait_us
- 362               	.LM8:
- 363 0022 C093 0000 		sts _nrk_cpu_state,r28
   55:../../src/kernel/source/nrk_idle_task.c **** 	    nrk_sleep();
- 365               	.LM9:
- 366 0026 0E94 0000 		call nrk_sleep
- 367               	.L3:
   56:../../src/kernel/source/nrk_idle_task.c **** 	#else
   57:../../src/kernel/source/nrk_idle_task.c **** 	    nrk_idle();
+ 350               	.LM5:
+ 351 0012 0E94 0000 		call nrk_idle
   58:../../src/kernel/source/nrk_idle_task.c **** 	#endif
   59:../../src/kernel/source/nrk_idle_task.c ****     }
   60:../../src/kernel/source/nrk_idle_task.c ****  
   61:../../src/kernel/source/nrk_idle_task.c **** #ifdef NRK_STACK_CHECK
   62:../../src/kernel/source/nrk_idle_task.c ****    if(nrk_idle_task_stk[0]!=STK_CANARY_VAL) nrk_error_add(NRK_STACK_SMASH);
- 369               	.LM10:
- 370 002a 8091 0000 		lds r24,nrk_idle_task_stk
- 371 002e 8535      		cpi r24,lo8(85)
- 372 0030 01F0      		breq .L4
- 374               	.LM11:
- 375 0032 88E0      		ldi r24,lo8(8)
- 376 0034 0E94 0000 		call nrk_error_add
- 377               	.L4:
+ 353               	.LM6:
+ 354 0016 8091 0000 		lds r24,nrk_idle_task_stk
+ 355 001a 8535      		cpi r24,lo8(85)
+ 356 001c 01F0      		breq .L4
+ 358               	.LM7:
+ 359 001e 88E0      		ldi r24,lo8(8)
+ 360 0020 0E94 0000 		call nrk_error_add
+ 361               	.L4:
   63:../../src/kernel/source/nrk_idle_task.c ****    #ifdef KERNEL_STK_ARRAY
   64:../../src/kernel/source/nrk_idle_task.c ****    	if(nrk_kernel_stk[0]!=STK_CANARY_VAL) nrk_error_add(NRK_STACK_SMASH);
   65:../../src/kernel/source/nrk_idle_task.c ****    #else
   66:../../src/kernel/source/nrk_idle_task.c ****    	stkc=(unsigned char*)(NRK_KERNEL_STK_TOP-NRK_KERNEL_STACKSIZE);
   67:../../src/kernel/source/nrk_idle_task.c ****    	if(*stkc!=STK_CANARY_VAL) nrk_error_add(NRK_STACK_SMASH);
- 379               	.LM12:
- 380 0038 8091 FE40 		lds r24,16638
- 381 003c 8535      		cpi r24,lo8(85)
- 382 003e 01F0      		breq .L5
- 384               	.LM13:
- 385 0040 88E0      		ldi r24,lo8(8)
- 386 0042 0E94 0000 		call nrk_error_add
- 387 0046 00C0      		rjmp .L5
- 389               	.Lscope1:
- 391               		.stabd	78,0,0
- 392               		.comm	next_next_wakeup,2,1
- 393               		.comm	_nrk_cpu_state,1,1
- 394               		.comm	app_timer0_prescale,1,1
- 395               		.comm	app_timer0_callback,2,1
- 396               		.comm	_nrk_time_trigger,1,1
- 397               		.comm	_nrk_prev_timer_val,1,1
- 398               		.comm	error_num,1,1
- 399               		.comm	error_task,1,1
- 400               		.comm	nrk_kernel_stk_ptr,2,1
- 401               		.comm	nrk_idle_task_stk,128,1
- 402               		.comm	_nrk_signal_list,4,1
- 415               	.Letext0:
- 416               		.ident	"GCC: (GNU) 4.9.1"
- 417               	.global __do_clear_bss
+ 363               	.LM8:
+ 364 0024 8091 7E41 		lds r24,16766
+ 365 0028 8535      		cpi r24,lo8(85)
+ 366 002a 01F0      		breq .L5
+ 368               	.LM9:
+ 369 002c 88E0      		ldi r24,lo8(8)
+ 370 002e 0E94 0000 		call nrk_error_add
+ 371 0032 00C0      		rjmp .L5
+ 373               	.Lscope1:
+ 375               		.stabd	78,0,0
+ 376               		.comm	next_next_wakeup,2,1
+ 377               		.comm	_nrk_cpu_state,1,1
+ 378               		.comm	app_timer0_prescale,1,1
+ 379               		.comm	app_timer0_callback,2,1
+ 380               		.comm	_nrk_time_trigger,1,1
+ 381               		.comm	_nrk_prev_timer_val,1,1
+ 382               		.comm	error_num,1,1
+ 383               		.comm	error_task,1,1
+ 384               		.comm	nrk_kernel_stk_ptr,2,1
+ 385               		.comm	nrk_idle_task_stk,128,1
+ 386               		.comm	_nrk_signal_list,4,1
+ 399               	.Letext0:
+ 400               		.ident	"GCC: (GNU) 4.9.1"
+ 401               	.global __do_clear_bss
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 nrk_idle_task.c
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccUzLYQ9.s:2      *ABS*:000000000000003e __SP_H__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccUzLYQ9.s:3      *ABS*:000000000000003d __SP_L__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccUzLYQ9.s:4      *ABS*:000000000000003f __SREG__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccUzLYQ9.s:5      *ABS*:000000000000003b __RAMPZ__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccUzLYQ9.s:6      *ABS*:0000000000000000 __tmp_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccUzLYQ9.s:7      *ABS*:0000000000000001 __zero_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccUzLYQ9.s:324    .text:0000000000000000 nrk_idle_task
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKdzDNf.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKdzDNf.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKdzDNf.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKdzDNf.s:5      *ABS*:000000000000003b __RAMPZ__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKdzDNf.s:6      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKdzDNf.s:7      *ABS*:0000000000000001 __zero_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKdzDNf.s:324    .text:0000000000000000 nrk_idle_task
                             *COM*:0000000000000001 _nrk_cpu_state
                             *COM*:0000000000000080 nrk_idle_task_stk
                             *COM*:0000000000000002 next_next_wakeup
@@ -172,7 +156,5 @@ UNDEFINED SYMBOLS
 nrk_stack_check
 _nrk_get_next_wakeup
 nrk_idle
-nrk_spin_wait_us
-nrk_sleep
 nrk_error_add
 __do_clear_bss

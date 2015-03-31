@@ -8,9 +8,9 @@ TARGET = main
 # Set the Port that you programmer is connected to 
 # PROGRAMMING_PORT = /dev/ttyUSB0
 # PROGRAMMING_PORT = /dev/tty.usbserial-AE00BUKC
+PROGRAMMING_PORT = /dev/tty.usbserial-A101XVZK
 
-
-PROGRAMMING_PORT = `ls /dev/tty.* | grep usb | head -n 1` # programmer connected to serial device
+# PROGRAMMING_PORT = `ls /dev/tty.* | grep usb | head -n 1` # programmer connected to serial device
 
 # Set this such that the nano-RK directory is the base path
 ROOT_DIR = ../..
@@ -23,7 +23,11 @@ ROOT_DIR = ../..
 include $(ROOT_DIR)/include/platform.mk
 
 ifndef CLIENT_MAC
-CLIENT_MAC = 1
+  CLIENT_MAC = 1
+  NODE_ADDR = 1
+endif
+ifdef CLIENT_MAC
+	NODE_ADDR = CLIENT_MAC
 endif
 
 

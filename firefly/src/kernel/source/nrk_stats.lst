@@ -1242,7 +1242,7 @@
  1534               		.comm	error_num,1,1
  1535               		.comm	error_task,1,1
  1536               		.comm	nrk_system_time,8,1
- 1537               		.comm	nrk_sem_list,6,1
+ 1537               		.comm	nrk_sem_list,3,1
  1538               		.comm	_nrk_resource_cnt,1,1
  1539               		.comm	nrk_high_ready_TCB,2,1
  1540               		.comm	nrk_high_ready_prio,1,1
@@ -1265,39 +1265,39 @@
  1577               	.global __do_clear_bss
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 nrk_stats.c
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKIXoSn.s:2      *ABS*:000000000000003e __SP_H__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKIXoSn.s:3      *ABS*:000000000000003d __SP_L__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKIXoSn.s:4      *ABS*:000000000000003f __SREG__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKIXoSn.s:5      *ABS*:000000000000003b __RAMPZ__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKIXoSn.s:6      *ABS*:0000000000000000 __tmp_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKIXoSn.s:7      *ABS*:0000000000000001 __zero_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKIXoSn.s:325    .text:0000000000000000 nrk_stats_reset
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccs6PJyV.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccs6PJyV.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccs6PJyV.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccs6PJyV.s:5      *ABS*:000000000000003b __RAMPZ__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccs6PJyV.s:6      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccs6PJyV.s:7      *ABS*:0000000000000001 __zero_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccs6PJyV.s:325    .text:0000000000000000 nrk_stats_reset
                             *COM*:0000000000000008 _nrk_stats_sleep_time
                             *COM*:0000000000000096 cur_task_stats
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKIXoSn.s:418    .text:0000000000000074 _nrk_stats_sleep
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKIXoSn.s:473    .text:00000000000000b2 nrk_stats_get_deep_sleep
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKIXoSn.s:516    .text:00000000000000de _nrk_stats_add_violation
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKIXoSn.s:560    .text:0000000000000102 _nrk_stats_task_start
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKIXoSn.s:622    .text:0000000000000144 _nrk_stats_task_preempted
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKIXoSn.s:717    .text:00000000000001be _nrk_stats_task_suspend
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKIXoSn.s:864    .text:000000000000027e nrk_stats_display_pid
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKIXoSn.s:1532   .progmem.data:00000000000000e1 __c.3318
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKIXoSn.s:1528   .progmem.data:00000000000000c6 __c.3320
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKIXoSn.s:1524   .progmem.data:00000000000000a5 __c.3322
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKIXoSn.s:1520   .progmem.data:0000000000000094 __c.3324
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKIXoSn.s:1516   .progmem.data:0000000000000079 __c.3326
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKIXoSn.s:1512   .progmem.data:0000000000000069 __c.3328
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKIXoSn.s:1508   .progmem.data:0000000000000056 __c.3330
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKIXoSn.s:1504   .progmem.data:000000000000003d __c.3332
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKIXoSn.s:1500   .progmem.data:0000000000000020 __c.3334
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKIXoSn.s:1496   .progmem.data:000000000000001d __c.3336
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKIXoSn.s:1314   .text:00000000000005b8 nrk_stats_display_all
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKIXoSn.s:1492   .progmem.data:0000000000000000 __c.3341
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccKIXoSn.s:1359   .text:00000000000005d4 nrk_stats_get
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccs6PJyV.s:418    .text:0000000000000074 _nrk_stats_sleep
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccs6PJyV.s:473    .text:00000000000000b2 nrk_stats_get_deep_sleep
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccs6PJyV.s:516    .text:00000000000000de _nrk_stats_add_violation
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccs6PJyV.s:560    .text:0000000000000102 _nrk_stats_task_start
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccs6PJyV.s:622    .text:0000000000000144 _nrk_stats_task_preempted
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccs6PJyV.s:717    .text:00000000000001be _nrk_stats_task_suspend
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccs6PJyV.s:864    .text:000000000000027e nrk_stats_display_pid
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccs6PJyV.s:1532   .progmem.data:00000000000000e1 __c.3318
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccs6PJyV.s:1528   .progmem.data:00000000000000c6 __c.3320
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccs6PJyV.s:1524   .progmem.data:00000000000000a5 __c.3322
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccs6PJyV.s:1520   .progmem.data:0000000000000094 __c.3324
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccs6PJyV.s:1516   .progmem.data:0000000000000079 __c.3326
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccs6PJyV.s:1512   .progmem.data:0000000000000069 __c.3328
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccs6PJyV.s:1508   .progmem.data:0000000000000056 __c.3330
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccs6PJyV.s:1504   .progmem.data:000000000000003d __c.3332
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccs6PJyV.s:1500   .progmem.data:0000000000000020 __c.3334
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccs6PJyV.s:1496   .progmem.data:000000000000001d __c.3336
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccs6PJyV.s:1314   .text:00000000000005b8 nrk_stats_display_all
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccs6PJyV.s:1492   .progmem.data:0000000000000000 __c.3341
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccs6PJyV.s:1359   .text:00000000000005d4 nrk_stats_get
                             *COM*:0000000000000001 error_num
                             *COM*:0000000000000001 error_task
                             *COM*:0000000000000008 nrk_system_time
-                            *COM*:0000000000000006 nrk_sem_list
+                            *COM*:0000000000000003 nrk_sem_list
                             *COM*:0000000000000001 _nrk_resource_cnt
                             *COM*:0000000000000002 nrk_high_ready_TCB
                             *COM*:0000000000000001 nrk_high_ready_prio

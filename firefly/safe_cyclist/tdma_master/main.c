@@ -113,18 +113,18 @@ void rx_task ()
 
   cnt = 0;
 
-// init tdma
-tdma_init (TDMA_HOST, DEFAULT_CHANNEL, HOST_MAC);
+  // init tdma
+  tdma_init (TDMA_HOST, DEFAULT_CHANNEL, HOST_MAC);
 
-// init slipstream
-slip_init (stdin, stdout, 0, 0);
+  // init slipstream
+  slip_init (stdin, stdout, 0, 0);
 
-// Change these parameters at runtime...
-tdma_set_slot_len_ms (5);
-tdma_set_slots_per_cycle (2);
+  // Change these parameters at runtime...
+  tdma_set_slot_len_ms (5);
+  tdma_set_slots_per_cycle (2);
 
-// tdma_aes_setkey(aes_key);
-// tdma_aes_enable();
+  tdma_aes_setkey(aes_key);
+  tdma_aes_enable();
 
 
   while (!tdma_started ())
@@ -135,16 +135,18 @@ tdma_set_slots_per_cycle (2);
     v = tdma_recv (&rx_tdma_fd, &rx_buf, &len, TDMA_BLOCKING);
     // printf("v = %d\r\n", v);
     if (v == NRK_OK) {
-      /*DEBUGGING
-      // printf ("src: %u rssi: %d ", rx_tdma_fd.src, rx_tdma_fd.rssi);
-      // printf ("slot: %u ", rx_tdma_fd.slot);
-      // printf ("len: %u\r\npayload: ", len);
-      // for (i = 0; i < len; i++)
-      //   printf ("%c", rx_buf[i]);
-      //printf ("\r\n");
-      */
+      nrk_led_set(RED_LED);
+      /* debugging */
+      printf ("src: %u rssi: %d ", rx_tdma_fd.src, rx_tdma_fd.rssi);
+      printf ("slot: %u ", rx_tdma_fd.slot);
+      printf ("len: %u\r\npayload: ", len);
+      for (i = 0; i < len; i++)
+        printf ("%d", rx_buf[i]);
+      printf ("\r\n");
+      
       //send the packet to the SLIPstream client
       slip_tx (rx_buf,len);
+      nrk_led_clr(RED_LED);
       // nrk_wait_until_next_period();
     }
      // nrk_wait_until_next_period();
@@ -162,24 +164,24 @@ void nrk_create_taskset ()
   rx_task_info.period.secs = 0;
   rx_task_info.period.nano_secs = 25 * NANOS_PER_MS;
   rx_task_info.cpu_reserve.secs = 0;
-  rx_task_info.cpu_reserve.nano_secs = 20 * NANOS_PER_MS;
+  rx_task_info.cpu_reserve.nano_secs = 0 * NANOS_PER_MS;
   rx_task_info.offset.secs = 0;
   rx_task_info.offset.nano_secs = 0;
   nrk_activate_task (&rx_task_info);
 
-  nrk_task_set_entry_function (&tx_task_info, tx_task);
-  nrk_task_set_stk (&tx_task_info, tx_task_stack, NRK_APP_STACKSIZE);
-  tx_task_info.prio = 1;
-  tx_task_info.FirstActivation = TRUE;
-  tx_task_info.Type = BASIC_TASK;
-  tx_task_info.SchType = PREEMPTIVE;
-  tx_task_info.period.secs = 0;
-  tx_task_info.period.nano_secs = 25 * NANOS_PER_MS;
-  tx_task_info.cpu_reserve.secs = 0;
-  tx_task_info.cpu_reserve.nano_secs = 20 * NANOS_PER_MS;
-  tx_task_info.offset.secs = 0;
-  tx_task_info.offset.nano_secs = 0;
-  nrk_activate_task (&tx_task_info);
+  //nrk_task_set_entry_function (&tx_task_info, tx_task);
+  //nrk_task_set_stk (&tx_task_info, tx_task_stack, NRK_APP_STACKSIZE);
+  //tx_task_info.prio = 1;
+  //tx_task_info.FirstActivation = TRUE;
+  //tx_task_info.Type = BASIC_TASK;
+  //tx_task_info.SchType = PREEMPTIVE;
+  //tx_task_info.period.secs = 0;
+  //tx_task_info.period.nano_secs = 25 * NANOS_PER_MS;
+  //tx_task_info.cpu_reserve.secs = 0;
+  //tx_task_info.cpu_reserve.nano_secs = 20 * NANOS_PER_MS;
+  //tx_task_info.offset.secs = 0;
+  //tx_task_info.offset.nano_secs = 0;
+  //nrk_activate_task (&tx_task_info);
 
   tdma_task_config ();
 

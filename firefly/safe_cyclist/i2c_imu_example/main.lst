@@ -20,7 +20,7 @@
  336               		.stabd	46,0,0
    1:main.c        **** /******************************************************************************
    2:main.c        **** *  Nano-RK, a real-time operating system for sensor networks.
-   3:main.c        **** *  Copyright (C) 2007, Real-Time and Multimedia Lab, Carnegie Mellon University
+   3:main.c        **** *  Copyright (C) 2015, Real-Time and Multimedia Lab, Carnegie Mellon University
    4:main.c        **** *  All rights reserved.
    5:main.c        **** *
    6:main.c        **** *  This is the Open Source Version of Nano-RK included as part of a Dual
@@ -118,84 +118,84 @@
   98:main.c        ****                     // Here is a simple sample, where if received a NACK on the slave address,
   99:main.c        ****                     // then a retransmission will be initiated.
  100:main.c        **** if ( (TWIerrorMsg == TWI_MTX_ADR_NACK) | (TWIerrorMsg == TWI_MRX_ADR_NACK) ){
- 101:main.c        ****     TWI_Start_Transceiver();
- 102:main.c        **** }
- 103:main.c        **** printf("%c \n",TWIerrorMsg);
- 104:main.c        ****     
- 105:main.c        ****   return TWIerrorMsg; 
- 106:main.c        **** }
- 107:main.c        **** 
+ 101:main.c        ****   printf("%c \n",TWIerrorMsg);  
+ 102:main.c        ****   TWI_Start_Transceiver();
+ 103:main.c        **** }
+ 104:main.c        **** 
+ 105:main.c        ****     
+ 106:main.c        ****   return TWIerrorMsg; 
+ 107:main.c        **** }
  108:main.c        **** 
  109:main.c        **** 
  110:main.c        **** 
- 111:main.c        **** NRK_STK Stack1[NRK_APP_STACKSIZE];
- 112:main.c        **** nrk_task_type TaskOne;
- 113:main.c        **** 
- 114:main.c        **** NRK_STK Stack2[NRK_APP_STACKSIZE];
- 115:main.c        **** nrk_task_type TaskTwo;
- 116:main.c        **** 
- 117:main.c        **** NRK_STK Stack3[NRK_APP_STACKSIZE];
- 118:main.c        **** nrk_task_type TaskThree;
- 119:main.c        **** 
- 120:main.c        **** void init_adxl345(void);
- 121:main.c        **** void init_itg3200(void);
- 122:main.c        **** void init_hmc5843(void);
- 123:main.c        **** 
- 124:main.c        **** void nrk_create_taskset();
- 125:main.c        **** 
- 126:main.c        **** int
- 127:main.c        **** main ()
- 128:main.c        **** {
- 129:main.c        ****   nrk_setup_ports();
- 130:main.c        ****   nrk_setup_uart(UART_BAUDRATE_115K2);
- 131:main.c        **** 
- 132:main.c        ****   TWI_Master_Initialise();
- 133:main.c        ****   sei();
- 134:main.c        ****   /* initialize the adxl345 */
- 135:main.c        ****   init_adxl345();
- 136:main.c        ****   init_itg3200();
- 137:main.c        ****   init_hmc5843();
- 138:main.c        ****   
- 139:main.c        ****   nrk_init();
- 140:main.c        **** 
- 141:main.c        ****   nrk_led_clr(ORANGE_LED);
- 142:main.c        ****   nrk_led_clr(BLUE_LED);
- 143:main.c        ****   nrk_led_clr(GREEN_LED);
- 144:main.c        ****   nrk_led_clr(RED_LED);
- 145:main.c        ****  
- 146:main.c        ****   nrk_time_set(0,0);
- 147:main.c        ****   nrk_create_taskset ();
- 148:main.c        ****   nrk_start();
- 149:main.c        ****   
- 150:main.c        ****   return 0;
- 151:main.c        **** }
- 152:main.c        **** 
- 153:main.c        **** void init_itg3200() {
- 154:main.c        ****     /* put in standby mode while we change fifo control bits */
- 155:main.c        ****   messageBuf[0] = ITG3200_ADDRESS | FALSE<<TWI_READ_BIT;
- 156:main.c        ****   messageBuf[1] = ITG3200_REGISTER_DLPF;
- 157:main.c        ****   messageBuf[2] = ITG3200_FULLSCALE | ITG3200_42HZ;
- 158:main.c        ****   TWI_Start_Transceiver_With_Data(messageBuf, 3);
- 159:main.c        **** }
- 160:main.c        **** 
- 161:main.c        **** void init_hmc5843() {
- 162:main.c        ****     /* put in standby mode while we change fifo control bits */
- 163:main.c        ****   messageBuf[0] = HMC5843_ADDRESS | FALSE<<TWI_READ_BIT;
- 164:main.c        ****   messageBuf[1] = HMC5843_REGISTER_MEASMODE;
- 165:main.c        ****   messageBuf[2] = HMC5843_MEASMODE_CONT;
- 166:main.c        ****   TWI_Start_Transceiver_With_Data(messageBuf, 3);
- 167:main.c        **** }
- 168:main.c        **** 
+ 111:main.c        **** 
+ 112:main.c        **** NRK_STK Stack1[NRK_APP_STACKSIZE];
+ 113:main.c        **** nrk_task_type TaskOne;
+ 114:main.c        **** 
+ 115:main.c        **** NRK_STK Stack2[NRK_APP_STACKSIZE];
+ 116:main.c        **** nrk_task_type TaskTwo;
+ 117:main.c        **** 
+ 118:main.c        **** NRK_STK Stack3[NRK_APP_STACKSIZE];
+ 119:main.c        **** nrk_task_type TaskThree;
+ 120:main.c        **** 
+ 121:main.c        **** void init_adxl345(void);
+ 122:main.c        **** void init_itg3200(void);
+ 123:main.c        **** void init_hmc5843(void);
+ 124:main.c        **** 
+ 125:main.c        **** void nrk_create_taskset();
+ 126:main.c        **** 
+ 127:main.c        **** int
+ 128:main.c        **** main ()
+ 129:main.c        **** {
+ 130:main.c        ****   nrk_setup_ports();
+ 131:main.c        ****   nrk_setup_uart(UART_BAUDRATE_115K2);
+ 132:main.c        **** 
+ 133:main.c        ****   TWI_Master_Initialise();
+ 134:main.c        ****   sei();
+ 135:main.c        ****   nrk_led_set(RED_LED);
+ 136:main.c        ****   /* initialize the adxl345 */
+ 137:main.c        ****   init_adxl345();
+ 138:main.c        ****   init_itg3200();
+ 139:main.c        ****   init_hmc5843();
+ 140:main.c        ****   nrk_init();
+ 141:main.c        **** 
+ 142:main.c        ****   nrk_led_clr(ORANGE_LED);
+ 143:main.c        ****   nrk_led_clr(BLUE_LED);
+ 144:main.c        ****   nrk_led_clr(GREEN_LED);
+ 145:main.c        ****   nrk_led_clr(RED_LED);
+ 146:main.c        ****  
+ 147:main.c        ****   nrk_time_set(0,0);
+ 148:main.c        ****   nrk_create_taskset ();
+ 149:main.c        ****   nrk_start();
+ 150:main.c        ****   
+ 151:main.c        ****   return 0;
+ 152:main.c        **** }
+ 153:main.c        **** 
+ 154:main.c        **** void init_itg3200() {
+ 155:main.c        ****     /* put in standby mode while we change fifo control bits */
+ 156:main.c        ****   messageBuf[0] = ITG3200_ADDRESS | FALSE<<TWI_READ_BIT;
+ 157:main.c        ****   messageBuf[1] = ITG3200_REGISTER_DLPF;
+ 158:main.c        ****   messageBuf[2] = ITG3200_FULLSCALE | ITG3200_42HZ;
+ 159:main.c        ****   TWI_Start_Transceiver_With_Data(messageBuf, 3);
+ 160:main.c        **** }
+ 161:main.c        **** 
+ 162:main.c        **** void init_hmc5843() {
+ 163:main.c        ****     /* put in standby mode while we change fifo control bits */
+ 164:main.c        ****   messageBuf[0] = HMC5843_ADDRESS | FALSE<<TWI_READ_BIT;
+ 165:main.c        ****   messageBuf[1] = HMC5843_REGISTER_MEASMODE;
+ 166:main.c        ****   messageBuf[2] = HMC5843_MEASMODE_CONT;
+ 167:main.c        ****   TWI_Start_Transceiver_With_Data(messageBuf, 3);
+ 168:main.c        **** }
  169:main.c        **** 
- 170:main.c        **** void init_adxl345() {
- 171:main.c        ****   unsigned int read = 0;
- 172:main.c        **** 
- 173:main.c        ****   /* put in standby mode while we change fifo control bits */
- 174:main.c        ****   messageBuf[0] = ADXL345_ADDRESS | FALSE<<TWI_READ_BIT;
- 175:main.c        ****   messageBuf[1] = ADXL_REGISTER_PWRCTL;
- 176:main.c        ****   messageBuf[2] = ADXL_PWRCTL_STBY;
- 177:main.c        ****   TWI_Start_Transceiver_With_Data(messageBuf, 3);
- 178:main.c        **** 
+ 170:main.c        **** 
+ 171:main.c        **** void init_adxl345() {
+ 172:main.c        ****   unsigned int read = 0;
+ 173:main.c        **** 
+ 174:main.c        ****   /* put in standby mode while we change fifo control bits */
+ 175:main.c        ****   messageBuf[0] = ADXL345_ADDRESS | FALSE<<TWI_READ_BIT;
+ 176:main.c        ****   messageBuf[1] = ADXL_REGISTER_PWRCTL;
+ 177:main.c        ****   messageBuf[2] = ADXL_PWRCTL_STBY;
+ 178:main.c        ****   TWI_Start_Transceiver_With_Data(messageBuf, 3);
  179:main.c        ****   /* set the fifo mode to stream */
  180:main.c        ****   messageBuf[0] = ADXL345_ADDRESS | FALSE<<TWI_READ_BIT;
  181:main.c        ****   messageBuf[1] = ADXL_REGISTER_FIFOCTL;
@@ -208,95 +208,94 @@
  188:main.c        ****   messageBuf[1] = ADXL_REGISTER_PWRCTL;
  189:main.c        ****   messageBuf[2] = ADXL_PWRCTL_MEASURE;
  190:main.c        ****   TWI_Start_Transceiver_With_Data(messageBuf, 3);
- 191:main.c        **** 
- 192:main.c        ****     /* set the data format */
- 193:main.c        ****   messageBuf[0] = ADXL345_ADDRESS | FALSE<<TWI_READ_BIT;
- 194:main.c        ****   messageBuf[1] = ADXL_REGISTER_DATAFMT;
- 195:main.c        ****   messageBuf[2] = ADXL_DATAFMT_4G;
- 196:main.c        ****   TWI_Start_Transceiver_With_Data(messageBuf,3);
- 197:main.c        **** }
+ 191:main.c        ****     /* set the data format */
+ 192:main.c        ****   messageBuf[0] = ADXL345_ADDRESS | FALSE<<TWI_READ_BIT;
+ 193:main.c        ****   messageBuf[1] = ADXL_REGISTER_DATAFMT;
+ 194:main.c        ****   messageBuf[2] = ADXL_DATAFMT_4G;
+ 195:main.c        ****   TWI_Start_Transceiver_With_Data(messageBuf,3);
+ 196:main.c        **** }
+ 197:main.c        **** 
  198:main.c        **** 
- 199:main.c        **** 
- 200:main.c        **** /* prints out data received from the adxl345 */
- 201:main.c        **** void Task_Accelorometer()
- 202:main.c        **** {
+ 199:main.c        **** /* prints out data received from the adxl345 */
+ 200:main.c        **** void Task_Accelorometer()
+ 201:main.c        **** {
  338               	.LM0:
  339               	.LFBB1:
  340               	/* prologue: function */
  341               	/* frame size = 0 */
  342               	/* stack size = 0 */
  343               	.L__stack_usage = 0
- 203:main.c        ****   while(1){
- 204:main.c        ****     messageBuf[0] = (ADXL345_ADDRESS) | (FALSE<<TWI_READ_BIT);
+ 202:main.c        ****   while(1){
+ 203:main.c        ****     messageBuf[0] = (ADXL345_ADDRESS) | (FALSE<<TWI_READ_BIT);
  345               	.LM1:
  346 0000 16EA      		ldi r17,lo8(-90)
- 205:main.c        ****     messageBuf[1] = ADXL345_REGISTER_XLSB;
+ 204:main.c        ****     messageBuf[1] = ADXL345_REGISTER_XLSB;
  348               	.LM2:
  349 0002 02E3      		ldi r16,lo8(50)
- 206:main.c        ****     TWI_Start_Transceiver_With_Data(messageBuf, 2);
- 207:main.c        **** 
- 208:main.c        ****     /* Read 7 bytes from the data registers, starting with the LSB of X */
- 209:main.c        ****     messageBuf[0] = (ADXL345_ADDRESS) | (TRUE<<TWI_READ_BIT);
+ 205:main.c        ****     TWI_Start_Transceiver_With_Data(messageBuf, 2);
+ 206:main.c        **** 
+ 207:main.c        ****     /* Read 7 bytes from the data registers, starting with the LSB of X */
+ 208:main.c        ****     messageBuf[0] = (ADXL345_ADDRESS) | (TRUE<<TWI_READ_BIT);
  351               	.LM3:
  352 0004 87EA      		ldi r24,lo8(-89)
  353 0006 F82E      		mov r15,r24
- 210:main.c        ****     /* set the rest of the messagebuf to 0, probably not necessary */
- 211:main.c        ****     messageBuf[1] = 0;
- 212:main.c        ****     messageBuf[2] = 0;
- 213:main.c        ****     messageBuf[3] = 0;
- 214:main.c        ****     messageBuf[4] = 0;
- 215:main.c        ****     messageBuf[5] = 0;
- 216:main.c        ****     messageBuf[6] = 0; 
- 217:main.c        ****     TWI_Start_Transceiver_With_Data(messageBuf, 7);
- 218:main.c        ****     /* if successful, print data received */
- 219:main.c        ****     /* data comes in like so: x1, x0, y1, y0, z1, z0, sign extended format */
- 220:main.c        ****     /* the 0th byte of every axis represents its sign */
- 221:main.c        ****     if (TWI_Get_Data_From_Transceiver(messageBuf, 7)){ 
- 222:main.c        ****       printf("ADXL: x0:%x x1:%x y0:%x y1:%x z0:%x z1:%x \r\n",messageBuf[2],messageBuf[1],messageBu
+ 209:main.c        ****     /* set the rest of the messagebuf to 0, probably not necessary */
+ 210:main.c        ****     messageBuf[1] = 0;
+ 211:main.c        ****     messageBuf[2] = 0;
+ 212:main.c        ****     messageBuf[3] = 0;
+ 213:main.c        ****     messageBuf[4] = 0;
+ 214:main.c        ****     messageBuf[5] = 0;
+ 215:main.c        ****     messageBuf[6] = 0; 
+ 216:main.c        ****     TWI_Start_Transceiver_With_Data(messageBuf, 7);
+ 217:main.c        ****     /* if successful, print data received */
+ 218:main.c        ****     /* data comes in like so: x1, x0, y1, y0, z1, z0, sign extended format */
+ 219:main.c        ****     /* the 0th byte of every axis represents its sign */
+ 220:main.c        ****     if (TWI_Get_Data_From_Transceiver(messageBuf, 7)){ 
+ 221:main.c        ****       printf("ADXL: x0:%x x1:%x y0:%x y1:%x z0:%x z1:%x \r\n",messageBuf[2],messageBuf[1],messageBu
  355               	.LM4:
  356 0008 C0E0      		ldi r28,lo8(.LC0)
  357 000a D0E0      		ldi r29,hi8(.LC0)
  358               	.L3:
- 204:main.c        ****     messageBuf[1] = ADXL345_REGISTER_XLSB;
+ 203:main.c        ****     messageBuf[1] = ADXL345_REGISTER_XLSB;
  360               	.LM5:
  361 000c 1093 0000 		sts messageBuf,r17
- 205:main.c        ****     TWI_Start_Transceiver_With_Data(messageBuf, 2);
+ 204:main.c        ****     TWI_Start_Transceiver_With_Data(messageBuf, 2);
  363               	.LM6:
  364 0010 0093 0000 		sts messageBuf+1,r16
- 206:main.c        **** 
+ 205:main.c        **** 
  366               	.LM7:
  367 0014 62E0      		ldi r22,lo8(2)
  368 0016 80E0      		ldi r24,lo8(messageBuf)
  369 0018 90E0      		ldi r25,hi8(messageBuf)
  370 001a 0E94 0000 		call TWI_Start_Transceiver_With_Data
- 209:main.c        ****     /* set the rest of the messagebuf to 0, probably not necessary */
+ 208:main.c        ****     /* set the rest of the messagebuf to 0, probably not necessary */
  372               	.LM8:
  373 001e F092 0000 		sts messageBuf,r15
- 211:main.c        ****     messageBuf[2] = 0;
+ 210:main.c        ****     messageBuf[2] = 0;
  375               	.LM9:
  376 0022 1092 0000 		sts messageBuf+1,__zero_reg__
- 212:main.c        ****     messageBuf[3] = 0;
+ 211:main.c        ****     messageBuf[3] = 0;
  378               	.LM10:
  379 0026 1092 0000 		sts messageBuf+2,__zero_reg__
- 213:main.c        ****     messageBuf[4] = 0;
+ 212:main.c        ****     messageBuf[4] = 0;
  381               	.LM11:
  382 002a 1092 0000 		sts messageBuf+3,__zero_reg__
- 214:main.c        ****     messageBuf[5] = 0;
+ 213:main.c        ****     messageBuf[5] = 0;
  384               	.LM12:
  385 002e 1092 0000 		sts messageBuf+4,__zero_reg__
- 215:main.c        ****     messageBuf[6] = 0; 
+ 214:main.c        ****     messageBuf[6] = 0; 
  387               	.LM13:
  388 0032 1092 0000 		sts messageBuf+5,__zero_reg__
- 216:main.c        ****     TWI_Start_Transceiver_With_Data(messageBuf, 7);
+ 215:main.c        ****     TWI_Start_Transceiver_With_Data(messageBuf, 7);
  390               	.LM14:
  391 0036 1092 0000 		sts messageBuf+6,__zero_reg__
- 217:main.c        ****     /* if successful, print data received */
+ 216:main.c        ****     /* if successful, print data received */
  393               	.LM15:
  394 003a 67E0      		ldi r22,lo8(7)
  395 003c 80E0      		ldi r24,lo8(messageBuf)
  396 003e 90E0      		ldi r25,hi8(messageBuf)
  397 0040 0E94 0000 		call TWI_Start_Transceiver_With_Data
- 221:main.c        ****       printf("ADXL: x0:%x x1:%x y0:%x y1:%x z0:%x z1:%x \r\n",messageBuf[2],messageBuf[1],messageBu
+ 220:main.c        ****       printf("ADXL: x0:%x x1:%x y0:%x y1:%x z0:%x z1:%x \r\n",messageBuf[2],messageBuf[1],messageBu
  399               	.LM16:
  400 0044 67E0      		ldi r22,lo8(7)
  401 0046 80E0      		ldi r24,lo8(messageBuf)
@@ -335,11 +334,11 @@
  435 0096 0FBE      		out __SREG__,__tmp_reg__
  436 0098 8DBF      		out __SP_L__,r24
  437               	.L2:
- 223:main.c        ****     }
- 224:main.c        ****     nrk_wait_until_next_period();
+ 222:main.c        ****     }
+ 223:main.c        ****     nrk_wait_until_next_period();
  439               	.LM18:
  440 009a 0E94 0000 		call nrk_wait_until_next_period
- 225:main.c        ****   }
+ 224:main.c        ****   }
  442               	.LM19:
  443 009e 00C0      		rjmp .L3
  445               	.Lscope1:
@@ -355,84 +354,84 @@
  453               	.global	Task_Gyro
  455               	Task_Gyro:
  456               		.stabd	46,0,0
- 226:main.c        **** }
+ 225:main.c        **** }
+ 226:main.c        **** 
  227:main.c        **** 
- 228:main.c        **** 
- 229:main.c        **** void Task_Gyro()
- 230:main.c        **** {
+ 228:main.c        **** void Task_Gyro()
+ 229:main.c        **** {
  458               	.LM20:
  459               	.LFBB2:
  460               	/* prologue: function */
  461               	/* frame size = 0 */
  462               	/* stack size = 0 */
  463               	.L__stack_usage = 0
- 231:main.c        ****   while(1){
- 232:main.c        ****     messageBuf[0] = (ITG3200_ADDRESS) | (FALSE<<TWI_READ_BIT);
+ 230:main.c        ****   while(1){
+ 231:main.c        ****     messageBuf[0] = (ITG3200_ADDRESS) | (FALSE<<TWI_READ_BIT);
  465               	.LM21:
  466 00a0 10ED      		ldi r17,lo8(-48)
- 233:main.c        ****     messageBuf[1] = ITG3200_REGISTER_XMSB;
+ 232:main.c        ****     messageBuf[1] = ITG3200_REGISTER_XMSB;
  468               	.LM22:
  469 00a2 0DE1      		ldi r16,lo8(29)
- 234:main.c        ****     TWI_Start_Transceiver_With_Data(messageBuf, 2);
- 235:main.c        **** 
- 236:main.c        ****     /* Read first byte */
- 237:main.c        ****     messageBuf[0] = (ITG3200_ADDRESS) | (TRUE<<TWI_READ_BIT);
+ 233:main.c        ****     TWI_Start_Transceiver_With_Data(messageBuf, 2);
+ 234:main.c        **** 
+ 235:main.c        ****     /* Read first byte */
+ 236:main.c        ****     messageBuf[0] = (ITG3200_ADDRESS) | (TRUE<<TWI_READ_BIT);
  471               	.LM23:
  472 00a4 81ED      		ldi r24,lo8(-47)
  473 00a6 F82E      		mov r15,r24
- 238:main.c        ****     messageBuf[1] = 0;
- 239:main.c        ****     messageBuf[2] = 0;
- 240:main.c        ****     messageBuf[3] = 0;
- 241:main.c        ****     messageBuf[4] = 0;
- 242:main.c        ****     messageBuf[5] = 0;
- 243:main.c        ****     messageBuf[6] = 0; 
- 244:main.c        ****     TWI_Start_Transceiver_With_Data(messageBuf, 7);
- 245:main.c        ****     if (TWI_Get_Data_From_Transceiver(messageBuf, 7)){
- 246:main.c        ****       printf("ITG: %x %x %x %x %x %x \r\n",messageBuf[1],messageBuf[2],messageBuf[3],messageBuf[4],
+ 237:main.c        ****     messageBuf[1] = 0;
+ 238:main.c        ****     messageBuf[2] = 0;
+ 239:main.c        ****     messageBuf[3] = 0;
+ 240:main.c        ****     messageBuf[4] = 0;
+ 241:main.c        ****     messageBuf[5] = 0;
+ 242:main.c        ****     messageBuf[6] = 0; 
+ 243:main.c        ****     TWI_Start_Transceiver_With_Data(messageBuf, 7);
+ 244:main.c        ****     if (TWI_Get_Data_From_Transceiver(messageBuf, 7)){
+ 245:main.c        ****       printf("ITG: %x %x %x %x %x %x \r\n",messageBuf[1],messageBuf[2],messageBuf[3],messageBuf[4],
  475               	.LM24:
  476 00a8 C0E0      		ldi r28,lo8(.LC1)
  477 00aa D0E0      		ldi r29,hi8(.LC1)
  478               	.L10:
- 232:main.c        ****     messageBuf[1] = ITG3200_REGISTER_XMSB;
+ 231:main.c        ****     messageBuf[1] = ITG3200_REGISTER_XMSB;
  480               	.LM25:
  481 00ac 1093 0000 		sts messageBuf,r17
- 233:main.c        ****     TWI_Start_Transceiver_With_Data(messageBuf, 2);
+ 232:main.c        ****     TWI_Start_Transceiver_With_Data(messageBuf, 2);
  483               	.LM26:
  484 00b0 0093 0000 		sts messageBuf+1,r16
- 234:main.c        **** 
+ 233:main.c        **** 
  486               	.LM27:
  487 00b4 62E0      		ldi r22,lo8(2)
  488 00b6 80E0      		ldi r24,lo8(messageBuf)
  489 00b8 90E0      		ldi r25,hi8(messageBuf)
  490 00ba 0E94 0000 		call TWI_Start_Transceiver_With_Data
- 237:main.c        ****     messageBuf[1] = 0;
+ 236:main.c        ****     messageBuf[1] = 0;
  492               	.LM28:
  493 00be F092 0000 		sts messageBuf,r15
- 238:main.c        ****     messageBuf[2] = 0;
+ 237:main.c        ****     messageBuf[2] = 0;
  495               	.LM29:
  496 00c2 1092 0000 		sts messageBuf+1,__zero_reg__
- 239:main.c        ****     messageBuf[3] = 0;
+ 238:main.c        ****     messageBuf[3] = 0;
  498               	.LM30:
  499 00c6 1092 0000 		sts messageBuf+2,__zero_reg__
- 240:main.c        ****     messageBuf[4] = 0;
+ 239:main.c        ****     messageBuf[4] = 0;
  501               	.LM31:
  502 00ca 1092 0000 		sts messageBuf+3,__zero_reg__
- 241:main.c        ****     messageBuf[5] = 0;
+ 240:main.c        ****     messageBuf[5] = 0;
  504               	.LM32:
  505 00ce 1092 0000 		sts messageBuf+4,__zero_reg__
- 242:main.c        ****     messageBuf[6] = 0; 
+ 241:main.c        ****     messageBuf[6] = 0; 
  507               	.LM33:
  508 00d2 1092 0000 		sts messageBuf+5,__zero_reg__
- 243:main.c        ****     TWI_Start_Transceiver_With_Data(messageBuf, 7);
+ 242:main.c        ****     TWI_Start_Transceiver_With_Data(messageBuf, 7);
  510               	.LM34:
  511 00d6 1092 0000 		sts messageBuf+6,__zero_reg__
- 244:main.c        ****     if (TWI_Get_Data_From_Transceiver(messageBuf, 7)){
+ 243:main.c        ****     if (TWI_Get_Data_From_Transceiver(messageBuf, 7)){
  513               	.LM35:
  514 00da 67E0      		ldi r22,lo8(7)
  515 00dc 80E0      		ldi r24,lo8(messageBuf)
  516 00de 90E0      		ldi r25,hi8(messageBuf)
  517 00e0 0E94 0000 		call TWI_Start_Transceiver_With_Data
- 245:main.c        ****       printf("ITG: %x %x %x %x %x %x \r\n",messageBuf[1],messageBuf[2],messageBuf[3],messageBuf[4],
+ 244:main.c        ****       printf("ITG: %x %x %x %x %x %x \r\n",messageBuf[1],messageBuf[2],messageBuf[3],messageBuf[4],
  519               	.LM36:
  520 00e4 67E0      		ldi r22,lo8(7)
  521 00e6 80E0      		ldi r24,lo8(messageBuf)
@@ -471,11 +470,11 @@
  555 0136 0FBE      		out __SREG__,__tmp_reg__
  556 0138 8DBF      		out __SP_L__,r24
  557               	.L9:
- 247:main.c        ****     }
- 248:main.c        ****     nrk_wait_until_next_period();
+ 246:main.c        ****     }
+ 247:main.c        ****     nrk_wait_until_next_period();
  559               	.LM38:
  560 013a 0E94 0000 		call nrk_wait_until_next_period
- 249:main.c        ****   }
+ 248:main.c        ****   }
  562               	.LM39:
  563 013e 00C0      		rjmp .L10
  565               	.Lscope2:
@@ -491,83 +490,83 @@
  573               	.global	Task_Magneto
  575               	Task_Magneto:
  576               		.stabd	46,0,0
- 250:main.c        **** }
- 251:main.c        **** 
- 252:main.c        **** void Task_Magneto()
- 253:main.c        **** {
+ 249:main.c        **** }
+ 250:main.c        **** 
+ 251:main.c        **** void Task_Magneto()
+ 252:main.c        **** {
  578               	.LM40:
  579               	.LFBB3:
  580               	/* prologue: function */
  581               	/* frame size = 0 */
  582               	/* stack size = 0 */
  583               	.L__stack_usage = 0
- 254:main.c        ****   while(1){
- 255:main.c        ****     messageBuf[0] = (HMC5843_ADDRESS) | (FALSE<<TWI_READ_BIT);
+ 253:main.c        ****   while(1){
+ 254:main.c        ****     messageBuf[0] = (HMC5843_ADDRESS) | (FALSE<<TWI_READ_BIT);
  585               	.LM41:
  586 0140 1CE3      		ldi r17,lo8(60)
- 256:main.c        ****     messageBuf[1] = HMC5843_REGISTER_XMSB;
+ 255:main.c        ****     messageBuf[1] = HMC5843_REGISTER_XMSB;
  588               	.LM42:
  589 0142 03E0      		ldi r16,lo8(3)
- 257:main.c        ****     TWI_Start_Transceiver_With_Data(messageBuf, 2);
- 258:main.c        **** 
- 259:main.c        ****     /* Read first byte */
- 260:main.c        ****     messageBuf[0] = (HMC5843_ADDRESS) | (TRUE<<TWI_READ_BIT);
+ 256:main.c        ****     TWI_Start_Transceiver_With_Data(messageBuf, 2);
+ 257:main.c        **** 
+ 258:main.c        ****     /* Read first byte */
+ 259:main.c        ****     messageBuf[0] = (HMC5843_ADDRESS) | (TRUE<<TWI_READ_BIT);
  591               	.LM43:
  592 0144 8DE3      		ldi r24,lo8(61)
  593 0146 F82E      		mov r15,r24
- 261:main.c        ****     messageBuf[1] = 0;
- 262:main.c        ****     messageBuf[2] = 0;
- 263:main.c        ****     messageBuf[3] = 0;
- 264:main.c        ****     messageBuf[4] = 0;
- 265:main.c        ****     messageBuf[5] = 0;
- 266:main.c        ****     messageBuf[6] = 0; 
- 267:main.c        ****     TWI_Start_Transceiver_With_Data(messageBuf, 7);
- 268:main.c        ****     if (TWI_Get_Data_From_Transceiver(messageBuf, 7)){
- 269:main.c        ****       printf("HMC: %x %x %x %x %x %x \r\n",messageBuf[1],messageBuf[2],messageBuf[3],messageBuf[4],
+ 260:main.c        ****     messageBuf[1] = 0;
+ 261:main.c        ****     messageBuf[2] = 0;
+ 262:main.c        ****     messageBuf[3] = 0;
+ 263:main.c        ****     messageBuf[4] = 0;
+ 264:main.c        ****     messageBuf[5] = 0;
+ 265:main.c        ****     messageBuf[6] = 0; 
+ 266:main.c        ****     TWI_Start_Transceiver_With_Data(messageBuf, 7);
+ 267:main.c        ****     if (TWI_Get_Data_From_Transceiver(messageBuf, 7)){
+ 268:main.c        ****       printf("HMC: %x %x %x %x %x %x \r\n",messageBuf[1],messageBuf[2],messageBuf[3],messageBuf[4],
  595               	.LM44:
  596 0148 C0E0      		ldi r28,lo8(.LC2)
  597 014a D0E0      		ldi r29,hi8(.LC2)
  598               	.L16:
- 255:main.c        ****     messageBuf[1] = HMC5843_REGISTER_XMSB;
+ 254:main.c        ****     messageBuf[1] = HMC5843_REGISTER_XMSB;
  600               	.LM45:
  601 014c 1093 0000 		sts messageBuf,r17
- 256:main.c        ****     TWI_Start_Transceiver_With_Data(messageBuf, 2);
+ 255:main.c        ****     TWI_Start_Transceiver_With_Data(messageBuf, 2);
  603               	.LM46:
  604 0150 0093 0000 		sts messageBuf+1,r16
- 257:main.c        **** 
+ 256:main.c        **** 
  606               	.LM47:
  607 0154 62E0      		ldi r22,lo8(2)
  608 0156 80E0      		ldi r24,lo8(messageBuf)
  609 0158 90E0      		ldi r25,hi8(messageBuf)
  610 015a 0E94 0000 		call TWI_Start_Transceiver_With_Data
- 260:main.c        ****     messageBuf[1] = 0;
+ 259:main.c        ****     messageBuf[1] = 0;
  612               	.LM48:
  613 015e F092 0000 		sts messageBuf,r15
- 261:main.c        ****     messageBuf[2] = 0;
+ 260:main.c        ****     messageBuf[2] = 0;
  615               	.LM49:
  616 0162 1092 0000 		sts messageBuf+1,__zero_reg__
- 262:main.c        ****     messageBuf[3] = 0;
+ 261:main.c        ****     messageBuf[3] = 0;
  618               	.LM50:
  619 0166 1092 0000 		sts messageBuf+2,__zero_reg__
- 263:main.c        ****     messageBuf[4] = 0;
+ 262:main.c        ****     messageBuf[4] = 0;
  621               	.LM51:
  622 016a 1092 0000 		sts messageBuf+3,__zero_reg__
- 264:main.c        ****     messageBuf[5] = 0;
+ 263:main.c        ****     messageBuf[5] = 0;
  624               	.LM52:
  625 016e 1092 0000 		sts messageBuf+4,__zero_reg__
- 265:main.c        ****     messageBuf[6] = 0; 
+ 264:main.c        ****     messageBuf[6] = 0; 
  627               	.LM53:
  628 0172 1092 0000 		sts messageBuf+5,__zero_reg__
- 266:main.c        ****     TWI_Start_Transceiver_With_Data(messageBuf, 7);
+ 265:main.c        ****     TWI_Start_Transceiver_With_Data(messageBuf, 7);
  630               	.LM54:
  631 0176 1092 0000 		sts messageBuf+6,__zero_reg__
- 267:main.c        ****     if (TWI_Get_Data_From_Transceiver(messageBuf, 7)){
+ 266:main.c        ****     if (TWI_Get_Data_From_Transceiver(messageBuf, 7)){
  633               	.LM55:
  634 017a 67E0      		ldi r22,lo8(7)
  635 017c 80E0      		ldi r24,lo8(messageBuf)
  636 017e 90E0      		ldi r25,hi8(messageBuf)
  637 0180 0E94 0000 		call TWI_Start_Transceiver_With_Data
- 268:main.c        ****       printf("HMC: %x %x %x %x %x %x \r\n",messageBuf[1],messageBuf[2],messageBuf[3],messageBuf[4],
+ 267:main.c        ****       printf("HMC: %x %x %x %x %x %x \r\n",messageBuf[1],messageBuf[2],messageBuf[3],messageBuf[4],
  639               	.LM56:
  640 0184 67E0      		ldi r22,lo8(7)
  641 0186 80E0      		ldi r24,lo8(messageBuf)
@@ -606,7 +605,8 @@
  675 01d6 0FBE      		out __SREG__,__tmp_reg__
  676 01d8 8DBF      		out __SP_L__,r24
  677               	.L15:
- 270:main.c        ****     }
+ 269:main.c        ****     }
+ 270:main.c        ****     
  271:main.c        ****     nrk_wait_until_next_period();
  679               	.LM58:
  680 01da 0E94 0000 		call nrk_wait_until_next_period
@@ -632,194 +632,192 @@
  704               	/* stack size = 1 */
  705               	.L__stack_usage = 1
  706 01e2 C82F      		mov r28,r24
- 100:main.c        ****     TWI_Start_Transceiver();
+ 100:main.c        ****   printf("%c \n",TWIerrorMsg);  
  708               	.LM61:
  709 01e4 8834      		cpi r24,lo8(72)
  710 01e6 01F0      		breq .L25
  711 01e8 8032      		cpi r24,lo8(32)
  712 01ea 01F4      		brne .L21
  713               	.L25:
- 101:main.c        **** }
+ 101:main.c        ****   TWI_Start_Transceiver();
  715               	.LM62:
- 716 01ec 0E94 0000 		call TWI_Start_Transceiver
- 717               	.L21:
- 103:main.c        ****     
- 719               	.LM63:
- 720 01f0 1F92      		push __zero_reg__
- 721 01f2 CF93      		push r28
- 722 01f4 80E0      		ldi r24,lo8(.LC3)
- 723 01f6 90E0      		ldi r25,hi8(.LC3)
- 724 01f8 9F93      		push r25
- 725 01fa 8F93      		push r24
- 726 01fc 0E94 0000 		call printf
- 105:main.c        **** }
- 728               	.LM64:
- 729 0200 0F90      		pop __tmp_reg__
- 730 0202 0F90      		pop __tmp_reg__
- 731 0204 0F90      		pop __tmp_reg__
- 732 0206 0F90      		pop __tmp_reg__
- 106:main.c        **** 
- 734               	.LM65:
- 735 0208 8C2F      		mov r24,r28
- 736               	/* epilogue start */
- 737 020a CF91      		pop r28
- 738 020c 0895      		ret
- 740               	.Lscope4:
- 742               		.stabd	78,0,0
- 744               	.global	init_itg3200
- 746               	init_itg3200:
- 747               		.stabd	46,0,0
- 153:main.c        ****     /* put in standby mode while we change fifo control bits */
- 749               	.LM66:
- 750               	.LFBB5:
- 751               	/* prologue: function */
- 752               	/* frame size = 0 */
- 753               	/* stack size = 0 */
- 754               	.L__stack_usage = 0
- 155:main.c        ****   messageBuf[1] = ITG3200_REGISTER_DLPF;
- 756               	.LM67:
- 757 020e E0E0      		ldi r30,lo8(messageBuf)
- 758 0210 F0E0      		ldi r31,hi8(messageBuf)
- 759 0212 80ED      		ldi r24,lo8(-48)
- 760 0214 8083      		st Z,r24
- 156:main.c        ****   messageBuf[2] = ITG3200_FULLSCALE | ITG3200_42HZ;
- 762               	.LM68:
- 763 0216 86E1      		ldi r24,lo8(22)
- 764 0218 8183      		std Z+1,r24
- 157:main.c        ****   TWI_Start_Transceiver_With_Data(messageBuf, 3);
- 766               	.LM69:
- 767 021a 8BE1      		ldi r24,lo8(27)
- 768 021c 8283      		std Z+2,r24
- 158:main.c        **** }
- 770               	.LM70:
- 771 021e 63E0      		ldi r22,lo8(3)
- 772 0220 CF01      		movw r24,r30
- 773 0222 0C94 0000 		jmp TWI_Start_Transceiver_With_Data
- 775               	.Lscope5:
- 777               		.stabd	78,0,0
- 779               	.global	init_hmc5843
- 781               	init_hmc5843:
- 782               		.stabd	46,0,0
- 161:main.c        ****     /* put in standby mode while we change fifo control bits */
- 784               	.LM71:
- 785               	.LFBB6:
- 786               	/* prologue: function */
- 787               	/* frame size = 0 */
- 788               	/* stack size = 0 */
- 789               	.L__stack_usage = 0
- 163:main.c        ****   messageBuf[1] = HMC5843_REGISTER_MEASMODE;
- 791               	.LM72:
- 792 0226 E0E0      		ldi r30,lo8(messageBuf)
- 793 0228 F0E0      		ldi r31,hi8(messageBuf)
- 794 022a 8CE3      		ldi r24,lo8(60)
- 795 022c 8083      		st Z,r24
- 164:main.c        ****   messageBuf[2] = HMC5843_MEASMODE_CONT;
- 797               	.LM73:
- 798 022e 82E0      		ldi r24,lo8(2)
- 799 0230 8183      		std Z+1,r24
- 165:main.c        ****   TWI_Start_Transceiver_With_Data(messageBuf, 3);
- 801               	.LM74:
- 802 0232 1282      		std Z+2,__zero_reg__
- 166:main.c        **** }
- 804               	.LM75:
- 805 0234 63E0      		ldi r22,lo8(3)
- 806 0236 CF01      		movw r24,r30
- 807 0238 0C94 0000 		jmp TWI_Start_Transceiver_With_Data
- 809               	.Lscope6:
- 811               		.stabd	78,0,0
- 813               	.global	init_adxl345
- 815               	init_adxl345:
- 816               		.stabd	46,0,0
- 170:main.c        ****   unsigned int read = 0;
- 818               	.LM76:
- 819               	.LFBB7:
- 820 023c 0F93      		push r16
- 821 023e 1F93      		push r17
- 822 0240 CF93      		push r28
- 823 0242 DF93      		push r29
- 824               	/* prologue: function */
- 825               	/* frame size = 0 */
- 826               	/* stack size = 4 */
- 827               	.L__stack_usage = 4
- 174:main.c        ****   messageBuf[1] = ADXL_REGISTER_PWRCTL;
- 829               	.LM77:
- 830 0244 C0E0      		ldi r28,lo8(messageBuf)
- 831 0246 D0E0      		ldi r29,hi8(messageBuf)
- 832 0248 16EA      		ldi r17,lo8(-90)
- 833 024a 1883      		st Y,r17
- 175:main.c        ****   messageBuf[2] = ADXL_PWRCTL_STBY;
- 835               	.LM78:
- 836 024c 0DE2      		ldi r16,lo8(45)
- 837 024e 0983      		std Y+1,r16
- 176:main.c        ****   TWI_Start_Transceiver_With_Data(messageBuf, 3);
- 839               	.LM79:
- 840 0250 1A82      		std Y+2,__zero_reg__
- 177:main.c        **** 
- 842               	.LM80:
- 843 0252 63E0      		ldi r22,lo8(3)
- 844 0254 CE01      		movw r24,r28
- 845 0256 0E94 0000 		call TWI_Start_Transceiver_With_Data
+ 716 01ec 1F92      		push __zero_reg__
+ 717 01ee CF93      		push r28
+ 718 01f0 80E0      		ldi r24,lo8(.LC3)
+ 719 01f2 90E0      		ldi r25,hi8(.LC3)
+ 720 01f4 9F93      		push r25
+ 721 01f6 8F93      		push r24
+ 722 01f8 0E94 0000 		call printf
+ 102:main.c        **** }
+ 724               	.LM63:
+ 725 01fc 0E94 0000 		call TWI_Start_Transceiver
+ 726 0200 0F90      		pop __tmp_reg__
+ 727 0202 0F90      		pop __tmp_reg__
+ 728 0204 0F90      		pop __tmp_reg__
+ 729 0206 0F90      		pop __tmp_reg__
+ 730               	.L21:
+ 107:main.c        **** 
+ 732               	.LM64:
+ 733 0208 8C2F      		mov r24,r28
+ 734               	/* epilogue start */
+ 735 020a CF91      		pop r28
+ 736 020c 0895      		ret
+ 738               	.Lscope4:
+ 740               		.stabd	78,0,0
+ 742               	.global	init_itg3200
+ 744               	init_itg3200:
+ 745               		.stabd	46,0,0
+ 154:main.c        ****     /* put in standby mode while we change fifo control bits */
+ 747               	.LM65:
+ 748               	.LFBB5:
+ 749               	/* prologue: function */
+ 750               	/* frame size = 0 */
+ 751               	/* stack size = 0 */
+ 752               	.L__stack_usage = 0
+ 156:main.c        ****   messageBuf[1] = ITG3200_REGISTER_DLPF;
+ 754               	.LM66:
+ 755 020e E0E0      		ldi r30,lo8(messageBuf)
+ 756 0210 F0E0      		ldi r31,hi8(messageBuf)
+ 757 0212 80ED      		ldi r24,lo8(-48)
+ 758 0214 8083      		st Z,r24
+ 157:main.c        ****   messageBuf[2] = ITG3200_FULLSCALE | ITG3200_42HZ;
+ 760               	.LM67:
+ 761 0216 86E1      		ldi r24,lo8(22)
+ 762 0218 8183      		std Z+1,r24
+ 158:main.c        ****   TWI_Start_Transceiver_With_Data(messageBuf, 3);
+ 764               	.LM68:
+ 765 021a 8BE1      		ldi r24,lo8(27)
+ 766 021c 8283      		std Z+2,r24
+ 159:main.c        **** }
+ 768               	.LM69:
+ 769 021e 63E0      		ldi r22,lo8(3)
+ 770 0220 CF01      		movw r24,r30
+ 771 0222 0C94 0000 		jmp TWI_Start_Transceiver_With_Data
+ 773               	.Lscope5:
+ 775               		.stabd	78,0,0
+ 777               	.global	init_hmc5843
+ 779               	init_hmc5843:
+ 780               		.stabd	46,0,0
+ 162:main.c        ****     /* put in standby mode while we change fifo control bits */
+ 782               	.LM70:
+ 783               	.LFBB6:
+ 784               	/* prologue: function */
+ 785               	/* frame size = 0 */
+ 786               	/* stack size = 0 */
+ 787               	.L__stack_usage = 0
+ 164:main.c        ****   messageBuf[1] = HMC5843_REGISTER_MEASMODE;
+ 789               	.LM71:
+ 790 0226 E0E0      		ldi r30,lo8(messageBuf)
+ 791 0228 F0E0      		ldi r31,hi8(messageBuf)
+ 792 022a 8CE3      		ldi r24,lo8(60)
+ 793 022c 8083      		st Z,r24
+ 165:main.c        ****   messageBuf[2] = HMC5843_MEASMODE_CONT;
+ 795               	.LM72:
+ 796 022e 82E0      		ldi r24,lo8(2)
+ 797 0230 8183      		std Z+1,r24
+ 166:main.c        ****   TWI_Start_Transceiver_With_Data(messageBuf, 3);
+ 799               	.LM73:
+ 800 0232 1282      		std Z+2,__zero_reg__
+ 167:main.c        **** }
+ 802               	.LM74:
+ 803 0234 63E0      		ldi r22,lo8(3)
+ 804 0236 CF01      		movw r24,r30
+ 805 0238 0C94 0000 		jmp TWI_Start_Transceiver_With_Data
+ 807               	.Lscope6:
+ 809               		.stabd	78,0,0
+ 811               	.global	init_adxl345
+ 813               	init_adxl345:
+ 814               		.stabd	46,0,0
+ 171:main.c        ****   unsigned int read = 0;
+ 816               	.LM75:
+ 817               	.LFBB7:
+ 818 023c 0F93      		push r16
+ 819 023e 1F93      		push r17
+ 820 0240 CF93      		push r28
+ 821 0242 DF93      		push r29
+ 822               	/* prologue: function */
+ 823               	/* frame size = 0 */
+ 824               	/* stack size = 4 */
+ 825               	.L__stack_usage = 4
+ 175:main.c        ****   messageBuf[1] = ADXL_REGISTER_PWRCTL;
+ 827               	.LM76:
+ 828 0244 C0E0      		ldi r28,lo8(messageBuf)
+ 829 0246 D0E0      		ldi r29,hi8(messageBuf)
+ 830 0248 16EA      		ldi r17,lo8(-90)
+ 831 024a 1883      		st Y,r17
+ 176:main.c        ****   messageBuf[2] = ADXL_PWRCTL_STBY;
+ 833               	.LM77:
+ 834 024c 0DE2      		ldi r16,lo8(45)
+ 835 024e 0983      		std Y+1,r16
+ 177:main.c        ****   TWI_Start_Transceiver_With_Data(messageBuf, 3);
+ 837               	.LM78:
+ 838 0250 1A82      		std Y+2,__zero_reg__
+ 178:main.c        ****   /* set the fifo mode to stream */
+ 840               	.LM79:
+ 841 0252 63E0      		ldi r22,lo8(3)
+ 842 0254 CE01      		movw r24,r28
+ 843 0256 0E94 0000 		call TWI_Start_Transceiver_With_Data
  180:main.c        ****   messageBuf[1] = ADXL_REGISTER_FIFOCTL;
- 847               	.LM81:
- 848 025a 1883      		st Y,r17
+ 845               	.LM80:
+ 846 025a 1883      		st Y,r17
  181:main.c        ****   messageBuf[2] = ADXL_FIFOCTL_STREAM;
- 850               	.LM82:
- 851 025c 88E3      		ldi r24,lo8(56)
- 852 025e 8983      		std Y+1,r24
+ 848               	.LM81:
+ 849 025c 88E3      		ldi r24,lo8(56)
+ 850 025e 8983      		std Y+1,r24
  182:main.c        ****   TWI_Start_Transceiver_With_Data(messageBuf,3);
- 854               	.LM83:
- 855 0260 80E8      		ldi r24,lo8(-128)
- 856 0262 8A83      		std Y+2,r24
+ 852               	.LM82:
+ 853 0260 80E8      		ldi r24,lo8(-128)
+ 854 0262 8A83      		std Y+2,r24
  183:main.c        **** 
- 858               	.LM84:
- 859 0264 63E0      		ldi r22,lo8(3)
- 860 0266 CE01      		movw r24,r28
- 861 0268 0E94 0000 		call TWI_Start_Transceiver_With_Data
+ 856               	.LM83:
+ 857 0264 63E0      		ldi r22,lo8(3)
+ 858 0266 CE01      		movw r24,r28
+ 859 0268 0E94 0000 		call TWI_Start_Transceiver_With_Data
  187:main.c        ****   messageBuf[1] = ADXL_REGISTER_PWRCTL;
- 863               	.LM85:
- 864 026c 1883      		st Y,r17
+ 861               	.LM84:
+ 862 026c 1883      		st Y,r17
  188:main.c        ****   messageBuf[2] = ADXL_PWRCTL_MEASURE;
- 866               	.LM86:
- 867 026e 0983      		std Y+1,r16
+ 864               	.LM85:
+ 865 026e 0983      		std Y+1,r16
  189:main.c        ****   TWI_Start_Transceiver_With_Data(messageBuf, 3);
- 869               	.LM87:
- 870 0270 88E0      		ldi r24,lo8(8)
- 871 0272 8A83      		std Y+2,r24
- 190:main.c        **** 
- 873               	.LM88:
- 874 0274 63E0      		ldi r22,lo8(3)
- 875 0276 CE01      		movw r24,r28
- 876 0278 0E94 0000 		call TWI_Start_Transceiver_With_Data
- 193:main.c        ****   messageBuf[1] = ADXL_REGISTER_DATAFMT;
- 878               	.LM89:
- 879 027c 1883      		st Y,r17
- 194:main.c        ****   messageBuf[2] = ADXL_DATAFMT_4G;
- 881               	.LM90:
- 882 027e 81E3      		ldi r24,lo8(49)
- 883 0280 8983      		std Y+1,r24
- 195:main.c        ****   TWI_Start_Transceiver_With_Data(messageBuf,3);
- 885               	.LM91:
- 886 0282 81E0      		ldi r24,lo8(1)
- 887 0284 8A83      		std Y+2,r24
- 196:main.c        **** }
- 889               	.LM92:
- 890 0286 63E0      		ldi r22,lo8(3)
- 891 0288 CE01      		movw r24,r28
- 892               	/* epilogue start */
- 197:main.c        **** 
- 894               	.LM93:
- 895 028a DF91      		pop r29
- 896 028c CF91      		pop r28
- 897 028e 1F91      		pop r17
- 898 0290 0F91      		pop r16
- 196:main.c        **** }
- 900               	.LM94:
- 901 0292 0C94 0000 		jmp TWI_Start_Transceiver_With_Data
- 903               	.Lscope7:
- 905               		.stabd	78,0,0
- 907               	.global	nrk_create_taskset
- 909               	nrk_create_taskset:
- 910               		.stabd	46,0,0
+ 867               	.LM86:
+ 868 0270 88E0      		ldi r24,lo8(8)
+ 869 0272 8A83      		std Y+2,r24
+ 190:main.c        ****     /* set the data format */
+ 871               	.LM87:
+ 872 0274 63E0      		ldi r22,lo8(3)
+ 873 0276 CE01      		movw r24,r28
+ 874 0278 0E94 0000 		call TWI_Start_Transceiver_With_Data
+ 192:main.c        ****   messageBuf[1] = ADXL_REGISTER_DATAFMT;
+ 876               	.LM88:
+ 877 027c 1883      		st Y,r17
+ 193:main.c        ****   messageBuf[2] = ADXL_DATAFMT_4G;
+ 879               	.LM89:
+ 880 027e 81E3      		ldi r24,lo8(49)
+ 881 0280 8983      		std Y+1,r24
+ 194:main.c        ****   TWI_Start_Transceiver_With_Data(messageBuf,3);
+ 883               	.LM90:
+ 884 0282 81E0      		ldi r24,lo8(1)
+ 885 0284 8A83      		std Y+2,r24
+ 195:main.c        **** }
+ 887               	.LM91:
+ 888 0286 63E0      		ldi r22,lo8(3)
+ 889 0288 CE01      		movw r24,r28
+ 890               	/* epilogue start */
+ 196:main.c        **** 
+ 892               	.LM92:
+ 893 028a DF91      		pop r29
+ 894 028c CF91      		pop r28
+ 895 028e 1F91      		pop r17
+ 896 0290 0F91      		pop r16
+ 195:main.c        **** }
+ 898               	.LM93:
+ 899 0292 0C94 0000 		jmp TWI_Start_Transceiver_With_Data
+ 901               	.Lscope7:
+ 903               		.stabd	78,0,0
+ 905               	.global	nrk_create_taskset
+ 907               	nrk_create_taskset:
+ 908               		.stabd	46,0,0
  273:main.c        **** }
  274:main.c        **** 
  275:main.c        **** 
@@ -827,394 +825,399 @@
  277:main.c        **** void
  278:main.c        **** nrk_create_taskset()
  279:main.c        **** {
- 912               	.LM95:
- 913               	.LFBB8:
- 914 0296 8F92      		push r8
- 915 0298 9F92      		push r9
- 916 029a AF92      		push r10
- 917 029c BF92      		push r11
- 918 029e CF92      		push r12
- 919 02a0 DF92      		push r13
- 920 02a2 EF92      		push r14
- 921 02a4 FF92      		push r15
- 922 02a6 CF93      		push r28
- 923               	/* prologue: function */
- 924               	/* frame size = 0 */
- 925               	/* stack size = 9 */
- 926               	.L__stack_usage = 9
+ 910               	.LM94:
+ 911               	.LFBB8:
+ 912 0296 8F92      		push r8
+ 913 0298 9F92      		push r9
+ 914 029a AF92      		push r10
+ 915 029c BF92      		push r11
+ 916 029e CF92      		push r12
+ 917 02a0 DF92      		push r13
+ 918 02a2 EF92      		push r14
+ 919 02a4 FF92      		push r15
+ 920 02a6 CF93      		push r28
+ 921               	/* prologue: function */
+ 922               	/* frame size = 0 */
+ 923               	/* stack size = 9 */
+ 924               	.L__stack_usage = 9
  280:main.c        ****   nrk_task_set_entry_function( &TaskOne, Task_Accelorometer);
- 928               	.LM96:
- 929 02a8 60E0      		ldi r22,lo8(gs(Task_Accelorometer))
- 930 02aa 70E0      		ldi r23,hi8(gs(Task_Accelorometer))
- 931 02ac 80E0      		ldi r24,lo8(TaskOne)
- 932 02ae 90E0      		ldi r25,hi8(TaskOne)
- 933 02b0 0E94 0000 		call nrk_task_set_entry_function
+ 926               	.LM95:
+ 927 02a8 60E0      		ldi r22,lo8(gs(Task_Accelorometer))
+ 928 02aa 70E0      		ldi r23,hi8(gs(Task_Accelorometer))
+ 929 02ac 80E0      		ldi r24,lo8(TaskOne)
+ 930 02ae 90E0      		ldi r25,hi8(TaskOne)
+ 931 02b0 0E94 0000 		call nrk_task_set_entry_function
  281:main.c        ****   nrk_task_set_stk( &TaskOne, Stack1, NRK_APP_STACKSIZE);
- 935               	.LM97:
- 936 02b4 40E8      		ldi r20,lo8(-128)
- 937 02b6 50E0      		ldi r21,0
- 938 02b8 60E0      		ldi r22,lo8(Stack1)
- 939 02ba 70E0      		ldi r23,hi8(Stack1)
- 940 02bc 80E0      		ldi r24,lo8(TaskOne)
- 941 02be 90E0      		ldi r25,hi8(TaskOne)
- 942 02c0 0E94 0000 		call nrk_task_set_stk
+ 933               	.LM96:
+ 934 02b4 40E8      		ldi r20,lo8(-128)
+ 935 02b6 50E0      		ldi r21,0
+ 936 02b8 60E0      		ldi r22,lo8(Stack1)
+ 937 02ba 70E0      		ldi r23,hi8(Stack1)
+ 938 02bc 80E0      		ldi r24,lo8(TaskOne)
+ 939 02be 90E0      		ldi r25,hi8(TaskOne)
+ 940 02c0 0E94 0000 		call nrk_task_set_stk
  282:main.c        ****   TaskOne.prio = 1;
- 944               	.LM98:
- 945 02c4 E0E0      		ldi r30,lo8(TaskOne)
- 946 02c6 F0E0      		ldi r31,hi8(TaskOne)
- 947 02c8 C1E0      		ldi r28,lo8(1)
- 948 02ca C087      		std Z+8,r28
+ 942               	.LM97:
+ 943 02c4 E0E0      		ldi r30,lo8(TaskOne)
+ 944 02c6 F0E0      		ldi r31,hi8(TaskOne)
+ 945 02c8 C1E0      		ldi r28,lo8(1)
+ 946 02ca C087      		std Z+8,r28
  283:main.c        ****   TaskOne.FirstActivation = TRUE;
- 950               	.LM99:
- 951 02cc C783      		std Z+7,r28
+ 948               	.LM98:
+ 949 02cc C783      		std Z+7,r28
  284:main.c        ****   TaskOne.Type = BASIC_TASK;
- 953               	.LM100:
- 954 02ce C187      		std Z+9,r28
+ 951               	.LM99:
+ 952 02ce C187      		std Z+9,r28
  285:main.c        ****   TaskOne.SchType = PREEMPTIVE;
- 956               	.LM101:
- 957 02d0 C287      		std Z+10,r28
+ 954               	.LM100:
+ 955 02d0 C287      		std Z+10,r28
  286:main.c        ****   TaskOne.period.secs = 0;
- 959               	.LM102:
- 960 02d2 1386      		std Z+11,__zero_reg__
- 961 02d4 1486      		std Z+12,__zero_reg__
- 962 02d6 1586      		std Z+13,__zero_reg__
- 963 02d8 1686      		std Z+14,__zero_reg__
+ 957               	.LM101:
+ 958 02d2 1386      		std Z+11,__zero_reg__
+ 959 02d4 1486      		std Z+12,__zero_reg__
+ 960 02d6 1586      		std Z+13,__zero_reg__
+ 961 02d8 1686      		std Z+14,__zero_reg__
  287:main.c        ****   TaskOne.period.nano_secs = 250*NANOS_PER_MS;
- 965               	.LM103:
- 966 02da 80E8      		ldi r24,lo8(-128)
- 967 02dc C82E      		mov r12,r24
- 968 02de 82EB      		ldi r24,lo8(-78)
- 969 02e0 D82E      		mov r13,r24
- 970 02e2 86EE      		ldi r24,lo8(-26)
- 971 02e4 E82E      		mov r14,r24
- 972 02e6 8EE0      		ldi r24,lo8(14)
- 973 02e8 F82E      		mov r15,r24
- 974 02ea C786      		std Z+15,r12
- 975 02ec D08A      		std Z+16,r13
- 976 02ee E18A      		std Z+17,r14
- 977 02f0 F28A      		std Z+18,r15
+ 963               	.LM102:
+ 964 02da 80E8      		ldi r24,lo8(-128)
+ 965 02dc C82E      		mov r12,r24
+ 966 02de 82EB      		ldi r24,lo8(-78)
+ 967 02e0 D82E      		mov r13,r24
+ 968 02e2 86EE      		ldi r24,lo8(-26)
+ 969 02e4 E82E      		mov r14,r24
+ 970 02e6 8EE0      		ldi r24,lo8(14)
+ 971 02e8 F82E      		mov r15,r24
+ 972 02ea C786      		std Z+15,r12
+ 973 02ec D08A      		std Z+16,r13
+ 974 02ee E18A      		std Z+17,r14
+ 975 02f0 F28A      		std Z+18,r15
  288:main.c        ****   TaskOne.cpu_reserve.secs = 0;
- 979               	.LM104:
- 980 02f2 138A      		std Z+19,__zero_reg__
- 981 02f4 148A      		std Z+20,__zero_reg__
- 982 02f6 158A      		std Z+21,__zero_reg__
- 983 02f8 168A      		std Z+22,__zero_reg__
+ 977               	.LM103:
+ 978 02f2 138A      		std Z+19,__zero_reg__
+ 979 02f4 148A      		std Z+20,__zero_reg__
+ 980 02f6 158A      		std Z+21,__zero_reg__
+ 981 02f8 168A      		std Z+22,__zero_reg__
  289:main.c        ****   TaskOne.cpu_reserve.nano_secs = 250*NANOS_PER_MS;
- 985               	.LM105:
- 986 02fa C78A      		std Z+23,r12
- 987 02fc D08E      		std Z+24,r13
- 988 02fe E18E      		std Z+25,r14
- 989 0300 F28E      		std Z+26,r15
+ 983               	.LM104:
+ 984 02fa C78A      		std Z+23,r12
+ 985 02fc D08E      		std Z+24,r13
+ 986 02fe E18E      		std Z+25,r14
+ 987 0300 F28E      		std Z+26,r15
  290:main.c        ****   TaskOne.offset.secs = 1;
- 991               	.LM106:
- 992 0302 812C      		mov r8,__zero_reg__
- 993 0304 912C      		mov r9,__zero_reg__
- 994 0306 5401      		movw r10,r8
- 995 0308 8394      		inc r8
- 996 030a 838E      		std Z+27,r8
- 997 030c 948E      		std Z+28,r9
- 998 030e A58E      		std Z+29,r10
- 999 0310 B68E      		std Z+30,r11
+ 989               	.LM105:
+ 990 0302 812C      		mov r8,__zero_reg__
+ 991 0304 912C      		mov r9,__zero_reg__
+ 992 0306 5401      		movw r10,r8
+ 993 0308 8394      		inc r8
+ 994 030a 838E      		std Z+27,r8
+ 995 030c 948E      		std Z+28,r9
+ 996 030e A58E      		std Z+29,r10
+ 997 0310 B68E      		std Z+30,r11
  291:main.c        ****   TaskOne.offset.nano_secs= 0;
- 1001               	.LM107:
- 1002 0312 178E      		std Z+31,__zero_reg__
- 1003 0314 10A2      		std Z+32,__zero_reg__
- 1004 0316 11A2      		std Z+33,__zero_reg__
- 1005 0318 12A2      		std Z+34,__zero_reg__
+ 999               	.LM106:
+ 1000 0312 178E      		std Z+31,__zero_reg__
+ 1001 0314 10A2      		std Z+32,__zero_reg__
+ 1002 0316 11A2      		std Z+33,__zero_reg__
+ 1003 0318 12A2      		std Z+34,__zero_reg__
  292:main.c        ****   nrk_activate_task (&TaskOne);
- 1007               	.LM108:
- 1008 031a CF01      		movw r24,r30
- 1009 031c 0E94 0000 		call nrk_activate_task
+ 1005               	.LM107:
+ 1006 031a CF01      		movw r24,r30
+ 1007 031c 0E94 0000 		call nrk_activate_task
  293:main.c        **** 
  294:main.c        ****   nrk_task_set_entry_function( &TaskTwo, Task_Gyro);
- 1011               	.LM109:
- 1012 0320 60E0      		ldi r22,lo8(gs(Task_Gyro))
- 1013 0322 70E0      		ldi r23,hi8(gs(Task_Gyro))
- 1014 0324 80E0      		ldi r24,lo8(TaskTwo)
- 1015 0326 90E0      		ldi r25,hi8(TaskTwo)
- 1016 0328 0E94 0000 		call nrk_task_set_entry_function
+ 1009               	.LM108:
+ 1010 0320 60E0      		ldi r22,lo8(gs(Task_Gyro))
+ 1011 0322 70E0      		ldi r23,hi8(gs(Task_Gyro))
+ 1012 0324 80E0      		ldi r24,lo8(TaskTwo)
+ 1013 0326 90E0      		ldi r25,hi8(TaskTwo)
+ 1014 0328 0E94 0000 		call nrk_task_set_entry_function
  295:main.c        ****   nrk_task_set_stk( &TaskTwo, Stack2, NRK_APP_STACKSIZE);
- 1018               	.LM110:
- 1019 032c 40E8      		ldi r20,lo8(-128)
- 1020 032e 50E0      		ldi r21,0
- 1021 0330 60E0      		ldi r22,lo8(Stack2)
- 1022 0332 70E0      		ldi r23,hi8(Stack2)
- 1023 0334 80E0      		ldi r24,lo8(TaskTwo)
- 1024 0336 90E0      		ldi r25,hi8(TaskTwo)
- 1025 0338 0E94 0000 		call nrk_task_set_stk
+ 1016               	.LM109:
+ 1017 032c 40E8      		ldi r20,lo8(-128)
+ 1018 032e 50E0      		ldi r21,0
+ 1019 0330 60E0      		ldi r22,lo8(Stack2)
+ 1020 0332 70E0      		ldi r23,hi8(Stack2)
+ 1021 0334 80E0      		ldi r24,lo8(TaskTwo)
+ 1022 0336 90E0      		ldi r25,hi8(TaskTwo)
+ 1023 0338 0E94 0000 		call nrk_task_set_stk
  296:main.c        ****   TaskTwo.prio = 2;
- 1027               	.LM111:
- 1028 033c E0E0      		ldi r30,lo8(TaskTwo)
- 1029 033e F0E0      		ldi r31,hi8(TaskTwo)
- 1030 0340 82E0      		ldi r24,lo8(2)
- 1031 0342 8087      		std Z+8,r24
+ 1025               	.LM110:
+ 1026 033c E0E0      		ldi r30,lo8(TaskTwo)
+ 1027 033e F0E0      		ldi r31,hi8(TaskTwo)
+ 1028 0340 82E0      		ldi r24,lo8(2)
+ 1029 0342 8087      		std Z+8,r24
  297:main.c        ****   TaskTwo.FirstActivation = TRUE;
- 1033               	.LM112:
- 1034 0344 C783      		std Z+7,r28
+ 1031               	.LM111:
+ 1032 0344 C783      		std Z+7,r28
  298:main.c        ****   TaskTwo.Type = BASIC_TASK;
- 1036               	.LM113:
- 1037 0346 C187      		std Z+9,r28
+ 1034               	.LM112:
+ 1035 0346 C187      		std Z+9,r28
  299:main.c        ****   TaskTwo.SchType = PREEMPTIVE;
- 1039               	.LM114:
- 1040 0348 C287      		std Z+10,r28
+ 1037               	.LM113:
+ 1038 0348 C287      		std Z+10,r28
  300:main.c        ****   TaskTwo.period.secs = 0;
- 1042               	.LM115:
- 1043 034a 1386      		std Z+11,__zero_reg__
- 1044 034c 1486      		std Z+12,__zero_reg__
- 1045 034e 1586      		std Z+13,__zero_reg__
- 1046 0350 1686      		std Z+14,__zero_reg__
+ 1040               	.LM114:
+ 1041 034a 1386      		std Z+11,__zero_reg__
+ 1042 034c 1486      		std Z+12,__zero_reg__
+ 1043 034e 1586      		std Z+13,__zero_reg__
+ 1044 0350 1686      		std Z+14,__zero_reg__
  301:main.c        ****   TaskTwo.period.nano_secs = 250*NANOS_PER_MS;
- 1048               	.LM116:
- 1049 0352 C786      		std Z+15,r12
- 1050 0354 D08A      		std Z+16,r13
- 1051 0356 E18A      		std Z+17,r14
- 1052 0358 F28A      		std Z+18,r15
+ 1046               	.LM115:
+ 1047 0352 C786      		std Z+15,r12
+ 1048 0354 D08A      		std Z+16,r13
+ 1049 0356 E18A      		std Z+17,r14
+ 1050 0358 F28A      		std Z+18,r15
  302:main.c        ****   TaskTwo.cpu_reserve.secs = 0;
- 1054               	.LM117:
- 1055 035a 138A      		std Z+19,__zero_reg__
- 1056 035c 148A      		std Z+20,__zero_reg__
- 1057 035e 158A      		std Z+21,__zero_reg__
- 1058 0360 168A      		std Z+22,__zero_reg__
+ 1052               	.LM116:
+ 1053 035a 138A      		std Z+19,__zero_reg__
+ 1054 035c 148A      		std Z+20,__zero_reg__
+ 1055 035e 158A      		std Z+21,__zero_reg__
+ 1056 0360 168A      		std Z+22,__zero_reg__
  303:main.c        ****   TaskTwo.cpu_reserve.nano_secs = 250*NANOS_PER_MS;
- 1060               	.LM118:
- 1061 0362 C78A      		std Z+23,r12
- 1062 0364 D08E      		std Z+24,r13
- 1063 0366 E18E      		std Z+25,r14
- 1064 0368 F28E      		std Z+26,r15
+ 1058               	.LM117:
+ 1059 0362 C78A      		std Z+23,r12
+ 1060 0364 D08E      		std Z+24,r13
+ 1061 0366 E18E      		std Z+25,r14
+ 1062 0368 F28E      		std Z+26,r15
  304:main.c        ****   TaskTwo.offset.secs = 1;
- 1066               	.LM119:
- 1067 036a 838E      		std Z+27,r8
- 1068 036c 948E      		std Z+28,r9
- 1069 036e A58E      		std Z+29,r10
- 1070 0370 B68E      		std Z+30,r11
+ 1064               	.LM118:
+ 1065 036a 838E      		std Z+27,r8
+ 1066 036c 948E      		std Z+28,r9
+ 1067 036e A58E      		std Z+29,r10
+ 1068 0370 B68E      		std Z+30,r11
  305:main.c        ****   TaskTwo.offset.nano_secs= 0;
- 1072               	.LM120:
- 1073 0372 178E      		std Z+31,__zero_reg__
- 1074 0374 10A2      		std Z+32,__zero_reg__
- 1075 0376 11A2      		std Z+33,__zero_reg__
- 1076 0378 12A2      		std Z+34,__zero_reg__
+ 1070               	.LM119:
+ 1071 0372 178E      		std Z+31,__zero_reg__
+ 1072 0374 10A2      		std Z+32,__zero_reg__
+ 1073 0376 11A2      		std Z+33,__zero_reg__
+ 1074 0378 12A2      		std Z+34,__zero_reg__
  306:main.c        ****   nrk_activate_task (&TaskTwo);
- 1078               	.LM121:
- 1079 037a CF01      		movw r24,r30
- 1080 037c 0E94 0000 		call nrk_activate_task
+ 1076               	.LM120:
+ 1077 037a CF01      		movw r24,r30
+ 1078 037c 0E94 0000 		call nrk_activate_task
  307:main.c        **** 
  308:main.c        ****   nrk_task_set_entry_function( &TaskThree, Task_Magneto);
- 1082               	.LM122:
- 1083 0380 60E0      		ldi r22,lo8(gs(Task_Magneto))
- 1084 0382 70E0      		ldi r23,hi8(gs(Task_Magneto))
- 1085 0384 80E0      		ldi r24,lo8(TaskThree)
- 1086 0386 90E0      		ldi r25,hi8(TaskThree)
- 1087 0388 0E94 0000 		call nrk_task_set_entry_function
+ 1080               	.LM121:
+ 1081 0380 60E0      		ldi r22,lo8(gs(Task_Magneto))
+ 1082 0382 70E0      		ldi r23,hi8(gs(Task_Magneto))
+ 1083 0384 80E0      		ldi r24,lo8(TaskThree)
+ 1084 0386 90E0      		ldi r25,hi8(TaskThree)
+ 1085 0388 0E94 0000 		call nrk_task_set_entry_function
  309:main.c        ****   nrk_task_set_stk( &TaskThree, Stack3, NRK_APP_STACKSIZE);
- 1089               	.LM123:
- 1090 038c 40E8      		ldi r20,lo8(-128)
- 1091 038e 50E0      		ldi r21,0
- 1092 0390 60E0      		ldi r22,lo8(Stack3)
- 1093 0392 70E0      		ldi r23,hi8(Stack3)
- 1094 0394 80E0      		ldi r24,lo8(TaskThree)
- 1095 0396 90E0      		ldi r25,hi8(TaskThree)
- 1096 0398 0E94 0000 		call nrk_task_set_stk
+ 1087               	.LM122:
+ 1088 038c 40E8      		ldi r20,lo8(-128)
+ 1089 038e 50E0      		ldi r21,0
+ 1090 0390 60E0      		ldi r22,lo8(Stack3)
+ 1091 0392 70E0      		ldi r23,hi8(Stack3)
+ 1092 0394 80E0      		ldi r24,lo8(TaskThree)
+ 1093 0396 90E0      		ldi r25,hi8(TaskThree)
+ 1094 0398 0E94 0000 		call nrk_task_set_stk
  310:main.c        ****   TaskThree.prio = 3;
- 1098               	.LM124:
- 1099 039c E0E0      		ldi r30,lo8(TaskThree)
- 1100 039e F0E0      		ldi r31,hi8(TaskThree)
- 1101 03a0 83E0      		ldi r24,lo8(3)
- 1102 03a2 8087      		std Z+8,r24
+ 1096               	.LM123:
+ 1097 039c E0E0      		ldi r30,lo8(TaskThree)
+ 1098 039e F0E0      		ldi r31,hi8(TaskThree)
+ 1099 03a0 83E0      		ldi r24,lo8(3)
+ 1100 03a2 8087      		std Z+8,r24
  311:main.c        ****   TaskThree.FirstActivation = TRUE;
- 1104               	.LM125:
- 1105 03a4 C783      		std Z+7,r28
+ 1102               	.LM124:
+ 1103 03a4 C783      		std Z+7,r28
  312:main.c        ****   TaskThree.Type = BASIC_TASK;
- 1107               	.LM126:
- 1108 03a6 C187      		std Z+9,r28
+ 1105               	.LM125:
+ 1106 03a6 C187      		std Z+9,r28
  313:main.c        ****   TaskThree.SchType = PREEMPTIVE;
- 1110               	.LM127:
- 1111 03a8 C287      		std Z+10,r28
+ 1108               	.LM126:
+ 1109 03a8 C287      		std Z+10,r28
  314:main.c        ****   TaskThree.period.secs = 0;
- 1113               	.LM128:
- 1114 03aa 1386      		std Z+11,__zero_reg__
- 1115 03ac 1486      		std Z+12,__zero_reg__
- 1116 03ae 1586      		std Z+13,__zero_reg__
- 1117 03b0 1686      		std Z+14,__zero_reg__
+ 1111               	.LM127:
+ 1112 03aa 1386      		std Z+11,__zero_reg__
+ 1113 03ac 1486      		std Z+12,__zero_reg__
+ 1114 03ae 1586      		std Z+13,__zero_reg__
+ 1115 03b0 1686      		std Z+14,__zero_reg__
  315:main.c        ****   TaskThree.period.nano_secs = 250*NANOS_PER_MS;
- 1119               	.LM129:
- 1120 03b2 C786      		std Z+15,r12
- 1121 03b4 D08A      		std Z+16,r13
- 1122 03b6 E18A      		std Z+17,r14
- 1123 03b8 F28A      		std Z+18,r15
+ 1117               	.LM128:
+ 1118 03b2 C786      		std Z+15,r12
+ 1119 03b4 D08A      		std Z+16,r13
+ 1120 03b6 E18A      		std Z+17,r14
+ 1121 03b8 F28A      		std Z+18,r15
  316:main.c        ****   TaskThree.cpu_reserve.secs = 0;
- 1125               	.LM130:
- 1126 03ba 138A      		std Z+19,__zero_reg__
- 1127 03bc 148A      		std Z+20,__zero_reg__
- 1128 03be 158A      		std Z+21,__zero_reg__
- 1129 03c0 168A      		std Z+22,__zero_reg__
- 317:main.c        ****   TaskThree.cpu_reserve.nano_secs = 250*NANOS_PER_MS;
- 1131               	.LM131:
- 1132 03c2 C78A      		std Z+23,r12
- 1133 03c4 D08E      		std Z+24,r13
- 1134 03c6 E18E      		std Z+25,r14
- 1135 03c8 F28E      		std Z+26,r15
+ 1123               	.LM129:
+ 1124 03ba 138A      		std Z+19,__zero_reg__
+ 1125 03bc 148A      		std Z+20,__zero_reg__
+ 1126 03be 158A      		std Z+21,__zero_reg__
+ 1127 03c0 168A      		std Z+22,__zero_reg__
+ 317:main.c        ****   TaskThree.cpu_reserve.nano_secs = 0*NANOS_PER_MS;
+ 1129               	.LM130:
+ 1130 03c2 178A      		std Z+23,__zero_reg__
+ 1131 03c4 108E      		std Z+24,__zero_reg__
+ 1132 03c6 118E      		std Z+25,__zero_reg__
+ 1133 03c8 128E      		std Z+26,__zero_reg__
  318:main.c        ****   TaskThree.offset.secs = 1;
- 1137               	.LM132:
- 1138 03ca 838E      		std Z+27,r8
- 1139 03cc 948E      		std Z+28,r9
- 1140 03ce A58E      		std Z+29,r10
- 1141 03d0 B68E      		std Z+30,r11
+ 1135               	.LM131:
+ 1136 03ca 838E      		std Z+27,r8
+ 1137 03cc 948E      		std Z+28,r9
+ 1138 03ce A58E      		std Z+29,r10
+ 1139 03d0 B68E      		std Z+30,r11
  319:main.c        ****   TaskThree.offset.nano_secs= 0;
- 1143               	.LM133:
- 1144 03d2 178E      		std Z+31,__zero_reg__
- 1145 03d4 10A2      		std Z+32,__zero_reg__
- 1146 03d6 11A2      		std Z+33,__zero_reg__
- 1147 03d8 12A2      		std Z+34,__zero_reg__
+ 1141               	.LM132:
+ 1142 03d2 178E      		std Z+31,__zero_reg__
+ 1143 03d4 10A2      		std Z+32,__zero_reg__
+ 1144 03d6 11A2      		std Z+33,__zero_reg__
+ 1145 03d8 12A2      		std Z+34,__zero_reg__
  320:main.c        ****   nrk_activate_task (&TaskThree);
- 1149               	.LM134:
- 1150 03da CF01      		movw r24,r30
- 1151               	/* epilogue start */
+ 1147               	.LM133:
+ 1148 03da CF01      		movw r24,r30
+ 1149               	/* epilogue start */
  321:main.c        **** }
- 1153               	.LM135:
- 1154 03dc CF91      		pop r28
- 1155 03de FF90      		pop r15
- 1156 03e0 EF90      		pop r14
- 1157 03e2 DF90      		pop r13
- 1158 03e4 CF90      		pop r12
- 1159 03e6 BF90      		pop r11
- 1160 03e8 AF90      		pop r10
- 1161 03ea 9F90      		pop r9
- 1162 03ec 8F90      		pop r8
+ 1151               	.LM134:
+ 1152 03dc CF91      		pop r28
+ 1153 03de FF90      		pop r15
+ 1154 03e0 EF90      		pop r14
+ 1155 03e2 DF90      		pop r13
+ 1156 03e4 CF90      		pop r12
+ 1157 03e6 BF90      		pop r11
+ 1158 03e8 AF90      		pop r10
+ 1159 03ea 9F90      		pop r9
+ 1160 03ec 8F90      		pop r8
  320:main.c        ****   nrk_activate_task (&TaskThree);
- 1164               	.LM136:
- 1165 03ee 0C94 0000 		jmp nrk_activate_task
- 1167               	.Lscope8:
- 1169               		.stabd	78,0,0
- 1170               		.section	.text.startup,"ax",@progbits
- 1172               	.global	main
- 1174               	main:
- 1175               		.stabd	46,0,0
- 128:main.c        ****   nrk_setup_ports();
- 1177               	.LM137:
- 1178               	.LFBB9:
- 1179               	/* prologue: function */
- 1180               	/* frame size = 0 */
- 1181               	/* stack size = 0 */
- 1182               	.L__stack_usage = 0
- 129:main.c        ****   nrk_setup_uart(UART_BAUDRATE_115K2);
- 1184               	.LM138:
- 1185 0000 0E94 0000 		call nrk_setup_ports
- 130:main.c        **** 
- 1187               	.LM139:
- 1188 0004 80E1      		ldi r24,lo8(16)
- 1189 0006 90E0      		ldi r25,0
- 1190 0008 0E94 0000 		call nrk_setup_uart
- 132:main.c        ****   sei();
- 1192               	.LM140:
- 1193 000c 0E94 0000 		call TWI_Master_Initialise
- 133:main.c        ****   /* initialize the adxl345 */
- 1195               	.LM141:
- 1196               	/* #APP */
- 1197               	 ;  133 "main.c" 1
- 1198 0010 7894      		sei
- 1199               	 ;  0 "" 2
- 135:main.c        ****   init_itg3200();
- 1201               	.LM142:
- 1202               	/* #NOAPP */
- 1203 0012 0E94 0000 		call init_adxl345
- 136:main.c        ****   init_hmc5843();
- 1205               	.LM143:
- 1206 0016 0E94 0000 		call init_itg3200
- 137:main.c        ****   
- 1208               	.LM144:
- 1209 001a 0E94 0000 		call init_hmc5843
- 139:main.c        **** 
- 1211               	.LM145:
- 1212 001e 0E94 0000 		call nrk_init
- 141:main.c        ****   nrk_led_clr(BLUE_LED);
- 1214               	.LM146:
- 1215 0022 82E0      		ldi r24,lo8(2)
- 1216 0024 90E0      		ldi r25,0
- 1217 0026 0E94 0000 		call nrk_led_clr
- 142:main.c        ****   nrk_led_clr(GREEN_LED);
- 1219               	.LM147:
- 1220 002a 83E0      		ldi r24,lo8(3)
- 1221 002c 90E0      		ldi r25,0
- 1222 002e 0E94 0000 		call nrk_led_clr
- 143:main.c        ****   nrk_led_clr(RED_LED);
- 1224               	.LM148:
- 1225 0032 81E0      		ldi r24,lo8(1)
- 1226 0034 90E0      		ldi r25,0
- 1227 0036 0E94 0000 		call nrk_led_clr
- 144:main.c        ****  
- 1229               	.LM149:
- 1230 003a 80E0      		ldi r24,0
- 1231 003c 90E0      		ldi r25,0
- 1232 003e 0E94 0000 		call nrk_led_clr
- 146:main.c        ****   nrk_create_taskset ();
- 1234               	.LM150:
- 1235 0042 20E0      		ldi r18,0
- 1236 0044 30E0      		ldi r19,0
- 1237 0046 A901      		movw r20,r18
- 1238 0048 60E0      		ldi r22,0
- 1239 004a 70E0      		ldi r23,0
- 1240 004c CB01      		movw r24,r22
- 1241 004e 0E94 0000 		call nrk_time_set
- 147:main.c        ****   nrk_start();
- 1243               	.LM151:
- 1244 0052 0E94 0000 		call nrk_create_taskset
- 148:main.c        ****   
- 1246               	.LM152:
- 1247 0056 0E94 0000 		call nrk_start
- 151:main.c        **** 
- 1249               	.LM153:
- 1250 005a 80E0      		ldi r24,0
- 1251 005c 90E0      		ldi r25,0
- 1252 005e 0895      		ret
- 1254               	.Lscope9:
- 1256               		.stabd	78,0,0
- 1257               		.comm	TaskThree,35,1
- 1258               		.comm	Stack3,128,1
- 1259               		.comm	TaskTwo,35,1
- 1260               		.comm	Stack2,128,1
- 1261               		.comm	TaskOne,35,1
- 1262               		.comm	Stack1,128,1
- 1263               		.comm	messageBuf,16,1
- 1264               		.comm	_nrk_stats_sleep_time,8,1
- 1265               		.comm	cur_task_stats,150,1
- 1266               		.comm	app_timer0_prescale,1,1
- 1267               		.comm	app_timer0_callback,2,1
- 1268               		.comm	_nrk_time_trigger,1,1
- 1269               		.comm	_nrk_prev_timer_val,1,1
- 1270               		.comm	error_num,1,1
- 1271               		.comm	error_task,1,1
- 1272               		.comm	nrk_kernel_stk_ptr,2,1
- 1273               		.comm	nrk_idle_task_stk,128,1
- 1274               		.comm	_nrk_signal_list,4,1
- 1293               		.text
- 1295               	.Letext0:
- 1296               		.ident	"GCC: (GNU) 4.9.1"
- 1297               	.global __do_copy_data
- 1298               	.global __do_clear_bss
+ 1162               	.LM135:
+ 1163 03ee 0C94 0000 		jmp nrk_activate_task
+ 1165               	.Lscope8:
+ 1167               		.stabd	78,0,0
+ 1168               		.section	.text.startup,"ax",@progbits
+ 1170               	.global	main
+ 1172               	main:
+ 1173               		.stabd	46,0,0
+ 129:main.c        ****   nrk_setup_ports();
+ 1175               	.LM136:
+ 1176               	.LFBB9:
+ 1177               	/* prologue: function */
+ 1178               	/* frame size = 0 */
+ 1179               	/* stack size = 0 */
+ 1180               	.L__stack_usage = 0
+ 130:main.c        ****   nrk_setup_uart(UART_BAUDRATE_115K2);
+ 1182               	.LM137:
+ 1183 0000 0E94 0000 		call nrk_setup_ports
+ 131:main.c        **** 
+ 1185               	.LM138:
+ 1186 0004 80E1      		ldi r24,lo8(16)
+ 1187 0006 90E0      		ldi r25,0
+ 1188 0008 0E94 0000 		call nrk_setup_uart
+ 133:main.c        ****   sei();
+ 1190               	.LM139:
+ 1191 000c 0E94 0000 		call TWI_Master_Initialise
+ 134:main.c        ****   nrk_led_set(RED_LED);
+ 1193               	.LM140:
+ 1194               	/* #APP */
+ 1195               	 ;  134 "main.c" 1
+ 1196 0010 7894      		sei
+ 1197               	 ;  0 "" 2
+ 135:main.c        ****   /* initialize the adxl345 */
+ 1199               	.LM141:
+ 1200               	/* #NOAPP */
+ 1201 0012 81E0      		ldi r24,lo8(1)
+ 1202 0014 90E0      		ldi r25,0
+ 1203 0016 0E94 0000 		call nrk_led_set
+ 137:main.c        ****   init_itg3200();
+ 1205               	.LM142:
+ 1206 001a 0E94 0000 		call init_adxl345
+ 138:main.c        ****   init_hmc5843();
+ 1208               	.LM143:
+ 1209 001e 0E94 0000 		call init_itg3200
+ 139:main.c        ****   nrk_init();
+ 1211               	.LM144:
+ 1212 0022 0E94 0000 		call init_hmc5843
+ 140:main.c        **** 
+ 1214               	.LM145:
+ 1215 0026 0E94 0000 		call nrk_init
+ 142:main.c        ****   nrk_led_clr(BLUE_LED);
+ 1217               	.LM146:
+ 1218 002a 83E0      		ldi r24,lo8(3)
+ 1219 002c 90E0      		ldi r25,0
+ 1220 002e 0E94 0000 		call nrk_led_clr
+ 143:main.c        ****   nrk_led_clr(GREEN_LED);
+ 1222               	.LM147:
+ 1223 0032 82E0      		ldi r24,lo8(2)
+ 1224 0034 90E0      		ldi r25,0
+ 1225 0036 0E94 0000 		call nrk_led_clr
+ 144:main.c        ****   nrk_led_clr(RED_LED);
+ 1227               	.LM148:
+ 1228 003a 80E0      		ldi r24,0
+ 1229 003c 90E0      		ldi r25,0
+ 1230 003e 0E94 0000 		call nrk_led_clr
+ 145:main.c        ****  
+ 1232               	.LM149:
+ 1233 0042 81E0      		ldi r24,lo8(1)
+ 1234 0044 90E0      		ldi r25,0
+ 1235 0046 0E94 0000 		call nrk_led_clr
+ 147:main.c        ****   nrk_create_taskset ();
+ 1237               	.LM150:
+ 1238 004a 20E0      		ldi r18,0
+ 1239 004c 30E0      		ldi r19,0
+ 1240 004e A901      		movw r20,r18
+ 1241 0050 60E0      		ldi r22,0
+ 1242 0052 70E0      		ldi r23,0
+ 1243 0054 CB01      		movw r24,r22
+ 1244 0056 0E94 0000 		call nrk_time_set
+ 148:main.c        ****   nrk_start();
+ 1246               	.LM151:
+ 1247 005a 0E94 0000 		call nrk_create_taskset
+ 149:main.c        ****   
+ 1249               	.LM152:
+ 1250 005e 0E94 0000 		call nrk_start
+ 152:main.c        **** 
+ 1252               	.LM153:
+ 1253 0062 80E0      		ldi r24,0
+ 1254 0064 90E0      		ldi r25,0
+ 1255 0066 0895      		ret
+ 1257               	.Lscope9:
+ 1259               		.stabd	78,0,0
+ 1260               		.comm	TaskThree,35,1
+ 1261               		.comm	Stack3,128,1
+ 1262               		.comm	TaskTwo,35,1
+ 1263               		.comm	Stack2,128,1
+ 1264               		.comm	TaskOne,35,1
+ 1265               		.comm	Stack1,128,1
+ 1266               		.comm	messageBuf,16,1
+ 1267               		.comm	_nrk_stats_sleep_time,8,1
+ 1268               		.comm	cur_task_stats,150,1
+ 1269               		.comm	app_timer0_prescale,1,1
+ 1270               		.comm	app_timer0_callback,2,1
+ 1271               		.comm	_nrk_time_trigger,1,1
+ 1272               		.comm	_nrk_prev_timer_val,1,1
+ 1273               		.comm	error_num,1,1
+ 1274               		.comm	error_task,1,1
+ 1275               		.comm	nrk_kernel_stk_ptr,2,1
+ 1276               		.comm	nrk_idle_task_stk,128,1
+ 1277               		.comm	_nrk_signal_list,4,1
+ 1296               		.text
+ 1298               	.Letext0:
+ 1299               		.ident	"GCC: (GNU) 4.9.1"
+ 1300               	.global __do_copy_data
+ 1301               	.global __do_clear_bss
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 main.c
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjj7Bjm.s:2      *ABS*:000000000000003e __SP_H__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjj7Bjm.s:3      *ABS*:000000000000003d __SP_L__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjj7Bjm.s:4      *ABS*:000000000000003f __SREG__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjj7Bjm.s:5      *ABS*:000000000000003b __RAMPZ__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjj7Bjm.s:6      *ABS*:0000000000000000 __tmp_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjj7Bjm.s:7      *ABS*:0000000000000001 __zero_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjj7Bjm.s:335    .text:0000000000000000 Task_Accelorometer
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccgCcQuS.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccgCcQuS.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccgCcQuS.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccgCcQuS.s:5      *ABS*:000000000000003b __RAMPZ__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccgCcQuS.s:6      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccgCcQuS.s:7      *ABS*:0000000000000001 __zero_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccgCcQuS.s:335    .text:0000000000000000 Task_Accelorometer
                             *COM*:0000000000000010 messageBuf
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjj7Bjm.s:455    .text:00000000000000a0 Task_Gyro
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjj7Bjm.s:575    .text:0000000000000140 Task_Magneto
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjj7Bjm.s:696    .text:00000000000001e0 TWI_Act_On_Failure_In_Last_Transmission
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjj7Bjm.s:746    .text:000000000000020e init_itg3200
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjj7Bjm.s:781    .text:0000000000000226 init_hmc5843
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjj7Bjm.s:815    .text:000000000000023c init_adxl345
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjj7Bjm.s:909    .text:0000000000000296 nrk_create_taskset
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccgCcQuS.s:455    .text:00000000000000a0 Task_Gyro
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccgCcQuS.s:575    .text:0000000000000140 Task_Magneto
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccgCcQuS.s:696    .text:00000000000001e0 TWI_Act_On_Failure_In_Last_Transmission
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccgCcQuS.s:744    .text:000000000000020e init_itg3200
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccgCcQuS.s:779    .text:0000000000000226 init_hmc5843
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccgCcQuS.s:813    .text:000000000000023c init_adxl345
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccgCcQuS.s:907    .text:0000000000000296 nrk_create_taskset
                             *COM*:0000000000000023 TaskOne
                             *COM*:0000000000000080 Stack1
                             *COM*:0000000000000023 TaskTwo
                             *COM*:0000000000000080 Stack2
                             *COM*:0000000000000023 TaskThree
                             *COM*:0000000000000080 Stack3
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccjj7Bjm.s:1174   .text.startup:0000000000000000 main
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccgCcQuS.s:1172   .text.startup:0000000000000000 main
                             *COM*:0000000000000008 _nrk_stats_sleep_time
                             *COM*:0000000000000096 cur_task_stats
                             *COM*:0000000000000001 app_timer0_prescale
@@ -1239,6 +1242,7 @@ nrk_activate_task
 nrk_setup_ports
 nrk_setup_uart
 TWI_Master_Initialise
+nrk_led_set
 nrk_init
 nrk_led_clr
 nrk_time_set

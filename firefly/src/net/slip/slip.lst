@@ -901,32 +901,32 @@
  1065               	.global __do_clear_bss
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 slip.c
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYypt3t.s:2      *ABS*:000000000000003e __SP_H__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYypt3t.s:3      *ABS*:000000000000003d __SP_L__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYypt3t.s:4      *ABS*:000000000000003f __SREG__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYypt3t.s:5      *ABS*:000000000000003b __RAMPZ__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYypt3t.s:6      *ABS*:0000000000000000 __tmp_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYypt3t.s:7      *ABS*:0000000000000001 __zero_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYypt3t.s:321    .text:0000000000000000 slip_init
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccL5SXfr.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccL5SXfr.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccL5SXfr.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccL5SXfr.s:5      *ABS*:000000000000003b __RAMPZ__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccL5SXfr.s:6      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccL5SXfr.s:7      *ABS*:0000000000000001 __zero_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccL5SXfr.s:321    .text:0000000000000000 slip_init
                             *COM*:0000000000000002 g_dv_in
                             *COM*:0000000000000002 g_dv_out
                             *COM*:0000000000000001 g_echo
                             *COM*:0000000000000001 g_delay
                             *COM*:0000000000000002 slip_tx_sem
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYypt3t.s:1036   .data:0000000000000000 _slip_started
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYypt3t.s:377    .text:0000000000000040 put_byte
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYypt3t.s:427    .text:0000000000000072 get_byte
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYypt3t.s:452    .text:0000000000000080 slip_tx
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYypt3t.s:1025   .progmem.data:000000000000009a __c.3285
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYypt3t.s:1021   .progmem.data:000000000000006c __c.3290
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYypt3t.s:627    .text:0000000000000152 slip_started
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYypt3t.s:653    .text:0000000000000158 slip_rx
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYypt3t.s:1028   .bss:0000000000000004 my_uart_rx_signal
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYypt3t.s:1017   .progmem.data:0000000000000050 __c.3305
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYypt3t.s:1013   .progmem.data:000000000000002b __c.3307
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccL5SXfr.s:1036   .data:0000000000000000 _slip_started
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccL5SXfr.s:377    .text:0000000000000040 put_byte
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccL5SXfr.s:427    .text:0000000000000072 get_byte
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccL5SXfr.s:452    .text:0000000000000080 slip_tx
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccL5SXfr.s:1025   .progmem.data:000000000000009a __c.3285
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccL5SXfr.s:1021   .progmem.data:000000000000006c __c.3290
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccL5SXfr.s:627    .text:0000000000000152 slip_started
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccL5SXfr.s:653    .text:0000000000000158 slip_rx
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccL5SXfr.s:1028   .bss:0000000000000004 my_uart_rx_signal
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccL5SXfr.s:1017   .progmem.data:0000000000000050 __c.3305
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccL5SXfr.s:1013   .progmem.data:000000000000002b __c.3307
                              .bss:0000000000000000 sm
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYypt3t.s:1009   .progmem.data:0000000000000019 __c.3316
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccYypt3t.s:1005   .progmem.data:0000000000000000 __c.3323
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccL5SXfr.s:1009   .progmem.data:0000000000000019 __c.3316
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccL5SXfr.s:1005   .progmem.data:0000000000000000 __c.3323
                             *COM*:0000000000000001 error_num
                             *COM*:0000000000000001 error_task
                             *COM*:0000000000000002 nrk_kernel_stk_ptr

@@ -66,6 +66,7 @@ int main (int argc, char *argv[])
 
   
   while (1) {
+ v=slipstream_send(buffer,strlen(buffer)+1);
     v=slipstream_receive( buffer );
     if (v > 0) {
       printf ("Host: ");
