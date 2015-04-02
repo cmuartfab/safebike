@@ -16,8 +16,13 @@ Make repos directory and cloned safebike repo. Remember that libswiftnav is a su
 
 Compile libswiftnav using their directions (on http://docs.swift-nav.com/libswiftnav/install.html).
 
-
-
 Resources:
 http://thethingsystem.com/dev/Bootstrapping-the-BeagleBone-Black-with-Debian.html
 
+
+# Piksi Setup
+
+Since we want to use the piksis to find ground truth on more than one moving object at the same time, we would like to set it up to have a base station that only transmits corrections and multiple rovers. To do this, we need to disable sending corrections back from the rovers. On each rover in settings, set the UARTA mask to 0 (64 by default to send position messages). Optionally, enable base station mode on the base station. Save the settings to flash.
+
+Resources:
+https://groups.google.com/forum/#!topic/swiftnav-discuss/CrtmUthvdVA
