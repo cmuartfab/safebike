@@ -796,23 +796,23 @@
  1093               	.global __do_clear_bss
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 nrk_ext_int.c
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmugoub.s:2      *ABS*:000000000000003e __SP_H__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmugoub.s:3      *ABS*:000000000000003d __SP_L__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmugoub.s:4      *ABS*:000000000000003f __SREG__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmugoub.s:5      *ABS*:000000000000003b __RAMPZ__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmugoub.s:6      *ABS*:0000000000000000 __tmp_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmugoub.s:7      *ABS*:0000000000000001 __zero_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmugoub.s:307    .text:0000000000000000 nrk_ext_int_enable
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmugoub.s:441    .text:0000000000000082 nrk_ext_int_disable
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmugoub.s:577    .text:0000000000000104 nrk_ext_int_configure
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccb5yz6D.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccb5yz6D.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccb5yz6D.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccb5yz6D.s:5      *ABS*:000000000000003b __RAMPZ__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccb5yz6D.s:6      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccb5yz6D.s:7      *ABS*:0000000000000001 __zero_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccb5yz6D.s:307    .text:0000000000000000 nrk_ext_int_enable
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccb5yz6D.s:441    .text:0000000000000082 nrk_ext_int_disable
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccb5yz6D.s:577    .text:0000000000000104 nrk_ext_int_configure
                             *COM*:0000000000000002 ext_int0_callback
                             *COM*:0000000000000002 ext_int1_callback
                             *COM*:0000000000000002 ext_int2_callback
                             *COM*:0000000000000002 pc_int0_callback
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmugoub.s:783    .text:0000000000000218 __vector_9
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmugoub.s:857    .text:000000000000027c __vector_1
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmugoub.s:931    .text:00000000000002e0 __vector_2
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmugoub.s:1005   .text:0000000000000344 __vector_3
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccb5yz6D.s:783    .text:0000000000000218 __vector_9
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccb5yz6D.s:857    .text:000000000000027c __vector_1
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccb5yz6D.s:931    .text:00000000000002e0 __vector_2
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccb5yz6D.s:1005   .text:0000000000000344 __vector_3
                             *COM*:0000000000000001 error_num
                             *COM*:0000000000000001 error_task
                             *COM*:0000000000000004 _nrk_signal_list

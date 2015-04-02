@@ -40,6 +40,7 @@
 #include <nrk_reserve.h>
 #include <bmac.h>
 #include <nrk_cfg.h>
+#include <basic_rf.h>
 
 
 #ifndef BMAC_STACKSIZE
@@ -558,8 +559,10 @@ uint8_t bmac_rx_failure_count_reset ()
 
 int8_t _bmac_tx ()
 {
-  uint8_t v, backoff, backoff_count;
+  uint8_t v, backoff, backoff_count, rf_tx_err;
   uint16_t b;
+
+  nrk_time_t curr_t, target_t, dummy_t;
 
 #ifdef DEBUG
   nrk_kprintf (PSTR ("_bmac_tx()\r\n"));
@@ -615,8 +618,20 @@ int8_t _bmac_tx ()
   ms += _bmac_check_period.nano_secs / 1000000;
   //printf( "CR ms: %u\n",ms );
   //target_t.nano_secs+=20*NANOS_PER_MS;
+  nrk_time_get(&curr_t);
+  target_t.secs = curr_t.secs;
+  target_t.nano_secs = curr_t.nano_secs + (ms * NANOS_PER_MS);
+  nrk_time_compact_nanos(&target_t);
+  
   rf_rx_on ();
-  pkt_got_ack = rf_tx_packet_repeat (&bmac_rfTxInfo, ms);
+  pkt_got_ack = rf_tx_packet(&bmac_rfTxInfo);
+  rf_pll_on();
+  do{
+    rf_tx_err = rf_tx_packet_resend();
+    if(rf_tx_err == NRK_OK) pkt_got_ack = NRK_OK;
+    nrk_time_get(&curr_t);
+  }while(nrk_time_sub(&dummy_t, target_t, curr_t) != NRK_ERROR);
+
 
   // send packet
   // pkt_got_ack=rf_tx_packet (&bmac_rfTxInfo);

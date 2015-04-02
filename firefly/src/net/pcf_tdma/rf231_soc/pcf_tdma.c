@@ -524,8 +524,9 @@ void tdma_nw_task ()
         // Upstream data slot
         // This configures the packet receive interrupt to call the _tdma_rx_master function
         // The _tdma_rx_master function triggers a signal to the tdma_rx function.
-        //rf_rx_on();
-	rx_end_callback(&_tdma_rx_master);
+        // rf_rx_on();
+	// rx_end_callback(&_tdma_rx_master);
+        _tdma_rx_master();
         if (v == 1)
           tdma_last_tx_slot = slot;
       }
@@ -684,7 +685,7 @@ int8_t _tdma_rx_master ()
   int8_t v, i;
   static uint8_t cnt=0;
   v = 0;
-
+  
   if (tdma_rx_buf_empty != 1) {
     rf_rx_off();
     rf_rx_on();

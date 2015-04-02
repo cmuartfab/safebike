@@ -32,7 +32,7 @@
 #include <nrk_stats.h>
 #include <pcf_tdma.h>
 #include <TWI_Master.h>
-
+#include <tdma_cons.h>
 
 // Constants for the accelrometer
 //There are 6 data registers, they are sequential starting 
@@ -75,10 +75,12 @@ tdma_info rx_tdma_fd;
 uint8_t i2c_buf[16];
 uint8_t tx_buf[TDMA_MAX_PKT_SIZE];
 uint8_t rx_buf[TDMA_MAX_PKT_SIZE];
+uint8_t tx_len;
 unsigned int sequenceNo; 
 bool packetReady;
 uint16_t mac_address;
 
+uint8_t aes_key[] = {0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xaa,0xbb,0xcc,0xdd,0xee, 0xff};
 
 
 unsigned char TWI_Act_On_Failure_In_Last_Transmission ( unsigned char TWIerrorMsg )
@@ -125,11 +127,18 @@ main ()
   nrk_setup_ports();
   nrk_setup_uart(UART_BAUDRATE_115K2);
 
+  tdma_init (TDMA_CLIENT, DEFAULT_CHANNEL, mac_address);
+
+  tdma_aes_setkey(aes_key);
+  tdma_aes_enable();
+
+  tdma_tx_slot_add (mac_address&0xFFFF);
+
   TWI_Master_Initialise();
   sei();
-  init_adxl345();
-  init_itg3200();
-  init_hmc5843();
+  // init_adxl345();
+  // init_itg3200();
+  // init_hmc5843();
   /* initialize sequence number, used to sync with master */
   sequenceNo = 0; 
 
@@ -137,6 +146,8 @@ main ()
   packetReady = true;
   
   nrk_init();
+
+  mac_address = CLIENT_MAC;
 
   nrk_led_clr(ORANGE_LED);
   nrk_led_clr(BLUE_LED);
@@ -197,11 +208,24 @@ void task_imu(){
   while(1){
     packetReady = false;
     i = 0;
+    tx_buf[i++] = NODE_ADDR;
     tx_buf[i++] = sequenceNo++;
 
+    //debugging start
+    for (int i = 2; i < 20; i++){
+      tx_buf[i] = i;
+    }
+    packetReady = true;
+    tx_len = 20;
+    nrk_wait_until_next_period();
+  }
+    //debugging end
+    while(1){
+    
     i2c_buf[0] = (ADXL345_ADDRESS) | (FALSE<<TWI_READ_BIT);
     i2c_buf[1] = ADXL345_REGISTER_XLSB;
     TWI_Start_Transceiver_With_Data(i2c_buf, 2);
+
 
     /* Read first byte */
     i2c_buf[0] = (ADXL345_ADDRESS) | (TRUE<<TWI_READ_BIT);
@@ -234,6 +258,7 @@ void task_imu(){
     for (count = 0; count < HMC5843_SIZE; count++){
       tx_buf[i++] = i2c_buf[count+1];
     }
+    tx_len = i;
     packetReady = true;
     nrk_wait_until_next_period();
   }
@@ -244,28 +269,43 @@ void tx_task ()
 {
   int8_t v;
   uint8_t len, cnt;
+  nrk_time_t t;
 
 
   printf ("Tx Task PID=%u\r\n", nrk_get_pid ());
+  t.secs = 5;
+  t.nano_secs = 0;
 
-  while (!tdma_started() && !packetReady)
+  // // setup a software watch dog timer
+  nrk_sw_wdt_init(0, &t, NULL);
+  nrk_sw_wdt_start(0);
+
+
+  while (!tdma_started())
     nrk_wait_until_next_period ();
 
   cnt = 0;
 
   while (1) {
-    nrk_led_clr(GREEN_LED);
+    // Update watchdog timer
+    nrk_sw_wdt_update(0);
+    nrk_led_set(RED_LED);
 
-    sprintf (tx_buf, "Node MAC: %u cnt: %d\n", mac_address, cnt);
-    cnt++;
-    len = strlen (tx_buf) + 1;
+    // if sensor data hasn't been gathered yet
+    if (!packetReady)
+     nrk_wait_until_next_period();
 
-    v = tdma_send (&tx_tdma_fd, &tx_buf, len, TDMA_BLOCKING);
+    //sprintf(tx_buf,"Hello from %d\r\n",mac_address);
+
+    //tx_len = strlen(tx_buf);
+    
+    nrk_led_clr(RED_LED);
+    v = tdma_send (&tx_tdma_fd, &tx_buf, 20, TDMA_BLOCKING);
     if (v == NRK_OK) {
-      nrk_led_set(GREEN_LED);
-      nrk_kprintf (PSTR ("App tx_buf Sent\n"));
+      nrk_kprintf (PSTR ("App tx_buf Sent\r\n"));
     }
-    nrk_wait_until_next_period();
+    else
+      printf("packet sending error!\r\n");
   }
 }
 
@@ -283,41 +323,36 @@ void rx_task ()
 
 
   printf ("RX Task PID=%u\r\n", nrk_get_pid ());
-  // t.secs = 5;
-  // t.nano_secs = 0;
 
-  // // setup a software watch dog timer
-  // nrk_sw_wdt_init(0, &t, NULL);
-  // nrk_sw_wdt_start(0);
+  tdma_init (TDMA_CLIENT, DEFAULT_CHANNEL, mac_address);
 
-  mac_address = 1;
+  // tdma_aes_setkey(aes_key);
+  // tdma_aes_enable();
 
-  tdma_init (TDMA_CLIENT, 13, mac_address);
 
 
   while (!tdma_started ())
     nrk_wait_until_next_period ();
 
-  v = tdma_tx_slot_add (mac_address);
+  v = tdma_tx_slot_add (mac_address&0xFFFF);
 
   if (v != NRK_OK)
     nrk_kprintf (PSTR ("Could not add slot!\r\n"));
 
   while (1) {
-    nrk_led_clr(BLUE_LED);
-    // Update watchdog timer
-    // nrk_sw_wdt_update(0);
+
     v = tdma_recv (&rx_tdma_fd, &rx_buf, &len, TDMA_BLOCKING);
     if (v == NRK_OK) {
-      printf ("src: %u\r\nrssi: %d\r\n", rx_tdma_fd.src, rx_tdma_fd.rssi);
-      printf ("slot: %u\r\n", rx_tdma_fd.slot);
-      printf ("cycle len: %u\r\n", rx_tdma_fd.cycle_size);
-      printf ("len: %u\r\npayload: ", len);
-      for (i = 0; i < len; i++)
-        printf ("%c", rx_buf[i]);
-      printf ("\r\n");
-      nrk_led_set(BLUE_LED);
+      // printf ("src: %u\r\nrssi: %d\r\n", rx_tdma_fd.src, rx_tdma_fd.rssi);
+      // printf ("slot: %u\r\n", rx_tdma_fd.slot);
+      // printf ("cycle len: %u\r\n", rx_tdma_fd.cycle_size);
+      // printf ("len: %u\r\npayload: ", len);
+      // for (i = 0; i < len; i++)
+        // printf ("%c", rx_buf[i]);
+      // printf ("\r\n");
     }
+    else
+      printf("packet receiving error!\r\n");
 
      nrk_wait_until_next_period();
   }
@@ -330,31 +365,31 @@ nrk_create_taskset()
 {
   nrk_task_set_entry_function( &TaskOne, task_imu);
   nrk_task_set_stk( &TaskOne, Stack1, NRK_APP_STACKSIZE);
-  TaskOne.prio = 1;
+  TaskOne.prio = 2;
   TaskOne.FirstActivation = TRUE;
   TaskOne.Type = BASIC_TASK;
   TaskOne.SchType = PREEMPTIVE;
   TaskOne.period.secs = 0;
   TaskOne.period.nano_secs = 250 * NANOS_PER_MS;
   TaskOne.cpu_reserve.secs = 0;
-  TaskOne.cpu_reserve.nano_secs = 30 * NANOS_PER_MS;
+  TaskOne.cpu_reserve.nano_secs = 100 * NANOS_PER_MS;
   TaskOne.offset.secs = 1;
   TaskOne.offset.nano_secs= 0;
   nrk_activate_task (&TaskOne);
 
-  nrk_task_set_entry_function (&rx_task_info, rx_task);
-  nrk_task_set_stk (&rx_task_info, rx_task_stack, NRK_APP_STACKSIZE);
-  rx_task_info.prio = 1;
-  rx_task_info.FirstActivation = TRUE;
-  rx_task_info.Type = BASIC_TASK;
-  rx_task_info.SchType = PREEMPTIVE;
-  rx_task_info.period.secs = 0;
-  rx_task_info.period.nano_secs = 250 * NANOS_PER_MS;
-  rx_task_info.cpu_reserve.secs = 0;
-  rx_task_info.cpu_reserve.nano_secs = 100 * NANOS_PER_MS;
-  rx_task_info.offset.secs = 0;
-  rx_task_info.offset.nano_secs = 0;
-  nrk_activate_task (&rx_task_info);
+  // nrk_task_set_entry_function (&rx_task_info, rx_task);
+  // nrk_task_set_stk (&rx_task_info, rx_task_stack, NRK_APP_STACKSIZE);
+  // rx_task_info.prio = 1;
+  // rx_task_info.FirstActivation = TRUE;
+  // rx_task_info.Type = BASIC_TASK;
+  // rx_task_info.SchType = PREEMPTIVE;
+  // rx_task_info.period.secs = 0;
+  // rx_task_info.period.nano_secs = 25 * NANOS_PER_MS;
+  // rx_task_info.cpu_reserve.secs = 0;
+  // rx_task_info.cpu_reserve.nano_secs = 30 * NANOS_PER_MS;
+  // rx_task_info.offset.secs = 0;
+  // rx_task_info.offset.nano_secs = 0;
+  // nrk_activate_task (&rx_task_info);
 
   nrk_task_set_entry_function (&tx_task_info, tx_task);
   nrk_task_set_stk (&tx_task_info, tx_task_stack, NRK_APP_STACKSIZE);

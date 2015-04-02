@@ -90,9 +90,10 @@ uint8_t rx_ctr[4];
 
 volatile RF_SETTINGS rfSettings;
 uint8_t rf_ready;
+volatile uint8_t rx_ready;
+volatile uint8_t tx_done;
 uint8_t use_glossy;
 
-nrk_time_t curr_t, target_t, dummy_t;
 
 volatile void (*rx_start_func)(void) = 0;
 volatile void (*rx_end_func)(void) = 0;
@@ -170,6 +171,11 @@ static void rf_cmd(uint8_t cmd)
 	while((TRX_STATUS & 0x1F) == STATE_TRANSITION_IN_PROGRESS)
 		continue;
 	TRX_STATE = cmd;
+}
+
+void rf_pll_on()
+{
+   rf_cmd(PLL_ON);
 }
 
 
@@ -287,10 +293,9 @@ void rf_init(RF_RX_INFO *pRRI, uint8_t channel, uint16_t panId, uint16_t myAddr)
 	XAH_CTRL_0 = (0 << MAX_FRAME_RETRIES0) | (0 << MAX_CSMA_RETRIES0)
 			| (0 << SLOTTED_OPERATION);
    
-   /* Interrupts disabled by default, basic_rf does not rely on them */
-	/* IRQ_MASK = (1 << AWAKE_EN) | (1 << TX_END_EN) | (1 << AMI_EN) | (1 << CCA_ED_DONE_EN)
-			| (1 << RX_END_EN) | (1 << RX_START_EN) | (1 << PLL_UNLOCK_EN) | (1 << PLL_LOCK_EN); */
-	IRQ_MASK = (1 << RX_START_EN);
+   /* Enable all radio interrupts */
+	IRQ_MASK = (1 << AWAKE_EN) | (1 << TX_END_EN) | (1 << AMI_EN) | (1 << CCA_ED_DONE_EN)
+			| (1 << RX_END_EN) | (1 << RX_START_EN) | (1 << PLL_UNLOCK_EN) | (1 << PLL_LOCK_EN);
 
 	/* Initialize settings struct */
 	rfSettings.pRxInfo = pRRI;
@@ -301,6 +306,8 @@ void rf_init(RF_RX_INFO *pRRI, uint8_t channel, uint16_t panId, uint16_t myAddr)
 	rfSettings.receiveOn = 0;
 
 	rf_ready = 1;
+   rx_ready = 0;
+   tx_done = 0;
 
 	use_glossy = 0;
 
@@ -378,7 +385,8 @@ void rf_rx_off(void)
 #endif
   //	DISABLE_FIFOP_INT();
 */
-	rf_cmd(TRX_OFF);
+   rf_cmd(TRX_OFF);
+   rx_ready = 0;
 }
 
 
@@ -493,15 +501,14 @@ uint8_t rf_tx_packet(RF_TX_INFO *pRTI)
 		rf_cc2591_tx_on();
 #endif
 
+   tx_done = 0;
    // Send packet. 0x2 is equivalent to TX_START
    rf_cmd(0x2);
-   for(i=0; i<65000; i++){
-      if(IRQ_STATUS & (1 << TX_END)){
-         break;
-      }
+   for(i=0; (i<65000) && !tx_done; i++){
+      continue;
    }
-   IRQ_STATUS = 1 << TX_END;
 
+   /* note error if ACK requested and not received */
 	trx_error = ((pRTI->ackRequest && 
 			(((TRX_STATE >> TRAC_STATUS0) & 0x7) != 0))
 			|| (i == 65000)) ? NRK_ERROR : NRK_OK;
@@ -512,6 +519,23 @@ uint8_t rf_tx_packet(RF_TX_INFO *pRTI)
 #endif
 
 	return trx_error;
+}
+
+
+/* Resends the packet in the buffer */
+uint8_t rf_tx_packet_resend()
+{
+   uint8_t trx_error;
+   uint16_t i;
+
+   tx_done = 0;
+   // Send packet. 0x2 is equivalent to TX_START
+   rf_cmd(0x2);
+   for(i=0; (i<65000) && !tx_done; i++)
+      continue;
+   trx_error = (i == 65000) ? NRK_ERROR : NRK_OK;
+
+   return trx_error;
 }
 
 
@@ -567,16 +591,11 @@ int8_t rf_rx_packet_nonblock()
 	if(!rf_ready)
 		return NRK_ERROR;
 
-   if(!(IRQ_STATUS & (1 << RX_END))){
+   if(!rx_ready)
       return 0;
-   }
-   if(!(PHY_RSSI & (1 << RX_CRC_VALID))){
-      return 0;
-   }
-   if((TST_RX_LENGTH - 2) > rfSettings.pRxInfo->max_length)
+   else if((TST_RX_LENGTH - 2) > rfSettings.pRxInfo->max_length)
 		return NRK_ERROR;
 
-   IRQ_STATUS = (1 << RX_END);
 
 	ieee_mac_frame_header_t *machead = frame_start;
 
@@ -586,7 +605,8 @@ int8_t rf_rx_packet_nonblock()
 
 	if((rfSettings.pRxInfo->length > rfSettings.pRxInfo->max_length)
 			|| (rfSettings.pRxInfo->length < 0)){
-		TRX_CTRL_2 &= ~(1 << RX_SAFE_MODE);
+		rx_ready = 0;
+      TRX_CTRL_2 &= ~(1 << RX_SAFE_MODE);
 		TRX_CTRL_2 |= (1 << RX_SAFE_MODE);
 		return NRK_ERROR;
 	}
@@ -619,7 +639,8 @@ int8_t rf_rx_packet_nonblock()
 	rfSettings.pRxInfo->linkQualityIndication = *(frame_start + TST_RX_LENGTH);
 
 	/* Reset frame buffer protection */
-	TRX_CTRL_2 &= ~(1 << RX_SAFE_MODE);
+	rx_ready = 0;
+   TRX_CTRL_2 &= ~(1 << RX_SAFE_MODE);
 	TRX_CTRL_2 |= (1 << RX_SAFE_MODE);
 
 	return NRK_OK;
@@ -638,7 +659,12 @@ SIGNAL(TRX24_RX_END_vect)
 			vprintf("\r\n");
 	}
 	vprintf("\r\n");
-	
+
+   if((PHY_RSSI >> RX_CRC_VALID) & 0x1){
+      rx_ready = 1;
+   } else {
+      printf("RX end failed checksum!\r\n");
+   }
    IRQ_STATUS = (1 << RX_END);
 	
 	if((PHY_RSSI >> RX_CRC_VALID) & 0x1) {
@@ -666,7 +692,8 @@ SIGNAL(TRX24_AWAKE_vect)
 SIGNAL(TRX24_TX_END_vect)
 {
 	vprintf("TX_END IRQ!\r\n");
-	IRQ_STATUS = (1 << TX_END);
+	tx_done = 1;
+   IRQ_STATUS = (1 << TX_END);
 
 #ifdef RADIO_CC2591
 	rf_cc2591_rx_on();

@@ -188,8 +188,9 @@ void rf_set_cca_thresh(int8_t t);
 //-------------------------------------------------------------------------------------------------------
 
 uint8_t rf_tx_packet(RF_TX_INFO *pRTI);
-uint8_t rf_tx_packet_repeat(RF_TX_INFO *pRTI, uint16_t ms);
+uint8_t rf_tx_packet_resend();
 int8_t rf_cca_check();
+void rf_pll_on();
 
 /* NOT IMPLEMENTED
 uint8_t rf_tx_tdma_packet(RF_TX_INFO *pRTI, uint16_t slot_start_time, uint16_t tx_guard_time); 

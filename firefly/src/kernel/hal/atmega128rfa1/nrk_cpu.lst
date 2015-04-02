@@ -414,7 +414,7 @@
  168:../../src/kernel/hal/atmega128rfa1/nrk_cpu.c ****         *stkc = STK_CANARY_VAL;
  628               	.LM38:
  629 00f0 85E5      		ldi r24,lo8(85)
- 630 00f2 8093 FE40 		sts 16638,r24
+ 630 00f2 8093 7E41 		sts 16766,r24
  169:../../src/kernel/hal/atmega128rfa1/nrk_cpu.c ****         stkc = (unsigned char *)NRK_KERNEL_STK_TOP;
  170:../../src/kernel/hal/atmega128rfa1/nrk_cpu.c ****         nrk_kernel_stk_ptr = (unsigned char *)NRK_KERNEL_STK_TOP;
  632               	.LM39:
@@ -516,22 +516,22 @@
  742               	.global __do_clear_bss
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 nrk_cpu.c
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccrS9inh.s:2      *ABS*:000000000000003e __SP_H__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccrS9inh.s:3      *ABS*:000000000000003d __SP_L__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccrS9inh.s:4      *ABS*:000000000000003f __SREG__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccrS9inh.s:5      *ABS*:000000000000003b __RAMPZ__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccrS9inh.s:6      *ABS*:0000000000000000 __tmp_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccrS9inh.s:7      *ABS*:0000000000000001 __zero_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccrS9inh.s:322    .text:0000000000000000 nrk_battery_save
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccrS9inh.s:339    .text:0000000000000002 nrk_sleep
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccrS9inh.s:376    .text:000000000000001a nrk_idle
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccrS9inh.s:414    .text:0000000000000030 nrk_task_set_entry_function
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccrS9inh.s:439    .text:0000000000000038 nrk_task_set_stk
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccrS9inh.s:498    .text:0000000000000074 nrk_task_stk_init
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccrS9inh.s:618    .text:00000000000000f0 nrk_stack_pointer_init
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc0BrUDF.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc0BrUDF.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc0BrUDF.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc0BrUDF.s:5      *ABS*:000000000000003b __RAMPZ__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc0BrUDF.s:6      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc0BrUDF.s:7      *ABS*:0000000000000001 __zero_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc0BrUDF.s:322    .text:0000000000000000 nrk_battery_save
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc0BrUDF.s:339    .text:0000000000000002 nrk_sleep
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc0BrUDF.s:376    .text:000000000000001a nrk_idle
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc0BrUDF.s:414    .text:0000000000000030 nrk_task_set_entry_function
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc0BrUDF.s:439    .text:0000000000000038 nrk_task_set_stk
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc0BrUDF.s:498    .text:0000000000000074 nrk_task_stk_init
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc0BrUDF.s:618    .text:00000000000000f0 nrk_stack_pointer_init
                             *COM*:0000000000000002 nrk_kernel_stk_ptr
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccrS9inh.s:653    .text:000000000000010e nrk_stack_pointer_restore
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccrS9inh.s:678    .text:000000000000011c nrk_target_start
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc0BrUDF.s:653    .text:000000000000010e nrk_stack_pointer_restore
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cc0BrUDF.s:678    .text:000000000000011c nrk_target_start
                             *COM*:0000000000000001 error_num
                             *COM*:0000000000000001 error_task
                             *COM*:0000000000000001 app_timer0_prescale

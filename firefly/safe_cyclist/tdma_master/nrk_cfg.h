@@ -31,6 +31,11 @@
 //#define NRK_SOFT_REBOOT_ON_ERROR
 
 
+// This must be greater than or equal to the highest priority task that uses
+// the serial port (i.e. print of nrk_kprintf)
+#define SLIP_PCP_CEILING		18	
+
+
 #define NRK_STATS_TRACKER
 
 #define NRK_SW_WDT
@@ -61,7 +66,7 @@
 #define NRK_TASK_IDLE_STK_SIZE         128 // Idle task stack size min=32 
 #define NRK_APP_STACKSIZE              256 
 #define NRK_KERNEL_STACKSIZE           256 
-#define NRK_MAX_RESOURCE_CNT           1
+#define NRK_MAX_RESOURCE_CNT           2  //slip uses one too!
 
 
 #endif

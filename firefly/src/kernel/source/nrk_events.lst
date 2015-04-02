@@ -1463,30 +1463,30 @@
  1630               	.global __do_clear_bss
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 nrk_events.c
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccbXWpNs.s:2      *ABS*:000000000000003e __SP_H__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccbXWpNs.s:3      *ABS*:000000000000003d __SP_L__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccbXWpNs.s:4      *ABS*:000000000000003f __SREG__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccbXWpNs.s:5      *ABS*:000000000000003b __RAMPZ__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccbXWpNs.s:6      *ABS*:0000000000000000 __tmp_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccbXWpNs.s:7      *ABS*:0000000000000001 __zero_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccbXWpNs.s:324    .text:0000000000000000 nrk_signal_create
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cck2jlxO.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cck2jlxO.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cck2jlxO.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cck2jlxO.s:5      *ABS*:000000000000003b __RAMPZ__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cck2jlxO.s:6      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cck2jlxO.s:7      *ABS*:0000000000000001 __zero_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cck2jlxO.s:324    .text:0000000000000000 nrk_signal_create
                             *COM*:0000000000000004 _nrk_signal_list
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccbXWpNs.s:412    .text:0000000000000072 nrk_signal_get_registered_mask
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cck2jlxO.s:412    .text:0000000000000072 nrk_signal_get_registered_mask
                             *COM*:0000000000000002 nrk_cur_task_TCB
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccbXWpNs.s:440    .text:0000000000000084 nrk_signal_delete
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cck2jlxO.s:440    .text:0000000000000084 nrk_signal_delete
                             *COM*:00000000000000d7 nrk_task_TCB
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccbXWpNs.s:635    .text:00000000000001a2 nrk_signal_unregister
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccbXWpNs.s:735    .text:0000000000000220 nrk_signal_register
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccbXWpNs.s:811    .text:0000000000000284 nrk_event_signal
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccbXWpNs.s:1002   .text:0000000000000366 nrk_event_wait
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cck2jlxO.s:635    .text:00000000000001a2 nrk_signal_unregister
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cck2jlxO.s:735    .text:0000000000000220 nrk_signal_register
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cck2jlxO.s:811    .text:0000000000000284 nrk_event_signal
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cck2jlxO.s:1002   .text:0000000000000366 nrk_event_wait
                             *COM*:0000000000000001 nrk_wakeup_signal
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccbXWpNs.s:1093   .text:00000000000003da nrk_sem_create
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccbXWpNs.s:1115   .text:00000000000003e0 nrk_get_resource_index
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cck2jlxO.s:1093   .text:00000000000003da nrk_sem_create
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cck2jlxO.s:1115   .text:00000000000003e0 nrk_get_resource_index
                             *COM*:0000000000000003 nrk_sem_list
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccbXWpNs.s:1145   .text:00000000000003f0 nrk_sem_query
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccbXWpNs.s:1206   .text:0000000000000424 nrk_sem_pend
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccbXWpNs.s:1351   .text:00000000000004e2 nrk_sem_post
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccbXWpNs.s:1509   .text:000000000000059e nrk_sem_delete
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cck2jlxO.s:1145   .text:00000000000003f0 nrk_sem_query
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cck2jlxO.s:1206   .text:0000000000000424 nrk_sem_pend
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cck2jlxO.s:1351   .text:00000000000004e2 nrk_sem_post
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cck2jlxO.s:1509   .text:000000000000059e nrk_sem_delete
                             *COM*:0000000000000001 _nrk_resource_cnt
                             *COM*:0000000000000008 nrk_system_time
                             *COM*:0000000000000002 nrk_high_ready_TCB
