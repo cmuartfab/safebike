@@ -39,12 +39,13 @@
 //with the LSB of X.  We'll read all 6 in a burst and won't
 //address them individually
 #define ADXL345_REGISTER_XLSB 0x32
-
+#define ADXL_REGISTER_DTFMT 0x31
 //Need to set power control bit to wake up the adxl345
 #define ADXL_REGISTER_PWRCTL 0x2D
 #define ADXL_REGISTER_FIFOCTL 0x38
 #define ADXL_FIFOCTL_STREAM 1<<7
 #define ADXL_PWRCTL_MEASURE 1 << 3
+#define ADXL_16G_DTFMT 0x0F
 #define ADXL_PWRCTL_STBY 0
 #define ADXL345_ADDRESS 0xA6
 #define ADXL_SIZE 6
@@ -129,21 +130,21 @@ main ()
 
   tdma_init (TDMA_CLIENT, DEFAULT_CHANNEL, mac_address);
 
-  tdma_aes_setkey(aes_key);
-  tdma_aes_enable();
+  //tdma_aes_setkey(aes_key);
+  //tdma_aes_enable();
 
   tdma_tx_slot_add (mac_address&0xFFFF);
 
   TWI_Master_Initialise();
   sei();
-  // init_adxl345();
-  // init_itg3200();
-  // init_hmc5843();
+  init_adxl345();
+  init_itg3200();
+  init_hmc5843();
   /* initialize sequence number, used to sync with master */
   sequenceNo = 0; 
 
   /* initialize tx_buf ready flag */
-  packetReady = true;
+  packetReady = false;
   
   nrk_init();
 
@@ -193,6 +194,11 @@ void init_adxl345() {
   i2c_buf[2] = ADXL_FIFOCTL_STREAM;
   TWI_Start_Transceiver_With_Data(i2c_buf,3);
 
+  /* set data format to full resolution +-16g */
+  i2c_buf[0] = ADXL345_ADDRESS | FALSE<<TWI_READ_BIT;
+  i2c_buf[1] = ADXL_REGISTER_DTFMT;
+  i2c_buf[2] = ADXL_16G_DTFMT;
+  TWI_Start_Transceiver_With_Data(i2c_buf,3);
 
   /* set to measure mode */
   i2c_buf[0] = ADXL345_ADDRESS | FALSE<<TWI_READ_BIT;
@@ -204,23 +210,13 @@ void init_adxl345() {
 void task_imu(){
   unsigned int i;
   unsigned int count;
+  int v;
   
   while(1){
     packetReady = false;
     i = 0;
     tx_buf[i++] = NODE_ADDR;
     tx_buf[i++] = sequenceNo++;
-
-    //debugging start
-    for (int i = 2; i < 20; i++){
-      tx_buf[i] = i;
-    }
-    packetReady = true;
-    tx_len = 20;
-    nrk_wait_until_next_period();
-  }
-    //debugging end
-    while(1){
     
     i2c_buf[0] = (ADXL345_ADDRESS) | (FALSE<<TWI_READ_BIT);
     i2c_buf[1] = ADXL345_REGISTER_XLSB;
@@ -229,8 +225,9 @@ void task_imu(){
 
     /* Read first byte */
     i2c_buf[0] = (ADXL345_ADDRESS) | (TRUE<<TWI_READ_BIT);
-    TWI_Start_Transceiver_With_Data(i2c_buf, 7);
 
+    TWI_Start_Transceiver_With_Data(i2c_buf, 7);
+    TWI_Get_Data_From_Transceiver(i2c_buf,7);
     for (count = 0; count < ADXL_SIZE; count++){
       tx_buf[i++] = i2c_buf[count+1];
     }
@@ -242,7 +239,7 @@ void task_imu(){
     /* Read first byte */
     i2c_buf[0] = (ITG3200_ADDRESS) | (TRUE<<TWI_READ_BIT);
     TWI_Start_Transceiver_With_Data(i2c_buf, 7);
-
+    TWI_Get_Data_From_Transceiver(i2c_buf,7);
     for (count = 0; count < ITG3200_SIZE; count++){
       tx_buf[i++] = i2c_buf[count+1];
     }
@@ -254,7 +251,7 @@ void task_imu(){
     /* Read first byte */
     i2c_buf[0] = (HMC5843_ADDRESS) | (TRUE<<TWI_READ_BIT);
     TWI_Start_Transceiver_With_Data(i2c_buf, 7);
-
+    TWI_Get_Data_From_Transceiver(i2c_buf,7);
     for (count = 0; count < HMC5843_SIZE; count++){
       tx_buf[i++] = i2c_buf[count+1];
     }
@@ -268,7 +265,7 @@ void task_imu(){
 void tx_task ()
 {
   int8_t v;
-  uint8_t len, cnt;
+  uint8_t cnt;
   nrk_time_t t;
 
 
@@ -294,67 +291,18 @@ void tx_task ()
     // if sensor data hasn't been gathered yet
     if (!packetReady)
      nrk_wait_until_next_period();
-
-    //sprintf(tx_buf,"Hello from %d\r\n",mac_address);
-
-    //tx_len = strlen(tx_buf);
     
     nrk_led_clr(RED_LED);
-    v = tdma_send (&tx_tdma_fd, &tx_buf, 20, TDMA_BLOCKING);
+    v = tdma_send (&tx_tdma_fd, &tx_buf, tx_len, TDMA_BLOCKING);
     if (v == NRK_OK) {
-      nrk_kprintf (PSTR ("App tx_buf Sent\r\n"));
+      //nrk_kprintf (PSTR ("App tx_buf Sent\r\n"));
+      //for (int i = 0; i < tx_len; i++){
+        //printf("%d",tx_buf[i]);
+      //}
+      //printf("\n");
     }
     else
       printf("packet sending error!\r\n");
-  }
-}
-
-void rx_task ()
-{
-  nrk_time_t t;
-  uint16_t cnt;
-  int8_t v;
-  uint8_t len, i;
-
-
-  cnt = 0;
-  nrk_kprintf (PSTR ("Nano-RK Version "));
-  printf ("%d\r\n", NRK_VERSION);
-
-
-  printf ("RX Task PID=%u\r\n", nrk_get_pid ());
-
-  tdma_init (TDMA_CLIENT, DEFAULT_CHANNEL, mac_address);
-
-  // tdma_aes_setkey(aes_key);
-  // tdma_aes_enable();
-
-
-
-  while (!tdma_started ())
-    nrk_wait_until_next_period ();
-
-  v = tdma_tx_slot_add (mac_address&0xFFFF);
-
-  if (v != NRK_OK)
-    nrk_kprintf (PSTR ("Could not add slot!\r\n"));
-
-  while (1) {
-
-    v = tdma_recv (&rx_tdma_fd, &rx_buf, &len, TDMA_BLOCKING);
-    if (v == NRK_OK) {
-      // printf ("src: %u\r\nrssi: %d\r\n", rx_tdma_fd.src, rx_tdma_fd.rssi);
-      // printf ("slot: %u\r\n", rx_tdma_fd.slot);
-      // printf ("cycle len: %u\r\n", rx_tdma_fd.cycle_size);
-      // printf ("len: %u\r\npayload: ", len);
-      // for (i = 0; i < len; i++)
-        // printf ("%c", rx_buf[i]);
-      // printf ("\r\n");
-    }
-    else
-      printf("packet receiving error!\r\n");
-
-     nrk_wait_until_next_period();
   }
 }
 
@@ -365,43 +313,29 @@ nrk_create_taskset()
 {
   nrk_task_set_entry_function( &TaskOne, task_imu);
   nrk_task_set_stk( &TaskOne, Stack1, NRK_APP_STACKSIZE);
-  TaskOne.prio = 2;
+  TaskOne.prio = 1;
   TaskOne.FirstActivation = TRUE;
   TaskOne.Type = BASIC_TASK;
   TaskOne.SchType = PREEMPTIVE;
   TaskOne.period.secs = 0;
-  TaskOne.period.nano_secs = 250 * NANOS_PER_MS;
+  TaskOne.period.nano_secs = 25 * NANOS_PER_MS;
   TaskOne.cpu_reserve.secs = 0;
-  TaskOne.cpu_reserve.nano_secs = 100 * NANOS_PER_MS;
+  TaskOne.cpu_reserve.nano_secs = 0;
   TaskOne.offset.secs = 1;
   TaskOne.offset.nano_secs= 0;
   nrk_activate_task (&TaskOne);
 
-  // nrk_task_set_entry_function (&rx_task_info, rx_task);
-  // nrk_task_set_stk (&rx_task_info, rx_task_stack, NRK_APP_STACKSIZE);
-  // rx_task_info.prio = 1;
-  // rx_task_info.FirstActivation = TRUE;
-  // rx_task_info.Type = BASIC_TASK;
-  // rx_task_info.SchType = PREEMPTIVE;
-  // rx_task_info.period.secs = 0;
-  // rx_task_info.period.nano_secs = 25 * NANOS_PER_MS;
-  // rx_task_info.cpu_reserve.secs = 0;
-  // rx_task_info.cpu_reserve.nano_secs = 30 * NANOS_PER_MS;
-  // rx_task_info.offset.secs = 0;
-  // rx_task_info.offset.nano_secs = 0;
-  // nrk_activate_task (&rx_task_info);
-
   nrk_task_set_entry_function (&tx_task_info, tx_task);
   nrk_task_set_stk (&tx_task_info, tx_task_stack, NRK_APP_STACKSIZE);
-  tx_task_info.prio = 1;
+  tx_task_info.prio = 2;
   tx_task_info.FirstActivation = TRUE;
   tx_task_info.Type = BASIC_TASK;
   tx_task_info.SchType = PREEMPTIVE;
   tx_task_info.period.secs = 0;
-  tx_task_info.period.nano_secs = 250 * NANOS_PER_MS;
+  tx_task_info.period.nano_secs = 15 * NANOS_PER_MS;
   tx_task_info.cpu_reserve.secs = 0;
-  tx_task_info.cpu_reserve.nano_secs = 100 * NANOS_PER_MS;
-  tx_task_info.offset.secs = 0;
+  tx_task_info.cpu_reserve.nano_secs = 0 * NANOS_PER_MS;
+  tx_task_info.offset.secs = 1;
   tx_task_info.offset.nano_secs = 0;
   nrk_activate_task (&tx_task_info);
 

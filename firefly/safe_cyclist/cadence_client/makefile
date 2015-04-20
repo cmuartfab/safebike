@@ -36,6 +36,7 @@ SRC = $(TARGET).c
 # Add extra source files. 
 # For example:
 SRC += $(ROOT_DIR)/src/net/pcf_tdma/$(RADIO)/pcf_tdma.c
+SRC += TWI_Master.c
 
 CFLAGS += -D CLIENT_MAC=$(CLIENT_MAC)
 

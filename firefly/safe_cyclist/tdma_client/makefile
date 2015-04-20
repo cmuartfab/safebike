@@ -8,7 +8,7 @@ TARGET = main
 # Set the Port that you programmer is connected to 
 # PROGRAMMING_PORT = /dev/ttyUSB0
 # PROGRAMMING_PORT = /dev/tty.usbserial-AE00BUKC
-PROGRAMMING_PORT = /dev/tty.usbserial-A101XVZK
+PROGRAMMING_PORT =  /dev/tty.usbserial-AM017Y4C
 
 # PROGRAMMING_PORT = `ls /dev/tty.* | grep usb | head -n 1` # programmer connected to serial device
 

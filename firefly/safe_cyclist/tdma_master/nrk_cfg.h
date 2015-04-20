@@ -59,14 +59,14 @@
 // Be sure to include the idle task
 // Making this the correct size will save on BSS memory which
 // is both RAM and ROM...
-#define NRK_MAX_TASKS       		5
+#define NRK_MAX_TASKS       		3
 
                            
 
 #define NRK_TASK_IDLE_STK_SIZE         128 // Idle task stack size min=32 
 #define NRK_APP_STACKSIZE              256 
 #define NRK_KERNEL_STACKSIZE           256 
-#define NRK_MAX_RESOURCE_CNT           2  //slip uses one too!
+#define NRK_MAX_RESOURCE_CNT           3  //slip uses one too!
 
 
 #endif
