@@ -1,62 +1,87 @@
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493859,339272,180,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493859,339955,180,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493859,341640,181,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493859,367664,181,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493859,402990,181,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493859,434180,181,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493859,467875,181,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493859,507475,181,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493859,545045,181,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493859,568888,181,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493859,607085,181,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493859,641343,181,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493859,672208,181,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493859,703565,181,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493859,739479,182,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493859,767539,182,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493859,804477,182,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493859,825719,182,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493859,861223,182,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493859,870296,182,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493859,909788,182,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493859,945274,182,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493859,969080,182,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,10278,182,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,27996,182,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,58540,182,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,79249,183,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,111162,183,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,145698,183,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,153731,183,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,187279,183,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,204805,183,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,224317,183,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,258788,183,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,276397,183,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,292543,183,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,331139,183,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,350812,184,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,390987,184,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,412795,184,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,437337,184,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,473120,184,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,497280,184,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,530693,184,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,553015,184,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,589436,184,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,615151,184,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,640052,184,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,653994,184,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,664136,185,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,684502,185,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,696911,185,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,713171,185,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,724450,185,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,740434,185,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,759615,185,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,789261,185,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,810441,185,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,851098,185,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,879411,185,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): 1427493860,910181,185,1,4096,0,32768,0,0,0,0,0,0
-(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ):
+1428781765,628871,156,1,28,ff10,798,b3ff,f8ff,1900,feff,9ffd,fafe
+1428781765,675405,194,1,0,ff10,790,b4ff,f8ff,1a00,100,a0fd,f9fe
+1428781765,693396,195,1,8,ff00,7a0,b5ff,f7ff,1800,fcff,a1fd,fcfe
+1428781766,622172,196,1,0,ff00,798,b4ff,f8ff,1800,fcff,a1fd,fcfe
+1428781766,668620,235,1,8,fef0,788,b4ff,f8ff,1a00,feff,a3fd,fcfe
+1428781767,628429,236,1,8,fef0,790,b5ff,f9ff,1a00,fcff,a0fd,fdfe
+1428781780,612422,254,1,8,ff08,798,b6ff,f8ff,1800,0,a0fd,fafe
+1428781785,937120,255,1,8,ff00,798,b3ff,f7ff,1900,feff,a2fd,fbfe
+1428781785,937132,0,1,8,ff00,798,b4ff,f8ff,1900,100,a3fd,f8fe
+1428781785,971066,1,1,8,ff00,788,b3ff,f7ff,1800,100,a3fd,f8fe
+1428781785,987909,2,1,10,ff00,788,b8ff,f8ff,1a00,100,a3fd,f8fe
+1428781786,17300,3,1,8,ff00,798,b5ff,f8ff,1700,ffff,a1fd,f8fe
+1428781786,69156,4,1,8,ff08,788,b3ff,f9ff,1800,ffff,a1fd,f8fe
+1428781786,86618,5,1,8,ff00,790,b5ff,f7ff,1a00,ffff,a1fd,f8fe
+1428781786,113017,6,1,8,ff00,788,b4ff,f8ff,1900,fdff,a3fd,f9fe
+1428781786,113034,7,1,10,fef8,790,b5ff,f8ff,1800,fdff,a3fd,f9fe
+1428781786,166146,8,1,8,ff00,788,b3ff,f8ff,1900,feff,9ffd,fefe
+1428781786,183471,9,1,8,ff00,780,b5ff,f8ff,1a00,feff,9ffd,fefe
+1428781786,214184,10,1,8,ff10,788,b4ff,f7ff,1900,feff,9ffd,fefe
+1428781786,224966,11,1,8,fef8,788,b5ff,f7ff,1a00,fcff,a1fd,fbfe
+1428781786,258891,12,1,8,ff08,790,b4ff,f8ff,1900,fcff,a1fd,fbfe
+1428781786,288910,13,1,8,ff00,788,b4ff,f9ff,1900,fcff,a1fd,fbfe
+1428781786,307139,14,1,8,ff00,788,b4ff,f8ff,1900,feff,a0fd,fafe
+1428781786,324561,15,1,0,fef8,788,b2ff,f7ff,1800,feff,a0fd,fafe
+1428781786,359324,16,1,8,fef8,788,b4ff,f8ff,1900,fbff,a1fd,fefe
+1428781786,388988,17,1,10,ff00,788,b4ff,f8ff,1900,fbff,a1fd,fefe
+1428781786,405967,18,1,8,ff00,788,b4ff,f7ff,1a00,fbff,a1fd,fefe
+1428781786,417553,19,1,8,fef8,798,b4ff,f8ff,1800,fcff,a1fd,fafe
+1428781786,464816,20,1,8,fef8,788,b5ff,f8ff,1800,fcff,a1fd,fafe
+1428781786,483644,21,1,8,ff00,790,b7ff,f9ff,1900,fcff,a1fd,fafe
+1428781786,501381,22,1,8,ff00,798,b3ff,f8ff,1900,0,9ffd,f8fe
+1428781786,518180,23,1,8,ff00,790,b3ff,f9ff,1a00,0,9ffd,f8fe
+1428781786,560757,24,1,8,ff08,790,b5ff,f6ff,1900,fbff,a4fd,f9fe
+1428781786,583300,25,1,8,ff00,788,b6ff,f7ff,1800,fbff,a4fd,f9fe
+1428781786,594412,26,1,8,fef8,798,b5ff,f7ff,1a00,fbff,a4fd,f9fe
+1428781786,613423,27,1,8,fef8,788,b4ff,f8ff,1900,fdff,9efd,fcfe
+1428781786,631122,28,1,8,fef8,790,b5ff,f7ff,1900,fdff,9efd,fcfe
+1428781786,661441,29,1,8,fef8,790,b5ff,f9ff,1b00,fdff,9efd,fcfe
+1428781786,673049,30,1,8,ff00,788,b1ff,f7ff,1800,feff,9efd,fbfe
+1428781786,707729,31,1,8,ff08,788,b5ff,f8ff,1800,feff,9efd,fbfe
+1428781786,759046,32,1,0,ff08,780,b5ff,f9ff,1a00,fdff,a2fd,fafe
+1428781786,771779,33,1,8,ff00,788,b6ff,f7ff,1800,fdff,a2fd,fafe
+1428781786,789085,34,1,8,ff08,798,b3ff,f8ff,1a00,fdff,a2fd,fafe
+1428781786,816619,35,1,8,ff00,790,b5ff,f8ff,1900,feff,a1fd,fbfe
+1428781786,834759,36,1,8,ff00,798,b5ff,f7ff,1a00,feff,a1fd,fbfe
+1428781786,853289,37,1,10,fef8,788,b3ff,f8ff,1900,feff,a1fd,fbfe
+1428781786,870304,38,1,8,fef8,788,b5ff,f8ff,1900,fdff,a0fd,fffe
+1428781787,654375,69,1,8,fef8,790,b4ff,f9ff,1a00,feff,a3fd,fafe
+1428781787,665811,70,1,8,ff00,790,b4ff,f9ff,1600,ffff,a2fd,fbfe
+1428781788,611073,71,1,10,fef8,798,b4ff,f7ff,1900,ffff,a2fd,fbfe
+1428781788,641493,110,1,0,ff00,788,b4ff,f9ff,1a00,100,a1fd,fdfe
+1428781789,604119,111,1,0,ff00,790,b3ff,f8ff,1a00,100,a1fd,fdfe
+1428781791,630312,233,1,8,fef0,780,b5ff,f8ff,1900,ffff,a0fd,f6fe
+1428781791,647102,234,1,8,ff00,798,b5ff,f9ff,1900,ffff,a0fd,f6fe
+1428781791,698674,235,1,0,ff10,790,b6ff,f7ff,1a00,ffff,a0fd,f9fe
+1428781791,710231,236,1,8,ff08,790,b6ff,f8ff,1900,ffff,a0fd,f9fe
+1428781791,727565,237,1,10,ff00,788,b4ff,f8ff,1900,ffff,a0fd,f9fe
+1428781791,758209,238,1,8,fef0,788,b5ff,f8ff,1800,100,a2fd,f5fe
+1428781791,776075,239,1,0,fef8,790,b5ff,f8ff,1900,100,a2fd,f5fe
+1428781804,621105,254,1,8,fef8,788,b5ff,f8ff,1800,feff,a1fd,f9fe
+1428781804,633782,255,1,8,ff08,790,b3ff,f7ff,1800,feff,a1fd,f9fe
+1428781804,680245,0,1,8,ff08,790,b4ff,f9ff,1b00,feff,a1fd,fbfe
+1428781804,697481,1,1,8,fef8,790,b6ff,f6ff,1900,feff,a1fd,fbfe
+1428781804,715042,2,1,8,ff00,788,b5ff,f9ff,1800,fcff,a3fd,fafe
+1428781804,743409,3,1,8,ff00,790,b3ff,f8ff,1900,fcff,a3fd,fafe
+1428781804,761362,4,1,8,ff00,798,b5ff,f8ff,1a00,fcff,a3fd,fafe
+1428781805,609109,39,1,8,ff10,788,b6ff,f8ff,1900,fdff,a1fd,f8fe
+1428781805,643692,40,1,8,fef8,788,b4ff,f8ff,1a00,ffff,a0fd,f6fe
+1428781805,689565,42,1,8,ff00,798,b4ff,f8ff,1900,ffff,a0fd,f6fe
+1428781805,718957,43,1,8,ff00,790,b5ff,f8ff,1800,fbff,a2fd,fafe
+1428781805,736712,44,1,8,ff08,798,b4ff,f7ff,1900,fbff,a2fd,fafe
+1428781805,754692,45,1,0,ff08,790,b5ff,f7ff,1900,fbff,a2fd,fafe
+1428781806,617607,80,1,8,ff00,7a0,b5ff,f8ff,1a00,100,a3fd,fbfe
+1428781806,636577,81,1,8,ff00,790,b2ff,f9ff,1900,feff,a3fd,fcfe
+1428781806,664476,82,1,8,ff10,790,b6ff,f9ff,1a00,feff,a3fd,fcfe
+1428781806,698691,83,1,8,ff00,780,b2ff,f6ff,1a00,feff,a2fd,fbfe
+1428781806,710506,84,1,8,ff00,790,b6ff,f8ff,1b00,feff,a2fd,fbfe
+1428781806,727110,85,1,8,fef8,798,b5ff,f7ff,1800,feff,a2fd,fbfe
+1428781806,745079,86,1,8,fef8,788,b4ff,f9ff,1900,ffff,a2fd,f9fe
+1428781807,623321,121,1,0,fef8,790,b6ff,f8ff,1900,0,a2fd,f9fe
+1428781807,640840,122,1,10,ff08,788,b9ff,f5ff,1800,0,a2fd,f9fe
+1428781808,586379,123,1,8,ff08,790,b3ff,f8ff,1500,fbff,a1fd,fdfe
+1428781808,629521,162,1,8,fef8,7a0,b4ff,f8ff,1900,ffff,a0fd,fdfe
+1428781809,591304,163,1,8,ff00,788,b6ff,f8ff,1a00,ffff,9ffd,fdfe
+1428781815,622434,192,1,fff8,fef8,780,b5ff,f8ff,1a00,0,a2fd,fcfe
+1428781816,577600,193,1,8,fef0,790,b5ff,f7ff,1800,fcff,a3fd,f9fe
+1428781823,569905,223,1,8,ff00,790,b5ff,f8ff,1800,feff,a1fd,fbfe
