@@ -70,7 +70,6 @@
 #define HMC5843_MEASMODE_CONT 0x00
 #define HMC5843_SIZE 6
 
-
 tdma_info tx_tdma_fd;
 
 uint8_t i2c_buf[16];
@@ -84,8 +83,6 @@ uint16_t mac_address;
 
 uint8_t aes_key[] = {0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xaa,0xbb,0xcc,0xdd,0xee, 0xff};
 
-void timer0_callback(void);
-void timer1_callback(void);
 
 // MIGHT HAVE TO CHANGE THESE
 //time structures
@@ -114,18 +111,18 @@ void init_adxl345(void);
 void init_itg3200(void);
 void init_hmc5843(void);
 
-
+void uni_timer_handler(void);
 
 void nrk_create_taskset();
 
 void init_interrupts(){
-  nrk_gpio_direction(NRK_PORTD_0, NRK_PIN_INPUT);
-  nrk_ext_int_configure(NRK_EXT_INT_0, NRK_RISING_EDGE, &timer0_callback);
-  nrk_ext_int_enable(NRK_EXT_INT_0);
+  nrk_gpio_direction(NRK_PORTB_5, NRK_PIN_INPUT);
+  nrk_ext_int_configure(NRK_PC_INT_5, NRK_LEVEL_TRIGGER, &uni_timer_handler);
+  nrk_ext_int_enable(NRK_PC_INT_5);
   
-  nrk_gpio_direction(NRK_PORTD_1, NRK_PIN_INPUT);
-  nrk_ext_int_configure(NRK_EXT_INT_1, NRK_RISING_EDGE, &timer1_callback);
-  nrk_ext_int_enable(NRK_EXT_INT_1);
+  nrk_gpio_direction(NRK_PORTB_7, NRK_PIN_INPUT);
+  nrk_ext_int_configure(NRK_PC_INT_7, NRK_LEVEL_TRIGGER, &uni_timer_handler);
+  nrk_ext_int_enable(NRK_PC_INT_7);
 }
 
 
@@ -173,13 +170,18 @@ main ()
   return 0;
 }
 
-void uni_timer_handle(uint8_t timerNo){
-  uint8_t v;
+void uni_timer_handler(void){
+  uint8_t timerNo,v;
   nrk_time_t pTime, sTime,cTime;
 
   // the current time, we now have to subtract this form
   // the previous time.
   nrk_time_get(&cTime);
+
+  if (nrk_gpio_get(NRK_PORTB_5))
+    timerNo = 0;
+  else if (nrk_gpio_get(NRK_PORTB_7))
+    timerNo = 1;
 
   switch (timerNo) {
     case 0: pTime = time0;
@@ -191,7 +193,7 @@ void uni_timer_handle(uint8_t timerNo){
   v = nrk_time_sub(&sTime, cTime, pTime);
 
 
-  // save the new previos time for this timer.
+  // save the new previous time for this timer.
   pTime.secs = cTime.secs;
   pTime.nano_secs = cTime.nano_secs;
 
@@ -199,6 +201,8 @@ void uni_timer_handle(uint8_t timerNo){
   tx_pack.timerNo = timerNo;
   tx_pack.secs = sTime.secs;
   tx_pack.nano_secs = sTime.nano_secs;
+
+  //printf("secs:%d, nano_secs:%d\r\n",sTime.secs,sTime.nano_secs);
 
   v = tdma_send (&tx_tdma_fd, &tx_pack, sizeof(tx_buf), TDMA_BLOCKING);
 
@@ -208,14 +212,6 @@ void uni_timer_handle(uint8_t timerNo){
   }
 }
 
-
-void timer0_callback(){
-  uni_timer_handle(0);
-}
-
-void timer1_callback(){
-  uni_timer_handle(1);
-}
 
 void init_itg3200() {
     /* put in standby mode while we change fifo control bits */
@@ -272,6 +268,13 @@ void task_imu(){
     i = 0;
     tx_buf[i++] = NODE_ADDR;
     tx_buf[i++] = sequenceNo++;
+
+    /* START : Cadence Debugging */
+    //v=nrk_gpio_get(NRK_PORTB_5);
+	  // Button logic is inverter 0 means pressed, 1 not pressed
+	  //if(v==0) nrk_led_set(RED_LED);
+	  //else nrk_led_clr(RED_LED);
+	  /* END : Cadence Debugging */
     
     i2c_buf[0] = (ADXL345_ADDRESS) | (FALSE<<TWI_READ_BIT);
     i2c_buf[1] = ADXL345_REGISTER_XLSB;
@@ -390,7 +393,7 @@ nrk_create_taskset()
   tx_task_info.Type = BASIC_TASK;
   tx_task_info.SchType = PREEMPTIVE;
   tx_task_info.period.secs = 0;
-  tx_task_info.period.nano_secs = 15 * NANOS_PER_MS;
+  tx_task_info.period.nano_secs = 25 * NANOS_PER_MS;
   tx_task_info.cpu_reserve.secs = 0;
   tx_task_info.cpu_reserve.nano_secs = 0 * NANOS_PER_MS;
   tx_task_info.offset.secs = 1;
