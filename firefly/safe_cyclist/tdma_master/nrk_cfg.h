@@ -15,19 +15,22 @@
 // it is easier to see debugging messages.
 //#define NRK_HALT_AND_LOOP_ON_ERROR
 //#define NRK_HALT_ON_ERROR
-#define IGNORE_BROWN_OUT_ERROR
-#define IGNORE_EXT_RST_ERROR
-
-
-// #define NRK_NO_BOUNDED_CONTEXT_SWAP
-// Disable a few common errors when connected to programmer
-//#define IGNORE_EXT_RST_ERROR
 //#define IGNORE_BROWN_OUT_ERROR
+//#define IGNORE_EXT_RST_ERROR
+
+#define NRK_UART_BUF 1
+#define MAX_UART_BUF 128
+
+#define NRK_NO_BOUNDED_CONTEXT_SWAP
+// Disable a few common errors when connected to programmer
+#define IGNORE_EXT_RST_ERROR
+#define IGNORE_BROWN_OUT_ERROR
 
 // Enable the watchdog as a protective measure
 // This will only activate if the scheduler fails.
 #define NRK_WATCHDOG
 #define NRK_REBOOT_ON_ERROR
+#define NRK_NO_POWER_DOWN
 //#define NRK_SOFT_REBOOT_ON_ERROR
 
 

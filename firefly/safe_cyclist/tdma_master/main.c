@@ -34,22 +34,19 @@
 #include <slip.h>
 #include <tdma_cons.h>
 
+#define SLOT_LEN 2
+#define SLOT_NO 3
+
 
 NRK_STK rx_task_stack[NRK_APP_STACKSIZE];
 nrk_task_type rx_task_info;
 void rx_task (void);
 
-NRK_STK tx_task_stack[NRK_APP_STACKSIZE];
-nrk_task_type tx_task_info;
-void tx_task (void);
-
 void nrk_create_taskset ();
 
-tdma_info tx_tdma_fd;
 tdma_info rx_tdma_fd;
 
 uint8_t rx_buf[TDMA_MAX_PKT_SIZE];
-uint8_t tx_buf[TDMA_MAX_PKT_SIZE];
 
 uint8_t aes_key[16] = {0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xaa,0xbb,0xcc,0xdd,0xee, 0xff}; 
 
@@ -57,8 +54,24 @@ int main ()
 {
   nrk_setup_ports ();
   nrk_setup_uart (UART_BAUDRATE_115K2);
-
   nrk_init ();
+
+  // init tdma with 0 mac address
+  tdma_init (TDMA_HOST, DEFAULT_CHANNEL, 0);
+
+  // init slipstream
+  slip_init (stdin, stdout, 0, 0);
+
+  // Change these parameters at runtime...
+  tdma_set_slot_len_ms (SLOT_LEN);
+  tdma_set_slots_per_cycle (SLOT_NO);
+  printf("%d ms slots, %d slots per cycle\r\n",SLOT_LEN,SLOT_NO);
+
+
+  //tdma_aes_setkey(aes_key);
+  //tdma_aes_enable();
+
+
 
   nrk_led_clr (ORANGE_LED);
   nrk_led_clr (BLUE_LED);
@@ -72,59 +85,11 @@ int main ()
   return 0;
 }
 
-void tx_task ()
-{
-  int8_t v;
-  uint8_t len, cnt;
-
-
-  printf ("Gateway Tx Task PID=%u\r\n", nrk_get_pid ());
-
-
-  while (!tdma_started ())
-    nrk_wait_until_next_period ();
-
-  cnt = 0;
-
-  while (1) {
-
-    sprintf (tx_buf, "Host data counter %d\n", cnt);
-    cnt++;
-    len = strlen (tx_buf) + 1;
-
-    // Only transmit data if you want to do so
-    // Messages from the host are always broadcasts
-    v = tdma_send (&tx_tdma_fd, &tx_buf, len, TDMA_BLOCKING);
-    if (v == NRK_OK) {
-      // printf ("Host Packet Sent\r\n");
-    }
-    nrk_wait_until_next_period();
-
-  }
-}
 
 void rx_task ()
 {
-  nrk_time_t t;
-  uint16_t cnt;
   int8_t v;
   uint8_t len, i;
-
-
-  cnt = 0;
-
-  // init tdma
-  tdma_init (TDMA_HOST, DEFAULT_CHANNEL, HOST_MAC);
-
-  // init slipstream
-  slip_init (stdin, stdout, 0, 0);
-
-  // Change these parameters at runtime...
-  tdma_set_slot_len_ms (5);
-  tdma_set_slots_per_cycle (2);
-
-  //tdma_aes_setkey(aes_key);
-  //tdma_aes_enable();
 
 
   while (!tdma_started () || !slip_started())
@@ -132,24 +97,14 @@ void rx_task ()
 
 
   while (1) {
-    v = tdma_recv (&rx_tdma_fd, &rx_buf, &len, TDMA_BLOCKING);
-    // printf("v = %d\r\n", v);
-    if (v == NRK_OK) {
+    v = tdma_recv (&rx_tdma_fd, &rx_buf, &len, TDMA_NONBLOCKING);
+    if (v == NRK_OK && len > 0) {
       nrk_led_set(RED_LED);
-      /* debugging */
-      //printf ("src: %u rssi: %d ", rx_tdma_fd.src, rx_tdma_fd.rssi);
-      //printf ("slot: %u ", rx_tdma_fd.slot);
-      //printf ("len: %u\r\npayload: ", len);
-      //for (i = 0; i < len; i++)
-        //printf ("%d", rx_buf[i]);
-      //printf ("\r\n");
       
       //send the packet to the SLIPstream client
       slip_tx (rx_buf,len);
       nrk_led_clr(RED_LED);
-      // nrk_wait_until_next_period();
     }
-     // nrk_wait_until_next_period();
   }
 }
 
@@ -162,7 +117,7 @@ void nrk_create_taskset ()
   rx_task_info.Type = BASIC_TASK;
   rx_task_info.SchType = PREEMPTIVE;
   rx_task_info.period.secs = 0;
-  rx_task_info.period.nano_secs = 10 * NANOS_PER_MS;
+  rx_task_info.period.nano_secs = 25 * NANOS_PER_MS;
   rx_task_info.cpu_reserve.secs = 0;
   rx_task_info.cpu_reserve.nano_secs = 0 * NANOS_PER_MS;
   rx_task_info.offset.secs = 1;

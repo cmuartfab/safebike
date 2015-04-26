@@ -75,33 +75,13 @@ tdma_info rx_tdma_fd;
 
 uint8_t i2c_buf[16];
 uint8_t tx_buf[TDMA_MAX_PKT_SIZE];
-uint8_t rx_buf[TDMA_MAX_PKT_SIZE];
+uint8_t pkt[TDMA_MAX_PKT_SIZE];
 uint8_t tx_len;
 unsigned int sequenceNo; 
 bool packetReady;
 uint16_t mac_address;
 
 uint8_t aes_key[] = {0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xaa,0xbb,0xcc,0xdd,0xee, 0xff};
-
-
-unsigned char TWI_Act_On_Failure_In_Last_Transmission ( unsigned char TWIerrorMsg )
-{
-                    // A failure has occurred, use TWIerrorMsg to determine the nature of the failure
-                    // and take appropriate actions.
-                    // Se header file for a list of possible failures messages.
-                    
-                    // Here is a simple sample, where if received a NACK on the slave address,
-                    // then a retransmission will be initiated.
-if ( (TWIerrorMsg == TWI_MTX_ADR_NACK) | (TWIerrorMsg == TWI_MRX_ADR_NACK) ){
-    TWI_Start_Transceiver();
-}
-printf("%c \n",TWIerrorMsg);
-    
-  return TWIerrorMsg; 
-}
-
-
-
 
 NRK_STK Stack1[NRK_APP_STACKSIZE];
 nrk_task_type TaskOne;
@@ -122,18 +102,12 @@ void init_hmc5843(void);
 
 void nrk_create_taskset();
 
-int
-main ()
-{
+int main ()
+{ 
+
   nrk_setup_ports();
   nrk_setup_uart(UART_BAUDRATE_115K2);
-
-  tdma_init (TDMA_CLIENT, DEFAULT_CHANNEL, mac_address);
-
-  //tdma_aes_setkey(aes_key);
-  //tdma_aes_enable();
-
-  tdma_tx_slot_add (mac_address&0xFFFF);
+  nrk_init();
 
   TWI_Master_Initialise();
   sei();
@@ -146,9 +120,15 @@ main ()
   /* initialize tx_buf ready flag */
   packetReady = false;
   
-  nrk_init();
 
   mac_address = CLIENT_MAC;
+  printf("mac = %d\r\n",mac_address);
+  tdma_init (TDMA_CLIENT, DEFAULT_CHANNEL, CLIENT_MAC);
+
+  //tdma_aes_setkey(aes_key);
+  //tdma_aes_enable();
+
+  tdma_tx_slot_add (mac_address&0xFFFF);
 
   nrk_led_clr(ORANGE_LED);
   nrk_led_clr(BLUE_LED);
@@ -213,7 +193,6 @@ void task_imu(){
   int v;
   
   while(1){
-    packetReady = false;
     i = 0;
     tx_buf[i++] = NODE_ADDR;
     tx_buf[i++] = sequenceNo++;
@@ -256,6 +235,11 @@ void task_imu(){
       tx_buf[i++] = i2c_buf[count+1];
     }
     tx_len = i;
+    packetReady = false;
+    //so we can resubmit while we build the new packet
+    for (int i = 0; i < tx_len; i++){
+      pkt[i] = tx_buf[i];
+    }
     packetReady = true;
     nrk_wait_until_next_period();
   }
@@ -289,21 +273,12 @@ void tx_task ()
     nrk_led_set(RED_LED);
 
     // if sensor data hasn't been gathered yet
-    if (!packetReady)
-     nrk_wait_until_next_period();
-    
-    nrk_led_clr(RED_LED);
-    v = tdma_send (&tx_tdma_fd, &tx_buf, tx_len, TDMA_BLOCKING);
-    if (v == NRK_OK) {
-      //nrk_kprintf (PSTR ("App tx_buf Sent\r\n"));
-      //for (int i = 0; i < tx_len; i++){
-        //printf("%d",tx_buf[i]);
-      //}
-      //printf("\n");
+    if (!packetReady){
+       continue;
     }
-    else
-      printf("packet sending error!\r\n");
-  }
+    nrk_led_clr(RED_LED);
+    v = tdma_send (&tx_tdma_fd, &pkt, tx_len, TDMA_BLOCKING);
+    }
 }
 
 
@@ -327,12 +302,12 @@ nrk_create_taskset()
 
   nrk_task_set_entry_function (&tx_task_info, tx_task);
   nrk_task_set_stk (&tx_task_info, tx_task_stack, NRK_APP_STACKSIZE);
-  tx_task_info.prio = 2;
+  tx_task_info.prio = 1;
   tx_task_info.FirstActivation = TRUE;
   tx_task_info.Type = BASIC_TASK;
   tx_task_info.SchType = PREEMPTIVE;
   tx_task_info.period.secs = 0;
-  tx_task_info.period.nano_secs = 15 * NANOS_PER_MS;
+  tx_task_info.period.nano_secs = 5 * NANOS_PER_MS;
   tx_task_info.cpu_reserve.secs = 0;
   tx_task_info.cpu_reserve.nano_secs = 0 * NANOS_PER_MS;
   tx_task_info.offset.secs = 1;
