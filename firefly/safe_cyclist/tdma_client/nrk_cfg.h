@@ -56,7 +56,7 @@
 // Be sure to include the idle task
 // Making this the correct size will save on BSS memory which
 // is both RAM and ROM...
-#define NRK_MAX_TASKS       		5
+#define NRK_MAX_TASKS       		4
 
                            
 

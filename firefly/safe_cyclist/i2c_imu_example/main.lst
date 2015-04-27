@@ -1114,7 +1114,7 @@
  135:main.c        ****   /* initialize the adxl345 */
  1199               	.LM141:
  1200               	/* #NOAPP */
- 1201 0012 81E0      		ldi r24,lo8(1)
+ 1201 0012 80E0      		ldi r24,0
  1202 0014 90E0      		ldi r25,0
  1203 0016 0E94 0000 		call nrk_led_set
  137:main.c        ****   init_itg3200();
@@ -1131,22 +1131,22 @@
  1215 0026 0E94 0000 		call nrk_init
  142:main.c        ****   nrk_led_clr(BLUE_LED);
  1217               	.LM146:
- 1218 002a 83E0      		ldi r24,lo8(3)
+ 1218 002a 82E0      		ldi r24,lo8(2)
  1219 002c 90E0      		ldi r25,0
  1220 002e 0E94 0000 		call nrk_led_clr
  143:main.c        ****   nrk_led_clr(GREEN_LED);
  1222               	.LM147:
- 1223 0032 82E0      		ldi r24,lo8(2)
+ 1223 0032 83E0      		ldi r24,lo8(3)
  1224 0034 90E0      		ldi r25,0
  1225 0036 0E94 0000 		call nrk_led_clr
  144:main.c        ****   nrk_led_clr(RED_LED);
  1227               	.LM148:
- 1228 003a 80E0      		ldi r24,0
+ 1228 003a 81E0      		ldi r24,lo8(1)
  1229 003c 90E0      		ldi r25,0
  1230 003e 0E94 0000 		call nrk_led_clr
  145:main.c        ****  
  1232               	.LM149:
- 1233 0042 81E0      		ldi r24,lo8(1)
+ 1233 0042 80E0      		ldi r24,0
  1234 0044 90E0      		ldi r25,0
  1235 0046 0E94 0000 		call nrk_led_clr
  147:main.c        ****   nrk_create_taskset ();
@@ -1196,28 +1196,28 @@
  1301               	.global __do_clear_bss
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 main.c
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccgCcQuS.s:2      *ABS*:000000000000003e __SP_H__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccgCcQuS.s:3      *ABS*:000000000000003d __SP_L__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccgCcQuS.s:4      *ABS*:000000000000003f __SREG__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccgCcQuS.s:5      *ABS*:000000000000003b __RAMPZ__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccgCcQuS.s:6      *ABS*:0000000000000000 __tmp_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccgCcQuS.s:7      *ABS*:0000000000000001 __zero_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccgCcQuS.s:335    .text:0000000000000000 Task_Accelorometer
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccLrxzEx.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccLrxzEx.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccLrxzEx.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccLrxzEx.s:5      *ABS*:000000000000003b __RAMPZ__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccLrxzEx.s:6      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccLrxzEx.s:7      *ABS*:0000000000000001 __zero_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccLrxzEx.s:335    .text:0000000000000000 Task_Accelorometer
                             *COM*:0000000000000010 messageBuf
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccgCcQuS.s:455    .text:00000000000000a0 Task_Gyro
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccgCcQuS.s:575    .text:0000000000000140 Task_Magneto
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccgCcQuS.s:696    .text:00000000000001e0 TWI_Act_On_Failure_In_Last_Transmission
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccgCcQuS.s:744    .text:000000000000020e init_itg3200
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccgCcQuS.s:779    .text:0000000000000226 init_hmc5843
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccgCcQuS.s:813    .text:000000000000023c init_adxl345
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccgCcQuS.s:907    .text:0000000000000296 nrk_create_taskset
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccLrxzEx.s:455    .text:00000000000000a0 Task_Gyro
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccLrxzEx.s:575    .text:0000000000000140 Task_Magneto
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccLrxzEx.s:696    .text:00000000000001e0 TWI_Act_On_Failure_In_Last_Transmission
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccLrxzEx.s:744    .text:000000000000020e init_itg3200
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccLrxzEx.s:779    .text:0000000000000226 init_hmc5843
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccLrxzEx.s:813    .text:000000000000023c init_adxl345
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccLrxzEx.s:907    .text:0000000000000296 nrk_create_taskset
                             *COM*:0000000000000023 TaskOne
                             *COM*:0000000000000080 Stack1
                             *COM*:0000000000000023 TaskTwo
                             *COM*:0000000000000080 Stack2
                             *COM*:0000000000000023 TaskThree
                             *COM*:0000000000000080 Stack3
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccgCcQuS.s:1172   .text.startup:0000000000000000 main
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccLrxzEx.s:1172   .text.startup:0000000000000000 main
                             *COM*:0000000000000008 _nrk_stats_sleep_time
                             *COM*:0000000000000096 cur_task_stats
                             *COM*:0000000000000001 app_timer0_prescale
