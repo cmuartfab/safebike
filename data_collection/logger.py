@@ -69,10 +69,11 @@ class DataDriver:
       print("%s: %s" % (self.name, line))
 
 
-g_data_directory = "./data"
+g_data_directory = "data"
 g_driver_list = [
-  DataDriver("piksi", "./driver_piksi/driver_piksi", ["/dev/tty.asdf"]),
-  DataDriver("accelerometers", "./driver_accelerometers/launch.sh", ["/dev/tty.asdf3"])
+  # DataDriver("piksi", "./driver_piksi/driver_piksi", ["/dev/tty.asdf"]),
+  # DataDriver("accelerometers", "./driver_accelerometers/launch.sh", ["/dev/tty.asdf3"]),
+  DataDriver("apriltags", "./driver_apriltags/build/bin/apriltags_demo", []),
 ]
 
 
