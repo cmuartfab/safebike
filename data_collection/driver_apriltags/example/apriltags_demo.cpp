@@ -316,7 +316,7 @@ public:
         exit(-1);
       } else {
         printf("Opened data file %s.\n", data_file_full_path.c_str());
-        fprintf(m_data_file, "Id, Hamming, distance, x, y, z, yaw, pitch, roll\n", );
+        fprintf(m_data_file, "Id, Hamming, distance, x, y, z, yaw, pitch, roll\n");
       }
     }
   }
