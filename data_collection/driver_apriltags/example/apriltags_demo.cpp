@@ -197,8 +197,8 @@ public:
     } else if (s=="36h11") {
       m_tagCodes = AprilTags::tagCodes36h11;
     } else {
-      // cout << "Invalid tag family specified" << endl;
-      printf("Invalid tag family specified!\n");
+      cout << "Invalid tag family specified" << endl;
+      // printf("Invalid tag family specified!\n");
       exit(1);
     }
   }
@@ -210,7 +210,8 @@ public:
       m_data_file_path = argv[1];
       argc--;
       argv++;
-      printf("Found data file path %s.\n", m_data_file_path.c_str());
+      cout << "Found data file path " << m_data_file_path << "." << endl;
+      // printf("Found data file path %s.\n", m_data_file_path.c_str());
     }
 
 
@@ -312,11 +313,14 @@ public:
 
       m_data_file = fopen(data_file_full_path.c_str(), "w");
       if(m_data_file == NULL) {
-        printf("Problem opening data file %s!\n", data_file_full_path.c_str());
+        cout << "Problem opening data file " << data_file_full_path << "!" << endl;
+        // printf("Problem opening data file %s!\n", data_file_full_path.c_str());
         exit(-1);
       } else {
-        printf("Opened data file %s.\n", data_file_full_path.c_str());
+        cout << "Opened data file " << data_file_full_path << "." << endl;
+        // printf("Opened data file %s.\n", data_file_full_path.c_str());
         fprintf(m_data_file, "Id, Hamming, distance, x, y, z, yaw, pitch, roll\n");
+        fflush(m_data_file);
       }
     }
   }
@@ -343,18 +347,18 @@ public:
         // cout << "Failed to set... " << strerror(errno) << endl;
         printf("Failed to set... %s\n!")
       }
-      // cout << "exposure: " << m_exposure << endl;
-      printf("exposure: %d\n", m_exposure);
+      cout << "exposure: " << m_exposure << endl;
+      // printf("exposure: %d\n", m_exposure);
       v4l2_set_control(device, V4L2_CID_EXPOSURE_ABSOLUTE, m_exposure*6);
     }
     if (m_gain >= 0) {
-      // cout << "gain: " << m_gain << endl;
-      printf("gain: %d\n", m_gain);
+      cout << "gain: " << m_gain << endl;
+      // printf("gain: %d\n", m_gain);
       v4l2_set_control(device, V4L2_CID_GAIN, m_gain*256);
     }
     if (m_brightness >= 0) {
-      // cout << "brightness: " << m_brightness << endl;
-      printf("brightness: %d\n", m_brightness);
+      cout << "brightness: " << m_brightness << endl;
+      // printf("brightness: %d\n", m_brightness);
       v4l2_set_control(device, V4L2_CID_BRIGHTNESS, m_brightness*256);
     }
     v4l2_close(device);
@@ -368,13 +372,13 @@ public:
     }
     m_cap.set(CV_CAP_PROP_FRAME_WIDTH, m_width);
     m_cap.set(CV_CAP_PROP_FRAME_HEIGHT, m_height);
-    // cout << "Camera successfully opened (ignore error messages above...)" << endl;
-    // cout << "Actual resolution: "
-    //      << m_cap.get(CV_CAP_PROP_FRAME_WIDTH) << "x"
-    //      << m_cap.get(CV_CAP_PROP_FRAME_HEIGHT) << endl;
-    printf("Camera successfully opened (ignore error messages above...)\n");
-    printf("Actual resolution: %lfx%lf\n", m_cap.get(CV_CAP_PROP_FRAME_WIDTH),
-                                         m_cap.get(CV_CAP_PROP_FRAME_HEIGHT) );
+    cout << "Camera successfully opened (ignore error messages above...)" << endl;
+    cout << "Actual resolution: "
+         << m_cap.get(CV_CAP_PROP_FRAME_WIDTH) << "x"
+         << m_cap.get(CV_CAP_PROP_FRAME_HEIGHT) << endl;
+    // printf("Camera successfully opened (ignore error messages above...)\n");
+    // printf("Actual resolution: %lfx%lf\n", m_cap.get(CV_CAP_PROP_FRAME_WIDTH),
+    //                                      m_cap.get(CV_CAP_PROP_FRAME_HEIGHT) );
 
   }
 
@@ -383,6 +387,7 @@ public:
     //      << " (Hamming: " << detection.hammingDistance << ")";
     // printf("  Id: %d (Hamming: %d)", detection.id, detection.hammingDistance);
     fprintf(m_data_file, "%d, %d", detection.id, detection.hammingDistance);
+    fflush(m_data_file);
 
     // recovering the relative pose of a tag:
 
@@ -428,6 +433,7 @@ public:
            yaw,
            pitch,
            roll);
+    fflush(m_data_file);
 
     // Also note that for SLAM/multi-view application it is better to
     // use reprojection error of corner points, because the noise in
@@ -530,8 +536,8 @@ public:
       frame++;
       if (frame % 10 == 0) {
         double t = tic();
-        // cout << "  " << 10./(t-last_t) << " fps" << endl;
-        printf("%f fps\n.", 10./(t-last_t));
+        cout << "  " << 10./(t-last_t) << " fps" << endl;
+        // printf("%f fps\n.", 10./(t-last_t));
         last_t = t;
       }
 
@@ -553,8 +559,8 @@ int main(int argc, char* argv[]) {
   demo.setup();
 
   if (demo.isVideo()) {
-    // cout << "Processing video" << endl;
-    printf("Processing video!\n");
+    cout << "Processing video" << endl;
+    // printf("Processing video!\n");
 
     // setup image source, window for drawing, serial port...
     demo.setupVideo();
@@ -563,8 +569,8 @@ int main(int argc, char* argv[]) {
     demo.loop();
 
   } else {
-    // cout << "Processing image" << endl;
-    printf("Processing images!\n");
+    cout << "Processing image" << endl;
+    // printf("Processing images!\n");
 
     // process single image
     demo.loadImages();
