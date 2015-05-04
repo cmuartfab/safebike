@@ -26,3 +26,21 @@ Since we want to use the piksis to find ground truth on more than one moving obj
 
 Resources:
 https://groups.google.com/forum/#!topic/swiftnav-discuss/CrtmUthvdVA
+
+
+# April Tags Setup
+
+The april tags SVN repo was copied in wholesale, so includes printable tags and the license file. The demo code is modified to output data in the format our data collection expects.
+
+The OpenCV and and Eigen3 libraries are required for this driver to work. On OS X, the `opencv` and `eigen` packages can be install with homebrew.
+
+The april tags driver must be compiled before use:
+
+```
+$ cd driver_apriltags
+$ make
+```
+
+Resources:
+http://people.csail.mit.edu/kaess/apriltags/
+
