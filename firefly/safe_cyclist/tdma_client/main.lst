@@ -595,579 +595,593 @@
  674 01c4 80E0      		ldi r24,lo8(tx_tdma_fd)
  675 01c6 90E0      		ldi r25,hi8(tx_tdma_fd)
  676 01c8 0E94 0000 		call tdma_send
- 677               	.L16:
+ 281:main.c        ****     v = tdma_send (&tx_tdma_fd, &pkt, tx_len, TDMA_BLOCKING);
+ 678               	.LM54:
+ 679 01cc 20E0      		ldi r18,0
+ 680 01ce 4091 0000 		lds r20,tx_len
+ 681 01d2 60E0      		ldi r22,lo8(pkt)
+ 682 01d4 70E0      		ldi r23,hi8(pkt)
+ 683 01d6 80E0      		ldi r24,lo8(tx_tdma_fd)
+ 684 01d8 90E0      		ldi r25,hi8(tx_tdma_fd)
+ 685 01da 0E94 0000 		call tdma_send
+ 282:main.c        ****     v = tdma_send (&tx_tdma_fd, &pkt, tx_len, TDMA_BLOCKING);
+ 687               	.LM55:
+ 688 01de 20E0      		ldi r18,0
+ 689 01e0 4091 0000 		lds r20,tx_len
+ 690 01e4 60E0      		ldi r22,lo8(pkt)
+ 691 01e6 70E0      		ldi r23,hi8(pkt)
+ 692 01e8 80E0      		ldi r24,lo8(tx_tdma_fd)
+ 693 01ea 90E0      		ldi r25,hi8(tx_tdma_fd)
+ 694 01ec 0E94 0000 		call tdma_send
+ 695               	.L16:
  272:main.c        ****     nrk_led_set(RED_LED);
- 679               	.LM54:
- 680 01cc 80E0      		ldi r24,0
- 681 01ce 90E0      		ldi r25,0
- 682 01d0 0E94 0000 		call nrk_sw_wdt_update
+ 697               	.LM56:
+ 698 01f0 80E0      		ldi r24,0
+ 699 01f2 90E0      		ldi r25,0
+ 700 01f4 0E94 0000 		call nrk_sw_wdt_update
  273:main.c        **** 
- 684               	.LM55:
- 685 01d4 80E0      		ldi r24,0
- 686 01d6 90E0      		ldi r25,0
- 687 01d8 0E94 0000 		call nrk_led_set
+ 702               	.LM57:
+ 703 01f8 80E0      		ldi r24,0
+ 704 01fa 90E0      		ldi r25,0
+ 705 01fc 0E94 0000 		call nrk_led_set
  276:main.c        ****        continue;
- 689               	.LM56:
- 690 01dc 8091 0000 		lds r24,packetReady
- 691 01e0 8823      		tst r24
- 692 01e2 01F0      		breq .L16
- 693 01e4 00C0      		rjmp .L20
- 694               	.LBE3:
- 699               	.Lscope2:
- 701               		.stabd	78,0,0
- 703               	.global	init_itg3200
- 705               	init_itg3200:
- 706               		.stabd	46,0,0
+ 707               	.LM58:
+ 708 0200 8091 0000 		lds r24,packetReady
+ 709 0204 8823      		tst r24
+ 710 0206 01F0      		breq .L16
+ 711 0208 00C0      		rjmp .L20
+ 712               	.LBE3:
+ 717               	.Lscope2:
+ 719               		.stabd	78,0,0
+ 721               	.global	init_itg3200
+ 723               	init_itg3200:
+ 724               		.stabd	46,0,0
  145:main.c        ****     /* put in standby mode while we change fifo control bits */
- 708               	.LM57:
- 709               	.LFBB3:
- 710               	/* prologue: function */
- 711               	/* frame size = 0 */
- 712               	/* stack size = 0 */
- 713               	.L__stack_usage = 0
+ 726               	.LM59:
+ 727               	.LFBB3:
+ 728               	/* prologue: function */
+ 729               	/* frame size = 0 */
+ 730               	/* stack size = 0 */
+ 731               	.L__stack_usage = 0
  147:main.c        ****   i2c_buf[1] = ITG3200_REGISTER_DLPF;
- 715               	.LM58:
- 716 01e6 E0E0      		ldi r30,lo8(i2c_buf)
- 717 01e8 F0E0      		ldi r31,hi8(i2c_buf)
- 718 01ea 80ED      		ldi r24,lo8(-48)
- 719 01ec 8083      		st Z,r24
+ 733               	.LM60:
+ 734 020a E0E0      		ldi r30,lo8(i2c_buf)
+ 735 020c F0E0      		ldi r31,hi8(i2c_buf)
+ 736 020e 80ED      		ldi r24,lo8(-48)
+ 737 0210 8083      		st Z,r24
  148:main.c        ****   i2c_buf[2] = ITG3200_FULLSCALE | ITG3200_42HZ;
- 721               	.LM59:
- 722 01ee 86E1      		ldi r24,lo8(22)
- 723 01f0 8183      		std Z+1,r24
+ 739               	.LM61:
+ 740 0212 86E1      		ldi r24,lo8(22)
+ 741 0214 8183      		std Z+1,r24
  149:main.c        ****   TWI_Start_Transceiver_With_Data(i2c_buf, 3);
- 725               	.LM60:
- 726 01f2 8BE1      		ldi r24,lo8(27)
- 727 01f4 8283      		std Z+2,r24
- 150:main.c        **** }
- 729               	.LM61:
- 730 01f6 63E0      		ldi r22,lo8(3)
- 731 01f8 CF01      		movw r24,r30
- 732 01fa 0C94 0000 		jmp TWI_Start_Transceiver_With_Data
- 734               	.Lscope3:
- 736               		.stabd	78,0,0
- 738               	.global	init_hmc5843
- 740               	init_hmc5843:
- 741               		.stabd	46,0,0
- 153:main.c        ****     /* put in standby mode while we change fifo control bits */
  743               	.LM62:
- 744               	.LFBB4:
- 745               	/* prologue: function */
- 746               	/* frame size = 0 */
- 747               	/* stack size = 0 */
- 748               	.L__stack_usage = 0
+ 744 0216 8BE1      		ldi r24,lo8(27)
+ 745 0218 8283      		std Z+2,r24
+ 150:main.c        **** }
+ 747               	.LM63:
+ 748 021a 63E0      		ldi r22,lo8(3)
+ 749 021c CF01      		movw r24,r30
+ 750 021e 0C94 0000 		jmp TWI_Start_Transceiver_With_Data
+ 752               	.Lscope3:
+ 754               		.stabd	78,0,0
+ 756               	.global	init_hmc5843
+ 758               	init_hmc5843:
+ 759               		.stabd	46,0,0
+ 153:main.c        ****     /* put in standby mode while we change fifo control bits */
+ 761               	.LM64:
+ 762               	.LFBB4:
+ 763               	/* prologue: function */
+ 764               	/* frame size = 0 */
+ 765               	/* stack size = 0 */
+ 766               	.L__stack_usage = 0
  155:main.c        ****   i2c_buf[1] = HMC5843_REGISTER_MEASMODE;
- 750               	.LM63:
- 751 01fe E0E0      		ldi r30,lo8(i2c_buf)
- 752 0200 F0E0      		ldi r31,hi8(i2c_buf)
- 753 0202 8CE3      		ldi r24,lo8(60)
- 754 0204 8083      		st Z,r24
+ 768               	.LM65:
+ 769 0222 E0E0      		ldi r30,lo8(i2c_buf)
+ 770 0224 F0E0      		ldi r31,hi8(i2c_buf)
+ 771 0226 8CE3      		ldi r24,lo8(60)
+ 772 0228 8083      		st Z,r24
  156:main.c        ****   i2c_buf[2] = HMC5843_MEASMODE_CONT;
- 756               	.LM64:
- 757 0206 82E0      		ldi r24,lo8(2)
- 758 0208 8183      		std Z+1,r24
+ 774               	.LM66:
+ 775 022a 82E0      		ldi r24,lo8(2)
+ 776 022c 8183      		std Z+1,r24
  157:main.c        ****   TWI_Start_Transceiver_With_Data(i2c_buf, 3);
- 760               	.LM65:
- 761 020a 1282      		std Z+2,__zero_reg__
+ 778               	.LM67:
+ 779 022e 1282      		std Z+2,__zero_reg__
  158:main.c        **** }
- 763               	.LM66:
- 764 020c 63E0      		ldi r22,lo8(3)
- 765 020e CF01      		movw r24,r30
- 766 0210 0C94 0000 		jmp TWI_Start_Transceiver_With_Data
- 768               	.Lscope4:
- 770               		.stabd	78,0,0
- 772               	.global	init_adxl345
- 774               	init_adxl345:
- 775               		.stabd	46,0,0
+ 781               	.LM68:
+ 782 0230 63E0      		ldi r22,lo8(3)
+ 783 0232 CF01      		movw r24,r30
+ 784 0234 0C94 0000 		jmp TWI_Start_Transceiver_With_Data
+ 786               	.Lscope4:
+ 788               		.stabd	78,0,0
+ 790               	.global	init_adxl345
+ 792               	init_adxl345:
+ 793               		.stabd	46,0,0
  162:main.c        ****   unsigned int read = 0;
- 777               	.LM67:
- 778               	.LFBB5:
- 779 0214 0F93      		push r16
- 780 0216 1F93      		push r17
- 781 0218 CF93      		push r28
- 782 021a DF93      		push r29
- 783               	/* prologue: function */
- 784               	/* frame size = 0 */
- 785               	/* stack size = 4 */
- 786               	.L__stack_usage = 4
+ 795               	.LM69:
+ 796               	.LFBB5:
+ 797 0238 0F93      		push r16
+ 798 023a 1F93      		push r17
+ 799 023c CF93      		push r28
+ 800 023e DF93      		push r29
+ 801               	/* prologue: function */
+ 802               	/* frame size = 0 */
+ 803               	/* stack size = 4 */
+ 804               	.L__stack_usage = 4
  166:main.c        ****   i2c_buf[1] = ADXL_REGISTER_PWRCTL;
- 788               	.LM68:
- 789 021c C0E0      		ldi r28,lo8(i2c_buf)
- 790 021e D0E0      		ldi r29,hi8(i2c_buf)
- 791 0220 16EA      		ldi r17,lo8(-90)
- 792 0222 1883      		st Y,r17
+ 806               	.LM70:
+ 807 0240 C0E0      		ldi r28,lo8(i2c_buf)
+ 808 0242 D0E0      		ldi r29,hi8(i2c_buf)
+ 809 0244 16EA      		ldi r17,lo8(-90)
+ 810 0246 1883      		st Y,r17
  167:main.c        ****   i2c_buf[2] = ADXL_PWRCTL_STBY;
- 794               	.LM69:
- 795 0224 0DE2      		ldi r16,lo8(45)
- 796 0226 0983      		std Y+1,r16
+ 812               	.LM71:
+ 813 0248 0DE2      		ldi r16,lo8(45)
+ 814 024a 0983      		std Y+1,r16
  168:main.c        ****   TWI_Start_Transceiver_With_Data(i2c_buf, 3);
- 798               	.LM70:
- 799 0228 1A82      		std Y+2,__zero_reg__
+ 816               	.LM72:
+ 817 024c 1A82      		std Y+2,__zero_reg__
  169:main.c        **** 
- 801               	.LM71:
- 802 022a 63E0      		ldi r22,lo8(3)
- 803 022c CE01      		movw r24,r28
- 804 022e 0E94 0000 		call TWI_Start_Transceiver_With_Data
+ 819               	.LM73:
+ 820 024e 63E0      		ldi r22,lo8(3)
+ 821 0250 CE01      		movw r24,r28
+ 822 0252 0E94 0000 		call TWI_Start_Transceiver_With_Data
  172:main.c        ****   i2c_buf[1] = ADXL_REGISTER_FIFOCTL;
- 806               	.LM72:
- 807 0232 1883      		st Y,r17
+ 824               	.LM74:
+ 825 0256 1883      		st Y,r17
  173:main.c        ****   i2c_buf[2] = ADXL_FIFOCTL_STREAM;
- 809               	.LM73:
- 810 0234 88E3      		ldi r24,lo8(56)
- 811 0236 8983      		std Y+1,r24
+ 827               	.LM75:
+ 828 0258 88E3      		ldi r24,lo8(56)
+ 829 025a 8983      		std Y+1,r24
  174:main.c        ****   TWI_Start_Transceiver_With_Data(i2c_buf,3);
- 813               	.LM74:
- 814 0238 80E8      		ldi r24,lo8(-128)
- 815 023a 8A83      		std Y+2,r24
+ 831               	.LM76:
+ 832 025c 80E8      		ldi r24,lo8(-128)
+ 833 025e 8A83      		std Y+2,r24
  175:main.c        **** 
- 817               	.LM75:
- 818 023c 63E0      		ldi r22,lo8(3)
- 819 023e CE01      		movw r24,r28
- 820 0240 0E94 0000 		call TWI_Start_Transceiver_With_Data
+ 835               	.LM77:
+ 836 0260 63E0      		ldi r22,lo8(3)
+ 837 0262 CE01      		movw r24,r28
+ 838 0264 0E94 0000 		call TWI_Start_Transceiver_With_Data
  178:main.c        ****   i2c_buf[1] = ADXL_REGISTER_DTFMT;
- 822               	.LM76:
- 823 0244 1883      		st Y,r17
+ 840               	.LM78:
+ 841 0268 1883      		st Y,r17
  179:main.c        ****   i2c_buf[2] = ADXL_16G_DTFMT;
- 825               	.LM77:
- 826 0246 81E3      		ldi r24,lo8(49)
- 827 0248 8983      		std Y+1,r24
+ 843               	.LM79:
+ 844 026a 81E3      		ldi r24,lo8(49)
+ 845 026c 8983      		std Y+1,r24
  180:main.c        ****   TWI_Start_Transceiver_With_Data(i2c_buf,3);
- 829               	.LM78:
- 830 024a 8FE0      		ldi r24,lo8(15)
- 831 024c 8A83      		std Y+2,r24
+ 847               	.LM80:
+ 848 026e 8FE0      		ldi r24,lo8(15)
+ 849 0270 8A83      		std Y+2,r24
  181:main.c        **** 
- 833               	.LM79:
- 834 024e 63E0      		ldi r22,lo8(3)
- 835 0250 CE01      		movw r24,r28
- 836 0252 0E94 0000 		call TWI_Start_Transceiver_With_Data
+ 851               	.LM81:
+ 852 0272 63E0      		ldi r22,lo8(3)
+ 853 0274 CE01      		movw r24,r28
+ 854 0276 0E94 0000 		call TWI_Start_Transceiver_With_Data
  184:main.c        ****   i2c_buf[1] = ADXL_REGISTER_PWRCTL;
- 838               	.LM80:
- 839 0256 1883      		st Y,r17
+ 856               	.LM82:
+ 857 027a 1883      		st Y,r17
  185:main.c        ****   i2c_buf[2] = ADXL_PWRCTL_MEASURE;
- 841               	.LM81:
- 842 0258 0983      		std Y+1,r16
+ 859               	.LM83:
+ 860 027c 0983      		std Y+1,r16
  186:main.c        ****   TWI_Start_Transceiver_With_Data(i2c_buf, 3);
- 844               	.LM82:
- 845 025a 88E0      		ldi r24,lo8(8)
- 846 025c 8A83      		std Y+2,r24
+ 862               	.LM84:
+ 863 027e 88E0      		ldi r24,lo8(8)
+ 864 0280 8A83      		std Y+2,r24
  187:main.c        **** }
- 848               	.LM83:
- 849 025e 63E0      		ldi r22,lo8(3)
- 850 0260 CE01      		movw r24,r28
- 851               	/* epilogue start */
+ 866               	.LM85:
+ 867 0282 63E0      		ldi r22,lo8(3)
+ 868 0284 CE01      		movw r24,r28
+ 869               	/* epilogue start */
  188:main.c        **** 
- 853               	.LM84:
- 854 0262 DF91      		pop r29
- 855 0264 CF91      		pop r28
- 856 0266 1F91      		pop r17
- 857 0268 0F91      		pop r16
- 187:main.c        **** }
- 859               	.LM85:
- 860 026a 0C94 0000 		jmp TWI_Start_Transceiver_With_Data
- 862               	.Lscope5:
- 864               		.stabd	78,0,0
- 866               	.global	nrk_create_taskset
- 868               	nrk_create_taskset:
- 869               		.stabd	46,0,0
- 281:main.c        ****     }
- 282:main.c        **** }
- 283:main.c        **** 
- 284:main.c        **** 
- 285:main.c        **** 
- 286:main.c        **** void
- 287:main.c        **** nrk_create_taskset()
- 288:main.c        **** {
  871               	.LM86:
- 872               	.LFBB6:
- 873 026e CF92      		push r12
- 874 0270 DF92      		push r13
- 875 0272 EF92      		push r14
- 876 0274 FF92      		push r15
- 877 0276 CF93      		push r28
- 878               	/* prologue: function */
- 879               	/* frame size = 0 */
- 880               	/* stack size = 5 */
- 881               	.L__stack_usage = 5
- 289:main.c        ****   nrk_task_set_entry_function( &TaskOne, task_imu);
- 883               	.LM87:
- 884 0278 60E0      		ldi r22,lo8(gs(task_imu))
- 885 027a 70E0      		ldi r23,hi8(gs(task_imu))
- 886 027c 80E0      		ldi r24,lo8(TaskOne)
- 887 027e 90E0      		ldi r25,hi8(TaskOne)
- 888 0280 0E94 0000 		call nrk_task_set_entry_function
- 290:main.c        ****   nrk_task_set_stk( &TaskOne, Stack1, NRK_APP_STACKSIZE);
- 890               	.LM88:
- 891 0284 40E8      		ldi r20,lo8(-128)
- 892 0286 50E0      		ldi r21,0
- 893 0288 60E0      		ldi r22,lo8(Stack1)
- 894 028a 70E0      		ldi r23,hi8(Stack1)
- 895 028c 80E0      		ldi r24,lo8(TaskOne)
- 896 028e 90E0      		ldi r25,hi8(TaskOne)
- 897 0290 0E94 0000 		call nrk_task_set_stk
- 291:main.c        ****   TaskOne.prio = 1;
- 899               	.LM89:
- 900 0294 E0E0      		ldi r30,lo8(TaskOne)
- 901 0296 F0E0      		ldi r31,hi8(TaskOne)
- 902 0298 C1E0      		ldi r28,lo8(1)
- 903 029a C087      		std Z+8,r28
- 292:main.c        ****   TaskOne.FirstActivation = TRUE;
- 905               	.LM90:
- 906 029c C783      		std Z+7,r28
- 293:main.c        ****   TaskOne.Type = BASIC_TASK;
- 908               	.LM91:
- 909 029e C187      		std Z+9,r28
- 294:main.c        ****   TaskOne.SchType = PREEMPTIVE;
- 911               	.LM92:
- 912 02a0 C287      		std Z+10,r28
- 295:main.c        ****   TaskOne.period.secs = 0;
- 914               	.LM93:
- 915 02a2 1386      		std Z+11,__zero_reg__
- 916 02a4 1486      		std Z+12,__zero_reg__
- 917 02a6 1586      		std Z+13,__zero_reg__
- 918 02a8 1686      		std Z+14,__zero_reg__
- 296:main.c        ****   TaskOne.period.nano_secs = 25 * NANOS_PER_MS;
- 920               	.LM94:
- 921 02aa 80E4      		ldi r24,lo8(64)
- 922 02ac 98E7      		ldi r25,lo8(120)
- 923 02ae ADE7      		ldi r26,lo8(125)
- 924 02b0 B1E0      		ldi r27,lo8(1)
- 925 02b2 8787      		std Z+15,r24
- 926 02b4 908B      		std Z+16,r25
- 927 02b6 A18B      		std Z+17,r26
- 928 02b8 B28B      		std Z+18,r27
- 297:main.c        ****   TaskOne.cpu_reserve.secs = 0;
- 930               	.LM95:
- 931 02ba 138A      		std Z+19,__zero_reg__
- 932 02bc 148A      		std Z+20,__zero_reg__
- 933 02be 158A      		std Z+21,__zero_reg__
- 934 02c0 168A      		std Z+22,__zero_reg__
- 298:main.c        ****   TaskOne.cpu_reserve.nano_secs = 0;
- 936               	.LM96:
- 937 02c2 178A      		std Z+23,__zero_reg__
- 938 02c4 108E      		std Z+24,__zero_reg__
- 939 02c6 118E      		std Z+25,__zero_reg__
- 940 02c8 128E      		std Z+26,__zero_reg__
- 299:main.c        ****   TaskOne.offset.secs = 1;
- 942               	.LM97:
- 943 02ca C12C      		mov r12,__zero_reg__
- 944 02cc D12C      		mov r13,__zero_reg__
- 945 02ce 7601      		movw r14,r12
- 946 02d0 C394      		inc r12
- 947 02d2 C38E      		std Z+27,r12
- 948 02d4 D48E      		std Z+28,r13
- 949 02d6 E58E      		std Z+29,r14
- 950 02d8 F68E      		std Z+30,r15
- 300:main.c        ****   TaskOne.offset.nano_secs= 0;
- 952               	.LM98:
- 953 02da 178E      		std Z+31,__zero_reg__
- 954 02dc 10A2      		std Z+32,__zero_reg__
- 955 02de 11A2      		std Z+33,__zero_reg__
- 956 02e0 12A2      		std Z+34,__zero_reg__
- 301:main.c        ****   nrk_activate_task (&TaskOne);
- 958               	.LM99:
- 959 02e2 CF01      		movw r24,r30
- 960 02e4 0E94 0000 		call nrk_activate_task
- 302:main.c        **** 
- 303:main.c        ****   nrk_task_set_entry_function (&tx_task_info, tx_task);
- 962               	.LM100:
- 963 02e8 60E0      		ldi r22,lo8(gs(tx_task))
- 964 02ea 70E0      		ldi r23,hi8(gs(tx_task))
- 965 02ec 80E0      		ldi r24,lo8(tx_task_info)
- 966 02ee 90E0      		ldi r25,hi8(tx_task_info)
- 967 02f0 0E94 0000 		call nrk_task_set_entry_function
- 304:main.c        ****   nrk_task_set_stk (&tx_task_info, tx_task_stack, NRK_APP_STACKSIZE);
- 969               	.LM101:
- 970 02f4 40E8      		ldi r20,lo8(-128)
- 971 02f6 50E0      		ldi r21,0
- 972 02f8 60E0      		ldi r22,lo8(tx_task_stack)
- 973 02fa 70E0      		ldi r23,hi8(tx_task_stack)
- 974 02fc 80E0      		ldi r24,lo8(tx_task_info)
- 975 02fe 90E0      		ldi r25,hi8(tx_task_info)
- 976 0300 0E94 0000 		call nrk_task_set_stk
- 305:main.c        ****   tx_task_info.prio = 1;
- 978               	.LM102:
- 979 0304 E0E0      		ldi r30,lo8(tx_task_info)
- 980 0306 F0E0      		ldi r31,hi8(tx_task_info)
- 981 0308 C087      		std Z+8,r28
- 306:main.c        ****   tx_task_info.FirstActivation = TRUE;
- 983               	.LM103:
- 984 030a C783      		std Z+7,r28
- 307:main.c        ****   tx_task_info.Type = BASIC_TASK;
- 986               	.LM104:
- 987 030c C187      		std Z+9,r28
- 308:main.c        ****   tx_task_info.SchType = PREEMPTIVE;
- 989               	.LM105:
- 990 030e C287      		std Z+10,r28
- 309:main.c        ****   tx_task_info.period.secs = 0;
- 992               	.LM106:
- 993 0310 1386      		std Z+11,__zero_reg__
- 994 0312 1486      		std Z+12,__zero_reg__
- 995 0314 1586      		std Z+13,__zero_reg__
- 996 0316 1686      		std Z+14,__zero_reg__
- 310:main.c        ****   tx_task_info.period.nano_secs = 5 * NANOS_PER_MS;
- 998               	.LM107:
- 999 0318 80E4      		ldi r24,lo8(64)
- 1000 031a 9BE4      		ldi r25,lo8(75)
- 1001 031c ACE4      		ldi r26,lo8(76)
- 1002 031e B0E0      		ldi r27,0
- 1003 0320 8787      		std Z+15,r24
- 1004 0322 908B      		std Z+16,r25
- 1005 0324 A18B      		std Z+17,r26
- 1006 0326 B28B      		std Z+18,r27
- 311:main.c        ****   tx_task_info.cpu_reserve.secs = 0;
- 1008               	.LM108:
- 1009 0328 138A      		std Z+19,__zero_reg__
- 1010 032a 148A      		std Z+20,__zero_reg__
- 1011 032c 158A      		std Z+21,__zero_reg__
- 1012 032e 168A      		std Z+22,__zero_reg__
- 312:main.c        ****   tx_task_info.cpu_reserve.nano_secs = 0 * NANOS_PER_MS;
- 1014               	.LM109:
- 1015 0330 178A      		std Z+23,__zero_reg__
- 1016 0332 108E      		std Z+24,__zero_reg__
- 1017 0334 118E      		std Z+25,__zero_reg__
- 1018 0336 128E      		std Z+26,__zero_reg__
- 313:main.c        ****   tx_task_info.offset.secs = 1;
- 1020               	.LM110:
- 1021 0338 C38E      		std Z+27,r12
- 1022 033a D48E      		std Z+28,r13
- 1023 033c E58E      		std Z+29,r14
- 1024 033e F68E      		std Z+30,r15
- 314:main.c        ****   tx_task_info.offset.nano_secs = 0;
- 1026               	.LM111:
- 1027 0340 178E      		std Z+31,__zero_reg__
- 1028 0342 10A2      		std Z+32,__zero_reg__
- 1029 0344 11A2      		std Z+33,__zero_reg__
- 1030 0346 12A2      		std Z+34,__zero_reg__
- 315:main.c        ****   nrk_activate_task (&tx_task_info);
- 1032               	.LM112:
- 1033 0348 CF01      		movw r24,r30
- 1034 034a 0E94 0000 		call nrk_activate_task
- 1035               	/* epilogue start */
- 316:main.c        **** 
- 317:main.c        ****   tdma_task_config ();
- 318:main.c        **** }
- 1037               	.LM113:
- 1038 034e CF91      		pop r28
- 1039 0350 FF90      		pop r15
- 1040 0352 EF90      		pop r14
- 1041 0354 DF90      		pop r13
- 1042 0356 CF90      		pop r12
- 317:main.c        **** }
- 1044               	.LM114:
- 1045 0358 0C94 0000 		jmp tdma_task_config
- 1047               	.Lscope6:
- 1049               		.stabd	78,0,0
- 1050               		.section	.rodata.str1.1
- 1051               	.LC1:
- 1052 0011 6D61 6320 		.string	"mac = %d\r\n"
- 1052      3D20 2564 
- 1052      0D0A 00
- 1053               		.section	.text.startup,"ax",@progbits
- 1055               	.global	main
- 1057               	main:
- 1058               		.stabd	46,0,0
+ 872 0286 DF91      		pop r29
+ 873 0288 CF91      		pop r28
+ 874 028a 1F91      		pop r17
+ 875 028c 0F91      		pop r16
+ 187:main.c        **** }
+ 877               	.LM87:
+ 878 028e 0C94 0000 		jmp TWI_Start_Transceiver_With_Data
+ 880               	.Lscope5:
+ 882               		.stabd	78,0,0
+ 884               	.global	nrk_create_taskset
+ 886               	nrk_create_taskset:
+ 887               		.stabd	46,0,0
+ 283:main.c        ****     }
+ 284:main.c        **** }
+ 285:main.c        **** 
+ 286:main.c        **** 
+ 287:main.c        **** 
+ 288:main.c        **** void
+ 289:main.c        **** nrk_create_taskset()
+ 290:main.c        **** {
+ 889               	.LM88:
+ 890               	.LFBB6:
+ 891 0292 CF92      		push r12
+ 892 0294 DF92      		push r13
+ 893 0296 EF92      		push r14
+ 894 0298 FF92      		push r15
+ 895 029a CF93      		push r28
+ 896               	/* prologue: function */
+ 897               	/* frame size = 0 */
+ 898               	/* stack size = 5 */
+ 899               	.L__stack_usage = 5
+ 291:main.c        ****   nrk_task_set_entry_function( &TaskOne, task_imu);
+ 901               	.LM89:
+ 902 029c 60E0      		ldi r22,lo8(gs(task_imu))
+ 903 029e 70E0      		ldi r23,hi8(gs(task_imu))
+ 904 02a0 80E0      		ldi r24,lo8(TaskOne)
+ 905 02a2 90E0      		ldi r25,hi8(TaskOne)
+ 906 02a4 0E94 0000 		call nrk_task_set_entry_function
+ 292:main.c        ****   nrk_task_set_stk( &TaskOne, Stack1, NRK_APP_STACKSIZE);
+ 908               	.LM90:
+ 909 02a8 40E8      		ldi r20,lo8(-128)
+ 910 02aa 50E0      		ldi r21,0
+ 911 02ac 60E0      		ldi r22,lo8(Stack1)
+ 912 02ae 70E0      		ldi r23,hi8(Stack1)
+ 913 02b0 80E0      		ldi r24,lo8(TaskOne)
+ 914 02b2 90E0      		ldi r25,hi8(TaskOne)
+ 915 02b4 0E94 0000 		call nrk_task_set_stk
+ 293:main.c        ****   TaskOne.prio = 1;
+ 917               	.LM91:
+ 918 02b8 E0E0      		ldi r30,lo8(TaskOne)
+ 919 02ba F0E0      		ldi r31,hi8(TaskOne)
+ 920 02bc C1E0      		ldi r28,lo8(1)
+ 921 02be C087      		std Z+8,r28
+ 294:main.c        ****   TaskOne.FirstActivation = TRUE;
+ 923               	.LM92:
+ 924 02c0 C783      		std Z+7,r28
+ 295:main.c        ****   TaskOne.Type = BASIC_TASK;
+ 926               	.LM93:
+ 927 02c2 C187      		std Z+9,r28
+ 296:main.c        ****   TaskOne.SchType = PREEMPTIVE;
+ 929               	.LM94:
+ 930 02c4 C287      		std Z+10,r28
+ 297:main.c        ****   TaskOne.period.secs = 0;
+ 932               	.LM95:
+ 933 02c6 1386      		std Z+11,__zero_reg__
+ 934 02c8 1486      		std Z+12,__zero_reg__
+ 935 02ca 1586      		std Z+13,__zero_reg__
+ 936 02cc 1686      		std Z+14,__zero_reg__
+ 298:main.c        ****   TaskOne.period.nano_secs = 25 * NANOS_PER_MS;
+ 938               	.LM96:
+ 939 02ce 80E4      		ldi r24,lo8(64)
+ 940 02d0 98E7      		ldi r25,lo8(120)
+ 941 02d2 ADE7      		ldi r26,lo8(125)
+ 942 02d4 B1E0      		ldi r27,lo8(1)
+ 943 02d6 8787      		std Z+15,r24
+ 944 02d8 908B      		std Z+16,r25
+ 945 02da A18B      		std Z+17,r26
+ 946 02dc B28B      		std Z+18,r27
+ 299:main.c        ****   TaskOne.cpu_reserve.secs = 0;
+ 948               	.LM97:
+ 949 02de 138A      		std Z+19,__zero_reg__
+ 950 02e0 148A      		std Z+20,__zero_reg__
+ 951 02e2 158A      		std Z+21,__zero_reg__
+ 952 02e4 168A      		std Z+22,__zero_reg__
+ 300:main.c        ****   TaskOne.cpu_reserve.nano_secs = 0;
+ 954               	.LM98:
+ 955 02e6 178A      		std Z+23,__zero_reg__
+ 956 02e8 108E      		std Z+24,__zero_reg__
+ 957 02ea 118E      		std Z+25,__zero_reg__
+ 958 02ec 128E      		std Z+26,__zero_reg__
+ 301:main.c        ****   TaskOne.offset.secs = 1;
+ 960               	.LM99:
+ 961 02ee C12C      		mov r12,__zero_reg__
+ 962 02f0 D12C      		mov r13,__zero_reg__
+ 963 02f2 7601      		movw r14,r12
+ 964 02f4 C394      		inc r12
+ 965 02f6 C38E      		std Z+27,r12
+ 966 02f8 D48E      		std Z+28,r13
+ 967 02fa E58E      		std Z+29,r14
+ 968 02fc F68E      		std Z+30,r15
+ 302:main.c        ****   TaskOne.offset.nano_secs= 0;
+ 970               	.LM100:
+ 971 02fe 178E      		std Z+31,__zero_reg__
+ 972 0300 10A2      		std Z+32,__zero_reg__
+ 973 0302 11A2      		std Z+33,__zero_reg__
+ 974 0304 12A2      		std Z+34,__zero_reg__
+ 303:main.c        ****   nrk_activate_task (&TaskOne);
+ 976               	.LM101:
+ 977 0306 CF01      		movw r24,r30
+ 978 0308 0E94 0000 		call nrk_activate_task
+ 304:main.c        **** 
+ 305:main.c        ****   nrk_task_set_entry_function (&tx_task_info, tx_task);
+ 980               	.LM102:
+ 981 030c 60E0      		ldi r22,lo8(gs(tx_task))
+ 982 030e 70E0      		ldi r23,hi8(gs(tx_task))
+ 983 0310 80E0      		ldi r24,lo8(tx_task_info)
+ 984 0312 90E0      		ldi r25,hi8(tx_task_info)
+ 985 0314 0E94 0000 		call nrk_task_set_entry_function
+ 306:main.c        ****   nrk_task_set_stk (&tx_task_info, tx_task_stack, NRK_APP_STACKSIZE);
+ 987               	.LM103:
+ 988 0318 40E8      		ldi r20,lo8(-128)
+ 989 031a 50E0      		ldi r21,0
+ 990 031c 60E0      		ldi r22,lo8(tx_task_stack)
+ 991 031e 70E0      		ldi r23,hi8(tx_task_stack)
+ 992 0320 80E0      		ldi r24,lo8(tx_task_info)
+ 993 0322 90E0      		ldi r25,hi8(tx_task_info)
+ 994 0324 0E94 0000 		call nrk_task_set_stk
+ 307:main.c        ****   tx_task_info.prio = 1;
+ 996               	.LM104:
+ 997 0328 E0E0      		ldi r30,lo8(tx_task_info)
+ 998 032a F0E0      		ldi r31,hi8(tx_task_info)
+ 999 032c C087      		std Z+8,r28
+ 308:main.c        ****   tx_task_info.FirstActivation = TRUE;
+ 1001               	.LM105:
+ 1002 032e C783      		std Z+7,r28
+ 309:main.c        ****   tx_task_info.Type = BASIC_TASK;
+ 1004               	.LM106:
+ 1005 0330 C187      		std Z+9,r28
+ 310:main.c        ****   tx_task_info.SchType = PREEMPTIVE;
+ 1007               	.LM107:
+ 1008 0332 C287      		std Z+10,r28
+ 311:main.c        ****   tx_task_info.period.secs = 0;
+ 1010               	.LM108:
+ 1011 0334 1386      		std Z+11,__zero_reg__
+ 1012 0336 1486      		std Z+12,__zero_reg__
+ 1013 0338 1586      		std Z+13,__zero_reg__
+ 1014 033a 1686      		std Z+14,__zero_reg__
+ 312:main.c        ****   tx_task_info.period.nano_secs = 0 * NANOS_PER_MS;
+ 1016               	.LM109:
+ 1017 033c 1786      		std Z+15,__zero_reg__
+ 1018 033e 108A      		std Z+16,__zero_reg__
+ 1019 0340 118A      		std Z+17,__zero_reg__
+ 1020 0342 128A      		std Z+18,__zero_reg__
+ 313:main.c        ****   tx_task_info.cpu_reserve.secs = 0;
+ 1022               	.LM110:
+ 1023 0344 138A      		std Z+19,__zero_reg__
+ 1024 0346 148A      		std Z+20,__zero_reg__
+ 1025 0348 158A      		std Z+21,__zero_reg__
+ 1026 034a 168A      		std Z+22,__zero_reg__
+ 314:main.c        ****   tx_task_info.cpu_reserve.nano_secs = 0 * NANOS_PER_MS;
+ 1028               	.LM111:
+ 1029 034c 178A      		std Z+23,__zero_reg__
+ 1030 034e 108E      		std Z+24,__zero_reg__
+ 1031 0350 118E      		std Z+25,__zero_reg__
+ 1032 0352 128E      		std Z+26,__zero_reg__
+ 315:main.c        ****   tx_task_info.offset.secs = 1;
+ 1034               	.LM112:
+ 1035 0354 C38E      		std Z+27,r12
+ 1036 0356 D48E      		std Z+28,r13
+ 1037 0358 E58E      		std Z+29,r14
+ 1038 035a F68E      		std Z+30,r15
+ 316:main.c        ****   tx_task_info.offset.nano_secs = 0;
+ 1040               	.LM113:
+ 1041 035c 178E      		std Z+31,__zero_reg__
+ 1042 035e 10A2      		std Z+32,__zero_reg__
+ 1043 0360 11A2      		std Z+33,__zero_reg__
+ 1044 0362 12A2      		std Z+34,__zero_reg__
+ 317:main.c        ****   nrk_activate_task (&tx_task_info);
+ 1046               	.LM114:
+ 1047 0364 CF01      		movw r24,r30
+ 1048 0366 0E94 0000 		call nrk_activate_task
+ 1049               	/* epilogue start */
+ 318:main.c        **** 
+ 319:main.c        ****   tdma_task_config ();
+ 320:main.c        **** }
+ 1051               	.LM115:
+ 1052 036a CF91      		pop r28
+ 1053 036c FF90      		pop r15
+ 1054 036e EF90      		pop r14
+ 1055 0370 DF90      		pop r13
+ 1056 0372 CF90      		pop r12
+ 319:main.c        **** }
+ 1058               	.LM116:
+ 1059 0374 0C94 0000 		jmp tdma_task_config
+ 1061               	.Lscope6:
+ 1063               		.stabd	78,0,0
+ 1064               		.section	.rodata.str1.1
+ 1065               	.LC1:
+ 1066 0011 6D61 6320 		.string	"mac = %d\r\n"
+ 1066      3D20 2564 
+ 1066      0D0A 00
+ 1067               		.section	.text.startup,"ax",@progbits
+ 1069               	.global	main
+ 1071               	main:
+ 1072               		.stabd	46,0,0
  106:main.c        **** 
- 1060               	.LM115:
- 1061               	.LFBB7:
- 1062               	/* prologue: function */
- 1063               	/* frame size = 0 */
- 1064               	/* stack size = 0 */
- 1065               	.L__stack_usage = 0
+ 1074               	.LM117:
+ 1075               	.LFBB7:
+ 1076               	/* prologue: function */
+ 1077               	/* frame size = 0 */
+ 1078               	/* stack size = 0 */
+ 1079               	.L__stack_usage = 0
  108:main.c        ****   nrk_setup_uart(UART_BAUDRATE_115K2);
- 1067               	.LM116:
- 1068 0000 0E94 0000 		call nrk_setup_ports
+ 1081               	.LM118:
+ 1082 0000 0E94 0000 		call nrk_setup_ports
  109:main.c        ****   nrk_init();
- 1070               	.LM117:
- 1071 0004 80E1      		ldi r24,lo8(16)
- 1072 0006 90E0      		ldi r25,0
- 1073 0008 0E94 0000 		call nrk_setup_uart
+ 1084               	.LM119:
+ 1085 0004 80E1      		ldi r24,lo8(16)
+ 1086 0006 90E0      		ldi r25,0
+ 1087 0008 0E94 0000 		call nrk_setup_uart
  110:main.c        **** 
- 1075               	.LM118:
- 1076 000c 0E94 0000 		call nrk_init
+ 1089               	.LM120:
+ 1090 000c 0E94 0000 		call nrk_init
  112:main.c        ****   sei();
- 1078               	.LM119:
- 1079 0010 0E94 0000 		call TWI_Master_Initialise
+ 1092               	.LM121:
+ 1093 0010 0E94 0000 		call TWI_Master_Initialise
  113:main.c        ****   init_adxl345();
- 1081               	.LM120:
- 1082               	/* #APP */
- 1083               	 ;  113 "main.c" 1
- 1084 0014 7894      		sei
- 1085               	 ;  0 "" 2
+ 1095               	.LM122:
+ 1096               	/* #APP */
+ 1097               	 ;  113 "main.c" 1
+ 1098 0014 7894      		sei
+ 1099               	 ;  0 "" 2
  114:main.c        ****   init_itg3200();
- 1087               	.LM121:
- 1088               	/* #NOAPP */
- 1089 0016 0E94 0000 		call init_adxl345
+ 1101               	.LM123:
+ 1102               	/* #NOAPP */
+ 1103 0016 0E94 0000 		call init_adxl345
  115:main.c        ****   init_hmc5843();
- 1091               	.LM122:
- 1092 001a 0E94 0000 		call init_itg3200
+ 1105               	.LM124:
+ 1106 001a 0E94 0000 		call init_itg3200
  116:main.c        ****   /* initialize sequence number, used to sync with master */
- 1094               	.LM123:
- 1095 001e 0E94 0000 		call init_hmc5843
+ 1108               	.LM125:
+ 1109 001e 0E94 0000 		call init_hmc5843
  118:main.c        **** 
- 1097               	.LM124:
- 1098 0022 1092 0000 		sts sequenceNo+1,__zero_reg__
- 1099 0026 1092 0000 		sts sequenceNo,__zero_reg__
+ 1111               	.LM126:
+ 1112 0022 1092 0000 		sts sequenceNo+1,__zero_reg__
+ 1113 0026 1092 0000 		sts sequenceNo,__zero_reg__
  121:main.c        ****   
- 1101               	.LM125:
- 1102 002a 1092 0000 		sts packetReady,__zero_reg__
+ 1115               	.LM127:
+ 1116 002a 1092 0000 		sts packetReady,__zero_reg__
  124:main.c        ****   printf("mac = %d\r\n",mac_address);
- 1104               	.LM126:
- 1105 002e 82E0      		ldi r24,lo8(2)
- 1106 0030 90E0      		ldi r25,0
- 1107 0032 9093 0000 		sts mac_address+1,r25
- 1108 0036 8093 0000 		sts mac_address,r24
+ 1118               	.LM128:
+ 1119 002e 82E0      		ldi r24,lo8(2)
+ 1120 0030 90E0      		ldi r25,0
+ 1121 0032 9093 0000 		sts mac_address+1,r25
+ 1122 0036 8093 0000 		sts mac_address,r24
  125:main.c        ****   tdma_init (TDMA_CLIENT, DEFAULT_CHANNEL, CLIENT_MAC);
- 1110               	.LM127:
- 1111 003a 1F92      		push __zero_reg__
- 1112 003c 8F93      		push r24
- 1113 003e 80E0      		ldi r24,lo8(.LC1)
- 1114 0040 90E0      		ldi r25,hi8(.LC1)
- 1115 0042 9F93      		push r25
- 1116 0044 8F93      		push r24
- 1117 0046 0E94 0000 		call printf
+ 1124               	.LM129:
+ 1125 003a 1F92      		push __zero_reg__
+ 1126 003c 8F93      		push r24
+ 1127 003e 80E0      		ldi r24,lo8(.LC1)
+ 1128 0040 90E0      		ldi r25,hi8(.LC1)
+ 1129 0042 9F93      		push r25
+ 1130 0044 8F93      		push r24
+ 1131 0046 0E94 0000 		call printf
  126:main.c        **** 
- 1119               	.LM128:
- 1120 004a 42E0      		ldi r20,lo8(2)
- 1121 004c 50E0      		ldi r21,0
- 1122 004e 6DE0      		ldi r22,lo8(13)
- 1123 0050 82E0      		ldi r24,lo8(2)
- 1124 0052 0E94 0000 		call tdma_init
+ 1133               	.LM130:
+ 1134 004a 42E0      		ldi r20,lo8(2)
+ 1135 004c 50E0      		ldi r21,0
+ 1136 004e 6DE0      		ldi r22,lo8(13)
+ 1137 0050 82E0      		ldi r24,lo8(2)
+ 1138 0052 0E94 0000 		call tdma_init
  131:main.c        **** 
- 1126               	.LM129:
- 1127 0056 8091 0000 		lds r24,mac_address
- 1128 005a 9091 0000 		lds r25,mac_address+1
- 1129 005e 0E94 0000 		call tdma_tx_slot_add
+ 1140               	.LM131:
+ 1141 0056 8091 0000 		lds r24,mac_address
+ 1142 005a 9091 0000 		lds r25,mac_address+1
+ 1143 005e 0E94 0000 		call tdma_tx_slot_add
  133:main.c        ****   nrk_led_clr(BLUE_LED);
- 1131               	.LM130:
- 1132 0062 82E0      		ldi r24,lo8(2)
- 1133 0064 90E0      		ldi r25,0
- 1134 0066 0E94 0000 		call nrk_led_clr
+ 1145               	.LM132:
+ 1146 0062 82E0      		ldi r24,lo8(2)
+ 1147 0064 90E0      		ldi r25,0
+ 1148 0066 0E94 0000 		call nrk_led_clr
  134:main.c        ****   nrk_led_clr(GREEN_LED);
- 1136               	.LM131:
- 1137 006a 83E0      		ldi r24,lo8(3)
- 1138 006c 90E0      		ldi r25,0
- 1139 006e 0E94 0000 		call nrk_led_clr
+ 1150               	.LM133:
+ 1151 006a 83E0      		ldi r24,lo8(3)
+ 1152 006c 90E0      		ldi r25,0
+ 1153 006e 0E94 0000 		call nrk_led_clr
  135:main.c        ****   nrk_led_clr(RED_LED);
- 1141               	.LM132:
- 1142 0072 81E0      		ldi r24,lo8(1)
- 1143 0074 90E0      		ldi r25,0
- 1144 0076 0E94 0000 		call nrk_led_clr
+ 1155               	.LM134:
+ 1156 0072 81E0      		ldi r24,lo8(1)
+ 1157 0074 90E0      		ldi r25,0
+ 1158 0076 0E94 0000 		call nrk_led_clr
  136:main.c        ****  
- 1146               	.LM133:
- 1147 007a 80E0      		ldi r24,0
- 1148 007c 90E0      		ldi r25,0
- 1149 007e 0E94 0000 		call nrk_led_clr
- 138:main.c        ****   nrk_create_taskset();
- 1151               	.LM134:
- 1152 0082 20E0      		ldi r18,0
- 1153 0084 30E0      		ldi r19,0
- 1154 0086 A901      		movw r20,r18
- 1155 0088 60E0      		ldi r22,0
- 1156 008a 70E0      		ldi r23,0
- 1157 008c CB01      		movw r24,r22
- 1158 008e 0E94 0000 		call nrk_time_set
- 139:main.c        ****   nrk_start();
  1160               	.LM135:
- 1161 0092 0E94 0000 		call nrk_create_taskset
+ 1161 007a 80E0      		ldi r24,0
+ 1162 007c 90E0      		ldi r25,0
+ 1163 007e 0E94 0000 		call nrk_led_clr
+ 138:main.c        ****   nrk_create_taskset();
+ 1165               	.LM136:
+ 1166 0082 20E0      		ldi r18,0
+ 1167 0084 30E0      		ldi r19,0
+ 1168 0086 A901      		movw r20,r18
+ 1169 0088 60E0      		ldi r22,0
+ 1170 008a 70E0      		ldi r23,0
+ 1171 008c CB01      		movw r24,r22
+ 1172 008e 0E94 0000 		call nrk_time_set
+ 139:main.c        ****   nrk_start();
+ 1174               	.LM137:
+ 1175 0092 0E94 0000 		call nrk_create_taskset
  140:main.c        ****   
- 1163               	.LM136:
- 1164 0096 0E94 0000 		call nrk_start
- 1165 009a 0F90      		pop __tmp_reg__
- 1166 009c 0F90      		pop __tmp_reg__
- 1167 009e 0F90      		pop __tmp_reg__
- 1168 00a0 0F90      		pop __tmp_reg__
+ 1177               	.LM138:
+ 1178 0096 0E94 0000 		call nrk_start
+ 1179 009a 0F90      		pop __tmp_reg__
+ 1180 009c 0F90      		pop __tmp_reg__
+ 1181 009e 0F90      		pop __tmp_reg__
+ 1182 00a0 0F90      		pop __tmp_reg__
  143:main.c        **** 
- 1170               	.LM137:
- 1171 00a2 80E0      		ldi r24,0
- 1172 00a4 90E0      		ldi r25,0
- 1173 00a6 0895      		ret
- 1175               	.Lscope7:
- 1177               		.stabd	78,0,0
- 1178               		.comm	tx_task_info,35,1
- 1179               		.comm	tx_task_stack,128,1
- 1180               		.comm	rx_task_info,35,1
- 1181               		.comm	rx_task_stack,128,1
- 1182               		.comm	TaskOne,35,1
- 1183               		.comm	Stack1,128,1
- 1184               	.global	aes_key
- 1185               		.data
- 1188               	aes_key:
- 1189 0000 00        		.byte	0
- 1190 0001 11        		.byte	17
- 1191 0002 22        		.byte	34
- 1192 0003 33        		.byte	51
- 1193 0004 44        		.byte	68
- 1194 0005 55        		.byte	85
- 1195 0006 66        		.byte	102
- 1196 0007 77        		.byte	119
- 1197 0008 88        		.byte	-120
- 1198 0009 99        		.byte	-103
- 1199 000a AA        		.byte	-86
- 1200 000b BB        		.byte	-69
- 1201 000c CC        		.byte	-52
- 1202 000d DD        		.byte	-35
- 1203 000e EE        		.byte	-18
- 1204 000f FF        		.byte	-1
- 1205               		.comm	mac_address,2,1
- 1206               		.comm	packetReady,1,1
- 1207               		.comm	sequenceNo,2,1
- 1208               		.comm	tx_len,1,1
- 1209               		.comm	pkt,112,1
- 1210               		.comm	tx_buf,112,1
- 1211               		.comm	i2c_buf,16,1
- 1212               		.comm	rx_tdma_fd,18,1
- 1213               		.comm	tx_tdma_fd,18,1
- 1214               		.comm	tdma_rfTxInfo,7,1
- 1215               		.comm	tdma_rfRxInfo,12,1
- 1216               		.comm	tdma_enable_signal,1,1
- 1217               		.comm	tdma_tx_pkt_done_signal,1,1
- 1218               		.comm	tdma_rx_pkt_signal,1,1
- 1219               		.comm	_nrk_stats_sleep_time,8,1
- 1220               		.comm	cur_task_stats,120,1
- 1221               		.comm	app_timer0_prescale,1,1
- 1222               		.comm	app_timer0_callback,2,1
- 1223               		.comm	_nrk_time_trigger,1,1
- 1224               		.comm	_nrk_prev_timer_val,1,1
- 1225               		.comm	error_num,1,1
- 1226               		.comm	error_task,1,1
- 1227               		.comm	nrk_kernel_stk_ptr,2,1
- 1228               		.comm	nrk_idle_task_stk,128,1
- 1229               		.comm	_nrk_signal_list,4,1
- 1262               		.text
- 1264               	.Letext0:
- 1265               		.ident	"GCC: (GNU) 4.9.1"
- 1266               	.global __do_copy_data
- 1267               	.global __do_clear_bss
+ 1184               	.LM139:
+ 1185 00a2 80E0      		ldi r24,0
+ 1186 00a4 90E0      		ldi r25,0
+ 1187 00a6 0895      		ret
+ 1189               	.Lscope7:
+ 1191               		.stabd	78,0,0
+ 1192               		.comm	tx_task_info,35,1
+ 1193               		.comm	tx_task_stack,128,1
+ 1194               		.comm	rx_task_info,35,1
+ 1195               		.comm	rx_task_stack,128,1
+ 1196               		.comm	TaskOne,35,1
+ 1197               		.comm	Stack1,128,1
+ 1198               	.global	aes_key
+ 1199               		.data
+ 1202               	aes_key:
+ 1203 0000 00        		.byte	0
+ 1204 0001 11        		.byte	17
+ 1205 0002 22        		.byte	34
+ 1206 0003 33        		.byte	51
+ 1207 0004 44        		.byte	68
+ 1208 0005 55        		.byte	85
+ 1209 0006 66        		.byte	102
+ 1210 0007 77        		.byte	119
+ 1211 0008 88        		.byte	-120
+ 1212 0009 99        		.byte	-103
+ 1213 000a AA        		.byte	-86
+ 1214 000b BB        		.byte	-69
+ 1215 000c CC        		.byte	-52
+ 1216 000d DD        		.byte	-35
+ 1217 000e EE        		.byte	-18
+ 1218 000f FF        		.byte	-1
+ 1219               		.comm	mac_address,2,1
+ 1220               		.comm	packetReady,1,1
+ 1221               		.comm	sequenceNo,2,1
+ 1222               		.comm	tx_len,1,1
+ 1223               		.comm	pkt,112,1
+ 1224               		.comm	tx_buf,112,1
+ 1225               		.comm	i2c_buf,16,1
+ 1226               		.comm	rx_tdma_fd,18,1
+ 1227               		.comm	tx_tdma_fd,18,1
+ 1228               		.comm	tdma_rfTxInfo,7,1
+ 1229               		.comm	tdma_rfRxInfo,12,1
+ 1230               		.comm	tdma_enable_signal,1,1
+ 1231               		.comm	tdma_tx_pkt_done_signal,1,1
+ 1232               		.comm	tdma_rx_pkt_signal,1,1
+ 1233               		.comm	_nrk_stats_sleep_time,8,1
+ 1234               		.comm	cur_task_stats,120,1
+ 1235               		.comm	app_timer0_prescale,1,1
+ 1236               		.comm	app_timer0_callback,2,1
+ 1237               		.comm	_nrk_time_trigger,1,1
+ 1238               		.comm	_nrk_prev_timer_val,1,1
+ 1239               		.comm	error_num,1,1
+ 1240               		.comm	error_task,1,1
+ 1241               		.comm	nrk_kernel_stk_ptr,2,1
+ 1242               		.comm	nrk_idle_task_stk,128,1
+ 1243               		.comm	_nrk_signal_list,4,1
+ 1276               		.text
+ 1278               	.Letext0:
+ 1279               		.ident	"GCC: (GNU) 4.9.1"
+ 1280               	.global __do_copy_data
+ 1281               	.global __do_clear_bss
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 main.c
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccvXEhB3.s:2      *ABS*:000000000000003e __SP_H__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccvXEhB3.s:3      *ABS*:000000000000003d __SP_L__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccvXEhB3.s:4      *ABS*:000000000000003f __SREG__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccvXEhB3.s:5      *ABS*:000000000000003b __RAMPZ__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccvXEhB3.s:6      *ABS*:0000000000000000 __tmp_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccvXEhB3.s:7      *ABS*:0000000000000001 __zero_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccvXEhB3.s:339    .text:0000000000000000 task_imu
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmf8OBz.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmf8OBz.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmf8OBz.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmf8OBz.s:5      *ABS*:000000000000003b __RAMPZ__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmf8OBz.s:6      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmf8OBz.s:7      *ABS*:0000000000000001 __zero_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmf8OBz.s:339    .text:0000000000000000 task_imu
                             *COM*:0000000000000070 tx_buf
                             *COM*:0000000000000002 sequenceNo
                             *COM*:0000000000000010 i2c_buf
                             *COM*:0000000000000001 tx_len
                             *COM*:0000000000000070 pkt
                             *COM*:0000000000000001 packetReady
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccvXEhB3.s:587    .text:0000000000000142 tx_task
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmf8OBz.s:587    .text:0000000000000142 tx_task
                             *COM*:0000000000000012 tx_tdma_fd
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccvXEhB3.s:705    .text:00000000000001e6 init_itg3200
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccvXEhB3.s:740    .text:00000000000001fe init_hmc5843
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccvXEhB3.s:774    .text:0000000000000214 init_adxl345
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccvXEhB3.s:868    .text:000000000000026e nrk_create_taskset
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmf8OBz.s:723    .text:000000000000020a init_itg3200
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmf8OBz.s:758    .text:0000000000000222 init_hmc5843
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmf8OBz.s:792    .text:0000000000000238 init_adxl345
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmf8OBz.s:886    .text:0000000000000292 nrk_create_taskset
                             *COM*:0000000000000023 TaskOne
                             *COM*:0000000000000080 Stack1
                             *COM*:0000000000000023 tx_task_info
                             *COM*:0000000000000080 tx_task_stack
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccvXEhB3.s:1057   .text.startup:0000000000000000 main
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmf8OBz.s:1071   .text.startup:0000000000000000 main
                             *COM*:0000000000000002 mac_address
                             *COM*:0000000000000023 rx_task_info
                             *COM*:0000000000000080 rx_task_stack
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccvXEhB3.s:1188   .data:0000000000000000 aes_key
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccmf8OBz.s:1202   .data:0000000000000000 aes_key
                             *COM*:0000000000000012 rx_tdma_fd
                             *COM*:0000000000000007 tdma_rfTxInfo
                             *COM*:000000000000000c tdma_rfRxInfo

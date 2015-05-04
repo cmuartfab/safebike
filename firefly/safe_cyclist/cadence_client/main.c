@@ -78,6 +78,9 @@ uint8_t tx_len;
 unsigned int sequenceNo; 
 bool packetReady;
 
+uint8_t timer0Seq;
+uint8_t timer1Seq;
+
 
 uint16_t mac_address;
 
@@ -91,6 +94,7 @@ static nrk_time_t time1;
 
 typedef struct {
    uint8_t mac;
+   uint8_t seq;
    uint8_t timerNo;
    uint32_t secs;
    uint32_t nano_secs;
@@ -172,7 +176,9 @@ main ()
 
 void uni_timer_handler(void){
   uint8_t timerNo,v;
+  uint8_t* seq;
   nrk_time_t pTime, sTime,cTime;
+
 
   // the current time, we now have to subtract this form
   // the previous time.
@@ -185,19 +191,24 @@ void uni_timer_handler(void){
 
   switch (timerNo) {
     case 0: pTime = time0;
+            seq = &timer0Seq;
             break;
     case 1: pTime = time1;
+            seq = &timer1Seq;
             break;
   }
 
   v = nrk_time_sub(&sTime, cTime, pTime);
 
+  //increment the corresponding sequence number
+  *seq = *seq + 1;
 
   // save the new previous time for this timer.
   pTime.secs = cTime.secs;
   pTime.nano_secs = cTime.nano_secs;
 
   tx_pack.mac = CLIENT_MAC;
+  tx_pack.seq = *seq;
   tx_pack.timerNo = timerNo;
   tx_pack.secs = sTime.secs;
   tx_pack.nano_secs = sTime.nano_secs;
