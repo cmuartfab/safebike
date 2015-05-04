@@ -19,7 +19,7 @@
 //#define IGNORE_EXT_RST_ERROR
 
 #define NRK_UART_BUF 1
-#define MAX_UART_BUF 128
+#define MAX_UART_BUF 256//128 trying this too
 
 #define NRK_NO_BOUNDED_CONTEXT_SWAP
 // Disable a few common errors when connected to programmer
@@ -36,7 +36,7 @@
 
 // This must be greater than or equal to the highest priority task that uses
 // the serial port (i.e. print of nrk_kprintf)
-#define SLIP_PCP_CEILING		18	
+#define SLIP_PCP_CEILING		25 //18 trying 25 to see if it helps	
 
 
 #define NRK_STATS_TRACKER
@@ -62,11 +62,11 @@
 // Be sure to include the idle task
 // Making this the correct size will save on BSS memory which
 // is both RAM and ROM...
-#define NRK_MAX_TASKS       		3
+#define NRK_MAX_TASKS       		5//3 trying this one too
 
                            
 
-#define NRK_TASK_IDLE_STK_SIZE         128 // Idle task stack size min=32 
+#define NRK_TASK_IDLE_STK_SIZE         256 // 128 trying this too
 #define NRK_APP_STACKSIZE              256 
 #define NRK_KERNEL_STACKSIZE           256 
 #define NRK_MAX_RESOURCE_CNT           3  //slip uses one too!

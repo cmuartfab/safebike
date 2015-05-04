@@ -34,8 +34,12 @@
 #include <slip.h>
 #include <tdma_cons.h>
 
+//CHANGE THESE AS NECESSARY
+//SLOT NUMBER: number of clients + 1
+//SLOT_LEN: as low as possible, 2 seems to be fine
+
 #define SLOT_LEN 2
-#define SLOT_NO 3
+#define SLOT_NO 3 
 
 
 NRK_STK rx_task_stack[NRK_APP_STACKSIZE];
@@ -65,6 +69,7 @@ int main ()
   // Change these parameters at runtime...
   tdma_set_slot_len_ms (SLOT_LEN);
   tdma_set_slots_per_cycle (SLOT_NO);
+  tdma_ttl_set(3);
   printf("%d ms slots, %d slots per cycle\r\n",SLOT_LEN,SLOT_NO);
 
 

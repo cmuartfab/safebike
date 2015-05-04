@@ -278,6 +278,8 @@ void tx_task ()
     }
     nrk_led_clr(RED_LED);
     v = tdma_send (&tx_tdma_fd, &pkt, tx_len, TDMA_BLOCKING);
+    v = tdma_send (&tx_tdma_fd, &pkt, tx_len, TDMA_BLOCKING);
+    v = tdma_send (&tx_tdma_fd, &pkt, tx_len, TDMA_BLOCKING);
     }
 }
 
@@ -307,7 +309,7 @@ nrk_create_taskset()
   tx_task_info.Type = BASIC_TASK;
   tx_task_info.SchType = PREEMPTIVE;
   tx_task_info.period.secs = 0;
-  tx_task_info.period.nano_secs = 5 * NANOS_PER_MS;
+  tx_task_info.period.nano_secs = 0 * NANOS_PER_MS;
   tx_task_info.cpu_reserve.secs = 0;
   tx_task_info.cpu_reserve.nano_secs = 0 * NANOS_PER_MS;
   tx_task_info.offset.secs = 1;

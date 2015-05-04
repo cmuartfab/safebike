@@ -77,29 +77,30 @@
   65:main.c        ****   // Change these parameters at runtime...
   66:main.c        ****   tdma_set_slot_len_ms (SLOT_LEN);
   67:main.c        ****   tdma_set_slots_per_cycle (SLOT_NO);
-  68:main.c        ****   printf("%d ms slots, %d slots per cycle\r\n",SLOT_LEN,SLOT_NO);
-  69:main.c        **** 
+  68:main.c        ****   tdma_ttl_set(3);
+  69:main.c        ****   printf("%d ms slots, %d slots per cycle\r\n",SLOT_LEN,SLOT_NO);
   70:main.c        **** 
-  71:main.c        ****   //tdma_aes_setkey(aes_key);
-  72:main.c        ****   //tdma_aes_enable();
-  73:main.c        **** 
+  71:main.c        **** 
+  72:main.c        ****   //tdma_aes_setkey(aes_key);
+  73:main.c        ****   //tdma_aes_enable();
   74:main.c        **** 
   75:main.c        **** 
-  76:main.c        ****   nrk_led_clr (ORANGE_LED);
-  77:main.c        ****   nrk_led_clr (BLUE_LED);
-  78:main.c        ****   nrk_led_clr (GREEN_LED);
-  79:main.c        ****   nrk_led_clr (RED_LED);
-  80:main.c        **** 
-  81:main.c        ****   nrk_time_set (0, 0);
-  82:main.c        ****   nrk_create_taskset ();
-  83:main.c        ****   nrk_start ();
-  84:main.c        **** 
-  85:main.c        ****   return 0;
-  86:main.c        **** }
-  87:main.c        **** 
+  76:main.c        **** 
+  77:main.c        ****   nrk_led_clr (ORANGE_LED);
+  78:main.c        ****   nrk_led_clr (BLUE_LED);
+  79:main.c        ****   nrk_led_clr (GREEN_LED);
+  80:main.c        ****   nrk_led_clr (RED_LED);
+  81:main.c        **** 
+  82:main.c        ****   nrk_time_set (0, 0);
+  83:main.c        ****   nrk_create_taskset ();
+  84:main.c        ****   nrk_start ();
+  85:main.c        **** 
+  86:main.c        ****   return 0;
+  87:main.c        **** }
   88:main.c        **** 
-  89:main.c        **** void rx_task ()
-  90:main.c        **** {
+  89:main.c        **** 
+  90:main.c        **** void rx_task ()
+  91:main.c        **** {
  339               	.LM0:
  340               	.LFBB1:
  341 0000 CF93      		push r28
@@ -112,31 +113,31 @@
  348               	/* stack size = 3 */
  349               	.L__stack_usage = 3
  350               	.L2:
-  91:main.c        ****   int8_t v;
-  92:main.c        ****   uint8_t len, i;
-  93:main.c        **** 
+  92:main.c        ****   int8_t v;
+  93:main.c        ****   uint8_t len, i;
   94:main.c        **** 
-  95:main.c        ****   while (!tdma_started () || !slip_started())
+  95:main.c        **** 
+  96:main.c        ****   while (!tdma_started () || !slip_started())
  352               	.LM1:
  353 000a 0E94 0000 		call tdma_started
  354 000e 8111      		cpse r24,__zero_reg__
  355 0010 00C0      		rjmp .L17
  356               	.L6:
-  96:main.c        ****     nrk_wait_until_next_period ();
+  97:main.c        ****     nrk_wait_until_next_period ();
  358               	.LM2:
  359 0012 0E94 0000 		call nrk_wait_until_next_period
  360 0016 00C0      		rjmp .L2
  361               	.L17:
-  95:main.c        ****     nrk_wait_until_next_period ();
+  96:main.c        ****     nrk_wait_until_next_period ();
  363               	.LM3:
  364 0018 0E94 0000 		call slip_started
  365 001c 8823      		tst r24
  366 001e 01F0      		breq .L6
  367               	.L4:
-  97:main.c        **** 
   98:main.c        **** 
-  99:main.c        ****   while (1) {
- 100:main.c        ****     v = tdma_recv (&rx_tdma_fd, &rx_buf, &len, TDMA_NONBLOCKING);
+  99:main.c        **** 
+ 100:main.c        ****   while (1) {
+ 101:main.c        ****     v = tdma_recv (&rx_tdma_fd, &rx_buf, &len, TDMA_NONBLOCKING);
  369               	.LM4:
  370 0020 21E0      		ldi r18,lo8(1)
  371 0022 AE01      		movw r20,r28
@@ -147,7 +148,7 @@
  376 002c 80E0      		ldi r24,lo8(rx_tdma_fd)
  377 002e 90E0      		ldi r25,hi8(rx_tdma_fd)
  378 0030 0E94 0000 		call tdma_recv
- 101:main.c        ****     if (v == NRK_OK && len > 0) {
+ 102:main.c        ****     if (v == NRK_OK && len > 0) {
  380               	.LM5:
  381 0034 8130      		cpi r24,lo8(1)
  382 0036 01F4      		brne .L4
@@ -155,20 +156,20 @@
  385 0038 8981      		ldd r24,Y+1
  386 003a 8823      		tst r24
  387 003c 01F0      		breq .L4
- 102:main.c        ****       nrk_led_set(RED_LED);
+ 103:main.c        ****       nrk_led_set(RED_LED);
  389               	.LM7:
  390 003e 81E0      		ldi r24,lo8(1)
  391 0040 90E0      		ldi r25,0
  392 0042 0E94 0000 		call nrk_led_set
- 103:main.c        ****       
- 104:main.c        ****       //send the packet to the SLIPstream client
- 105:main.c        ****       slip_tx (rx_buf,len);
+ 104:main.c        ****       
+ 105:main.c        ****       //send the packet to the SLIPstream client
+ 106:main.c        ****       slip_tx (rx_buf,len);
  394               	.LM8:
  395 0046 6981      		ldd r22,Y+1
  396 0048 80E0      		ldi r24,lo8(rx_buf)
  397 004a 90E0      		ldi r25,hi8(rx_buf)
  398 004c 0E94 0000 		call slip_tx
- 106:main.c        ****       nrk_led_clr(RED_LED);
+ 107:main.c        ****       nrk_led_clr(RED_LED);
  400               	.LM9:
  401 0050 81E0      		ldi r24,lo8(1)
  402 0052 90E0      		ldi r25,0
@@ -179,26 +180,26 @@
  413               	.global	nrk_create_taskset
  415               	nrk_create_taskset:
  416               		.stabd	46,0,0
- 107:main.c        ****     }
- 108:main.c        ****   }
- 109:main.c        **** }
- 110:main.c        **** 
- 111:main.c        **** void nrk_create_taskset ()
- 112:main.c        **** {
+ 108:main.c        ****     }
+ 109:main.c        ****   }
+ 110:main.c        **** }
+ 111:main.c        **** 
+ 112:main.c        **** void nrk_create_taskset ()
+ 113:main.c        **** {
  418               	.LM10:
  419               	.LFBB2:
  420               	/* prologue: function */
  421               	/* frame size = 0 */
  422               	/* stack size = 0 */
  423               	.L__stack_usage = 0
- 113:main.c        ****   nrk_task_set_entry_function (&rx_task_info, rx_task);
+ 114:main.c        ****   nrk_task_set_entry_function (&rx_task_info, rx_task);
  425               	.LM11:
  426 005a 60E0      		ldi r22,lo8(gs(rx_task))
  427 005c 70E0      		ldi r23,hi8(gs(rx_task))
  428 005e 80E0      		ldi r24,lo8(rx_task_info)
  429 0060 90E0      		ldi r25,hi8(rx_task_info)
  430 0062 0E94 0000 		call nrk_task_set_entry_function
- 114:main.c        ****   nrk_task_set_stk (&rx_task_info, rx_task_stack, NRK_APP_STACKSIZE);
+ 115:main.c        ****   nrk_task_set_stk (&rx_task_info, rx_task_stack, NRK_APP_STACKSIZE);
  432               	.LM12:
  433 0066 40E0      		ldi r20,0
  434 0068 51E0      		ldi r21,lo8(1)
@@ -207,28 +208,28 @@
  437 006e 80E0      		ldi r24,lo8(rx_task_info)
  438 0070 90E0      		ldi r25,hi8(rx_task_info)
  439 0072 0E94 0000 		call nrk_task_set_stk
- 115:main.c        ****   rx_task_info.prio = 1;
+ 116:main.c        ****   rx_task_info.prio = 1;
  441               	.LM13:
  442 0076 E0E0      		ldi r30,lo8(rx_task_info)
  443 0078 F0E0      		ldi r31,hi8(rx_task_info)
  444 007a 81E0      		ldi r24,lo8(1)
  445 007c 8087      		std Z+8,r24
- 116:main.c        ****   rx_task_info.FirstActivation = TRUE;
+ 117:main.c        ****   rx_task_info.FirstActivation = TRUE;
  447               	.LM14:
  448 007e 8783      		std Z+7,r24
- 117:main.c        ****   rx_task_info.Type = BASIC_TASK;
+ 118:main.c        ****   rx_task_info.Type = BASIC_TASK;
  450               	.LM15:
  451 0080 8187      		std Z+9,r24
- 118:main.c        ****   rx_task_info.SchType = PREEMPTIVE;
+ 119:main.c        ****   rx_task_info.SchType = PREEMPTIVE;
  453               	.LM16:
  454 0082 8287      		std Z+10,r24
- 119:main.c        ****   rx_task_info.period.secs = 0;
+ 120:main.c        ****   rx_task_info.period.secs = 0;
  456               	.LM17:
  457 0084 1386      		std Z+11,__zero_reg__
  458 0086 1486      		std Z+12,__zero_reg__
  459 0088 1586      		std Z+13,__zero_reg__
  460 008a 1686      		std Z+14,__zero_reg__
- 120:main.c        ****   rx_task_info.period.nano_secs = 25 * NANOS_PER_MS;
+ 121:main.c        ****   rx_task_info.period.nano_secs = 25 * NANOS_PER_MS;
  462               	.LM18:
  463 008c 80E4      		ldi r24,lo8(64)
  464 008e 98E7      		ldi r25,lo8(120)
@@ -238,19 +239,19 @@
  468 0096 908B      		std Z+16,r25
  469 0098 A18B      		std Z+17,r26
  470 009a B28B      		std Z+18,r27
- 121:main.c        ****   rx_task_info.cpu_reserve.secs = 0;
+ 122:main.c        ****   rx_task_info.cpu_reserve.secs = 0;
  472               	.LM19:
  473 009c 138A      		std Z+19,__zero_reg__
  474 009e 148A      		std Z+20,__zero_reg__
  475 00a0 158A      		std Z+21,__zero_reg__
  476 00a2 168A      		std Z+22,__zero_reg__
- 122:main.c        ****   rx_task_info.cpu_reserve.nano_secs = 0 * NANOS_PER_MS;
+ 123:main.c        ****   rx_task_info.cpu_reserve.nano_secs = 0 * NANOS_PER_MS;
  478               	.LM20:
  479 00a4 178A      		std Z+23,__zero_reg__
  480 00a6 108E      		std Z+24,__zero_reg__
  481 00a8 118E      		std Z+25,__zero_reg__
  482 00aa 128E      		std Z+26,__zero_reg__
- 123:main.c        ****   rx_task_info.offset.secs = 1;
+ 124:main.c        ****   rx_task_info.offset.secs = 1;
  484               	.LM21:
  485 00ac 81E0      		ldi r24,lo8(1)
  486 00ae 90E0      		ldi r25,0
@@ -260,18 +261,18 @@
  490 00b6 948F      		std Z+28,r25
  491 00b8 A58F      		std Z+29,r26
  492 00ba B68F      		std Z+30,r27
- 124:main.c        ****   rx_task_info.offset.nano_secs = 0;
+ 125:main.c        ****   rx_task_info.offset.nano_secs = 0;
  494               	.LM22:
  495 00bc 178E      		std Z+31,__zero_reg__
  496 00be 10A2      		std Z+32,__zero_reg__
  497 00c0 11A2      		std Z+33,__zero_reg__
  498 00c2 12A2      		std Z+34,__zero_reg__
- 125:main.c        ****   nrk_activate_task (&rx_task_info);
+ 126:main.c        ****   nrk_activate_task (&rx_task_info);
  500               	.LM23:
  501 00c4 CF01      		movw r24,r30
  502 00c6 0E94 0000 		call nrk_activate_task
- 126:main.c        **** 
- 127:main.c        ****   tdma_task_config ();
+ 127:main.c        **** 
+ 128:main.c        ****   tdma_task_config ();
  504               	.LM24:
  505 00ca 0C94 0000 		jmp tdma_task_config
  507               	.Lscope2:
@@ -328,139 +329,144 @@
  557 0030 82E0      		ldi r24,lo8(2)
  558 0032 90E0      		ldi r25,0
  559 0034 0E94 0000 		call tdma_set_slot_len_ms
-  67:main.c        ****   printf("%d ms slots, %d slots per cycle\r\n",SLOT_LEN,SLOT_NO);
+  67:main.c        ****   tdma_ttl_set(3);
  561               	.LM32:
  562 0038 83E0      		ldi r24,lo8(3)
  563 003a 90E0      		ldi r25,0
  564 003c 0E94 0000 		call tdma_set_slots_per_cycle
-  68:main.c        **** 
+  68:main.c        ****   printf("%d ms slots, %d slots per cycle\r\n",SLOT_LEN,SLOT_NO);
  566               	.LM33:
- 567 0040 1F92      		push __zero_reg__
- 568 0042 83E0      		ldi r24,lo8(3)
- 569 0044 8F93      		push r24
- 570 0046 1F92      		push __zero_reg__
- 571 0048 82E0      		ldi r24,lo8(2)
- 572 004a 8F93      		push r24
- 573 004c 80E0      		ldi r24,lo8(.LC0)
- 574 004e 90E0      		ldi r25,hi8(.LC0)
- 575 0050 9F93      		push r25
- 576 0052 8F93      		push r24
- 577 0054 0E94 0000 		call printf
-  76:main.c        ****   nrk_led_clr (BLUE_LED);
- 579               	.LM34:
- 580 0058 83E0      		ldi r24,lo8(3)
- 581 005a 90E0      		ldi r25,0
- 582 005c 0E94 0000 		call nrk_led_clr
-  77:main.c        ****   nrk_led_clr (GREEN_LED);
+ 567 0040 83E0      		ldi r24,lo8(3)
+ 568 0042 90E0      		ldi r25,0
+ 569 0044 0E94 0000 		call tdma_ttl_set
+  69:main.c        **** 
+ 571               	.LM34:
+ 572 0048 1F92      		push __zero_reg__
+ 573 004a 83E0      		ldi r24,lo8(3)
+ 574 004c 8F93      		push r24
+ 575 004e 1F92      		push __zero_reg__
+ 576 0050 82E0      		ldi r24,lo8(2)
+ 577 0052 8F93      		push r24
+ 578 0054 80E0      		ldi r24,lo8(.LC0)
+ 579 0056 90E0      		ldi r25,hi8(.LC0)
+ 580 0058 9F93      		push r25
+ 581 005a 8F93      		push r24
+ 582 005c 0E94 0000 		call printf
+  77:main.c        ****   nrk_led_clr (BLUE_LED);
  584               	.LM35:
- 585 0060 82E0      		ldi r24,lo8(2)
+ 585 0060 83E0      		ldi r24,lo8(3)
  586 0062 90E0      		ldi r25,0
  587 0064 0E94 0000 		call nrk_led_clr
-  78:main.c        ****   nrk_led_clr (RED_LED);
+  78:main.c        ****   nrk_led_clr (GREEN_LED);
  589               	.LM36:
- 590 0068 80E0      		ldi r24,0
+ 590 0068 82E0      		ldi r24,lo8(2)
  591 006a 90E0      		ldi r25,0
  592 006c 0E94 0000 		call nrk_led_clr
-  79:main.c        **** 
+  79:main.c        ****   nrk_led_clr (RED_LED);
  594               	.LM37:
- 595 0070 81E0      		ldi r24,lo8(1)
+ 595 0070 80E0      		ldi r24,0
  596 0072 90E0      		ldi r25,0
  597 0074 0E94 0000 		call nrk_led_clr
-  81:main.c        ****   nrk_create_taskset ();
+  80:main.c        **** 
  599               	.LM38:
- 600 0078 20E0      		ldi r18,0
- 601 007a 30E0      		ldi r19,0
- 602 007c A901      		movw r20,r18
- 603 007e 60E0      		ldi r22,0
- 604 0080 70E0      		ldi r23,0
- 605 0082 CB01      		movw r24,r22
- 606 0084 0E94 0000 		call nrk_time_set
-  82:main.c        ****   nrk_start ();
- 608               	.LM39:
- 609 0088 0E94 0000 		call nrk_create_taskset
-  83:main.c        **** 
- 611               	.LM40:
- 612 008c 0E94 0000 		call nrk_start
- 613 0090 0F90      		pop __tmp_reg__
- 614 0092 0F90      		pop __tmp_reg__
- 615 0094 0F90      		pop __tmp_reg__
- 616 0096 0F90      		pop __tmp_reg__
- 617 0098 0F90      		pop __tmp_reg__
- 618 009a 0F90      		pop __tmp_reg__
-  86:main.c        **** 
- 620               	.LM41:
- 621 009c 80E0      		ldi r24,0
- 622 009e 90E0      		ldi r25,0
- 623 00a0 0895      		ret
- 625               	.Lscope3:
- 627               		.stabd	78,0,0
- 628               	.global	aes_key
- 629               		.data
- 632               	aes_key:
- 633 0000 00        		.byte	0
- 634 0001 11        		.byte	17
- 635 0002 22        		.byte	34
- 636 0003 33        		.byte	51
- 637 0004 44        		.byte	68
- 638 0005 55        		.byte	85
- 639 0006 66        		.byte	102
- 640 0007 77        		.byte	119
- 641 0008 88        		.byte	-120
- 642 0009 99        		.byte	-103
- 643 000a AA        		.byte	-86
- 644 000b BB        		.byte	-69
- 645 000c CC        		.byte	-52
- 646 000d DD        		.byte	-35
- 647 000e EE        		.byte	-18
- 648 000f FF        		.byte	-1
- 649               		.comm	rx_buf,112,1
- 650               		.comm	rx_tdma_fd,18,1
- 651               		.comm	rx_task_info,35,1
- 652               		.comm	rx_task_stack,256,1
- 653               		.comm	tdma_rfTxInfo,7,1
- 654               		.comm	tdma_rfRxInfo,12,1
- 655               		.comm	tdma_enable_signal,1,1
- 656               		.comm	tdma_tx_pkt_done_signal,1,1
- 657               		.comm	tdma_rx_pkt_signal,1,1
- 658               		.comm	_nrk_stats_sleep_time,8,1
- 659               		.comm	cur_task_stats,90,1
- 660               		.comm	app_timer0_prescale,1,1
- 661               		.comm	app_timer0_callback,2,1
- 662               		.comm	_nrk_time_trigger,1,1
- 663               		.comm	_nrk_prev_timer_val,1,1
- 664               		.comm	error_num,1,1
- 665               		.comm	error_task,1,1
- 666               		.comm	nrk_kernel_stk_ptr,2,1
- 667               		.comm	nrk_idle_task_stk,128,1
- 668               		.comm	_nrk_signal_list,4,1
- 690               		.text
- 692               	.Letext0:
- 693               		.ident	"GCC: (GNU) 4.9.1"
- 694               	.global __do_copy_data
- 695               	.global __do_clear_bss
+ 600 0078 81E0      		ldi r24,lo8(1)
+ 601 007a 90E0      		ldi r25,0
+ 602 007c 0E94 0000 		call nrk_led_clr
+  82:main.c        ****   nrk_create_taskset ();
+ 604               	.LM39:
+ 605 0080 20E0      		ldi r18,0
+ 606 0082 30E0      		ldi r19,0
+ 607 0084 A901      		movw r20,r18
+ 608 0086 60E0      		ldi r22,0
+ 609 0088 70E0      		ldi r23,0
+ 610 008a CB01      		movw r24,r22
+ 611 008c 0E94 0000 		call nrk_time_set
+  83:main.c        ****   nrk_start ();
+ 613               	.LM40:
+ 614 0090 0E94 0000 		call nrk_create_taskset
+  84:main.c        **** 
+ 616               	.LM41:
+ 617 0094 0E94 0000 		call nrk_start
+ 618 0098 0F90      		pop __tmp_reg__
+ 619 009a 0F90      		pop __tmp_reg__
+ 620 009c 0F90      		pop __tmp_reg__
+ 621 009e 0F90      		pop __tmp_reg__
+ 622 00a0 0F90      		pop __tmp_reg__
+ 623 00a2 0F90      		pop __tmp_reg__
+  87:main.c        **** 
+ 625               	.LM42:
+ 626 00a4 80E0      		ldi r24,0
+ 627 00a6 90E0      		ldi r25,0
+ 628 00a8 0895      		ret
+ 630               	.Lscope3:
+ 632               		.stabd	78,0,0
+ 633               	.global	aes_key
+ 634               		.data
+ 637               	aes_key:
+ 638 0000 00        		.byte	0
+ 639 0001 11        		.byte	17
+ 640 0002 22        		.byte	34
+ 641 0003 33        		.byte	51
+ 642 0004 44        		.byte	68
+ 643 0005 55        		.byte	85
+ 644 0006 66        		.byte	102
+ 645 0007 77        		.byte	119
+ 646 0008 88        		.byte	-120
+ 647 0009 99        		.byte	-103
+ 648 000a AA        		.byte	-86
+ 649 000b BB        		.byte	-69
+ 650 000c CC        		.byte	-52
+ 651 000d DD        		.byte	-35
+ 652 000e EE        		.byte	-18
+ 653 000f FF        		.byte	-1
+ 654               		.comm	rx_buf,112,1
+ 655               		.comm	rx_tdma_fd,18,1
+ 656               		.comm	rx_task_info,35,1
+ 657               		.comm	rx_task_stack,256,1
+ 658               		.comm	tdma_rfTxInfo,7,1
+ 659               		.comm	tdma_rfRxInfo,12,1
+ 660               		.comm	tdma_enable_signal,1,1
+ 661               		.comm	tdma_tx_pkt_done_signal,1,1
+ 662               		.comm	tdma_rx_pkt_signal,1,1
+ 663               		.comm	_nrk_stats_sleep_time,8,1
+ 664               		.comm	cur_task_stats,150,1
+ 665               		.comm	app_timer0_prescale,1,1
+ 666               		.comm	app_timer0_callback,2,1
+ 667               		.comm	_nrk_time_trigger,1,1
+ 668               		.comm	_nrk_prev_timer_val,1,1
+ 669               		.comm	error_num,1,1
+ 670               		.comm	error_task,1,1
+ 671               		.comm	nrk_kernel_stk_ptr,2,1
+ 672               		.comm	nrk_idle_task_stk,256,1
+ 673               		.comm	_nrk_signal_list,4,1
+ 695               		.text
+ 697               	.Letext0:
+ 698               		.ident	"GCC: (GNU) 4.9.1"
+ 699               	.global __do_copy_data
+ 700               	.global __do_clear_bss
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 main.c
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cclV802P.s:2      *ABS*:000000000000003e __SP_H__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cclV802P.s:3      *ABS*:000000000000003d __SP_L__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cclV802P.s:4      *ABS*:000000000000003f __SREG__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cclV802P.s:5      *ABS*:000000000000003b __RAMPZ__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cclV802P.s:6      *ABS*:0000000000000000 __tmp_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cclV802P.s:7      *ABS*:0000000000000001 __zero_reg__
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cclV802P.s:336    .text:0000000000000000 rx_task
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccl6UkWu.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccl6UkWu.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccl6UkWu.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccl6UkWu.s:5      *ABS*:000000000000003b __RAMPZ__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccl6UkWu.s:6      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccl6UkWu.s:7      *ABS*:0000000000000001 __zero_reg__
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccl6UkWu.s:336    .text:0000000000000000 rx_task
                             *COM*:0000000000000070 rx_buf
                             *COM*:0000000000000012 rx_tdma_fd
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cclV802P.s:415    .text:000000000000005a nrk_create_taskset
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccl6UkWu.s:415    .text:000000000000005a nrk_create_taskset
                             *COM*:0000000000000023 rx_task_info
                             *COM*:0000000000000100 rx_task_stack
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cclV802P.s:517    .text.startup:0000000000000000 main
-/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//cclV802P.s:632    .data:0000000000000000 aes_key
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccl6UkWu.s:517    .text.startup:0000000000000000 main
+/var/folders/5w/cgn1dq610yqf6q25zlv0gqm40000gn/T//ccl6UkWu.s:637    .data:0000000000000000 aes_key
                             *COM*:0000000000000007 tdma_rfTxInfo
                             *COM*:000000000000000c tdma_rfRxInfo
                             *COM*:0000000000000001 tdma_enable_signal
                             *COM*:0000000000000001 tdma_tx_pkt_done_signal
                             *COM*:0000000000000001 tdma_rx_pkt_signal
                             *COM*:0000000000000008 _nrk_stats_sleep_time
-                            *COM*:000000000000005a cur_task_stats
+                            *COM*:0000000000000096 cur_task_stats
                             *COM*:0000000000000001 app_timer0_prescale
                             *COM*:0000000000000002 app_timer0_callback
                             *COM*:0000000000000001 _nrk_time_trigger
@@ -468,7 +474,7 @@ DEFINED SYMBOLS
                             *COM*:0000000000000001 error_num
                             *COM*:0000000000000001 error_task
                             *COM*:0000000000000002 nrk_kernel_stk_ptr
-                            *COM*:0000000000000080 nrk_idle_task_stk
+                            *COM*:0000000000000100 nrk_idle_task_stk
                             *COM*:0000000000000004 _nrk_signal_list
 
 UNDEFINED SYMBOLS
@@ -491,6 +497,7 @@ __iob
 slip_init
 tdma_set_slot_len_ms
 tdma_set_slots_per_cycle
+tdma_ttl_set
 printf
 nrk_time_set
 nrk_start
