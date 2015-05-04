@@ -40,6 +40,7 @@ const string usage = "\n"
   "  -E <exposure>   Manually set camera exposure (default auto; range 0-10000)\n"
   "  -G <gain>       Manually set camera gain (default auto; range 0-255)\n"
   "  -B <brightness> Manually set the camera brightness (default 128; range 0-255)\n"
+  "  -f              Data file base path\n"
   "\n";
 
 const string intro = "\n"
@@ -205,18 +206,8 @@ public:
 
   // parse command line options to change default behavior
   void parseOptions(int argc, char* argv[]) {
-    // non-standard: slice off first argument as the data file path for safebike
-    if(argc >= 2) {
-      m_data_file_path = argv[1];
-      argc--;
-      argv++;
-      cout << "Found data file path " << m_data_file_path << "." << endl;
-      // printf("Found data file path %s.\n", m_data_file_path.c_str());
-    }
-
-
     int c;
-    while ((c = getopt(argc, argv, ":h?adtC:F:H:S:W:E:G:B:D:")) != -1) {
+    while ((c = getopt(argc, argv, ":h?adtC:F:H:S:W:E:G:B:D:f:")) != -1) {
       // Each option character has to be in the string in getopt();
       // the first colon changes the error character from '?' to ':';
       // a colon after an option means that there is an extra
@@ -278,6 +269,10 @@ public:
         break;
       case 'D':
         m_deviceId = atoi(optarg);
+        break;
+      case 'f':
+        m_data_file_path = optarg;
+        cout << "Found data file path \"" << m_data_file_path << "\"." << endl;
         break;
       case ':': // unknown option, from getopt
         cout << intro;
