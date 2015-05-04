@@ -22,7 +22,7 @@ class DataDriver:
   be used to make a folder, name files with suffixes, or generate a .csv file.
   """
 
-  def __init__(self, io_queue, name, exec_path, exec_args, read_only=False):
+  def __init__(self, io_queue, name, exec_path, exec_args, read_only=False, data_arg_flag=""):
     """
     Initialize by providing required information.
     name: For identification. Also used to name the data folder
@@ -35,6 +35,7 @@ class DataDriver:
     self.exec_path = exec_path
     self.exec_args = exec_args
     self.read_only = read_only
+    self.data_arg_flag = data_arg_flag
 
     self.subprocess_handle = None
     self.thread_handle = None
@@ -49,13 +50,15 @@ class DataDriver:
     if(self.read_only == True):
       process_args = [self.exec_path] + self.exec_args
     else:
-      process_args = [self.exec_path] + [data_base_path] + self.exec_args
+      data_arg = self.data_arg_flag + data_base_path
+      process_args = [self.exec_path] + self.exec_args + [data_arg]
 
     # spawn new process 
+    # print("running %s" % ("\""+"\" \"".join(process_args)+"\""))
+    print repr(process_args)
     self.subprocess_handle = subprocess.Popen(process_args,
                                               stdout=subprocess.PIPE,
                                               stderr=subprocess.STDOUT)
-    print("ran %s" % ("\""+"\" \"".join(process_args)+"\""))
 
     # start monitoring thread
     self.thread_handle = Thread(target=self.feed)
@@ -83,9 +86,10 @@ class DataDriver:
 g_io_queue = Queue.Queue()
 g_data_directory = "data"
 g_driver_list = [
-  # DataDriver(g_io_queue, "piksi", "./driver_piksi/driver_piksi", ["/dev/tty.asdf"]),
+  # DataDriver(g_io_queue, "piksi", "./driver_piksi/driver_piksi", ["/dev/tty.usbserial-00001014"]),
+  DataDriver(g_io_queue, "piksi", "/usr/local/bin/python", ["./driver_piksi/driver_piksi2.py", "-p", "/dev/cu.usbserial-00002014"], data_arg_flag="-d "),
   # DataDriver(g_io_queue, "accelerometers", "./driver_accelerometers/launch.sh", ["/dev/tty.asdf3"]),
-  DataDriver(g_io_queue, "apriltags", "./driver_apriltags/build/bin/apriltags_demo", []),
+  # DataDriver(g_io_queue, "apriltags", "./driver_apriltags/build/bin/apriltags_demo", []),
   # DataDriver(g_io_queue, "test", "./driver_test/a.out", []),
 ]
 
