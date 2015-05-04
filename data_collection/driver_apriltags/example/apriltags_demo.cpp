@@ -314,7 +314,7 @@ public:
       } else {
         cout << "Opened data file " << data_file_full_path << "." << endl;
         // printf("Opened data file %s.\n", data_file_full_path.c_str());
-        fprintf(m_data_file, "Id, Hamming, distance, x, y, z, yaw, pitch, roll\n");
+        fprintf(m_data_file, "system time (s), system time residual (us), Id, Hamming, distance, x (m), y (m), z (m), yaw, pitch, roll\n");
         fflush(m_data_file);
       }
     }
@@ -378,6 +378,12 @@ public:
   }
 
   void print_detection(AprilTags::TagDetection& detection) const {
+    // timestamp
+    struct timeval t;
+    gettimeofday(&t, NULL);
+    fprintf(m_data_file, "%lu, %lu, ", t.tv_sec, t.tv_usec);
+    fflush(m_data_file);
+
     // cout << "  Id: " << detection.id
     //      << " (Hamming: " << detection.hammingDistance << ")";
     // printf("  Id: %d (Hamming: %d)", detection.id, detection.hammingDistance);
