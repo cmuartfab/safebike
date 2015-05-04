@@ -1,5 +1,5 @@
 CC = clang
-CFLAGS = -I. -Wall
+CFLAGS = -I. -Wall -g
 MAKE = make
 DEPS = 
 LIBS = libswiftnav-static.a

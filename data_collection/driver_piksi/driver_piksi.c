@@ -144,18 +144,23 @@ void callback_setup(sbp_state_t *sbp_state_p)
   /* Register a node and callback, and associate them with a specific message ID. */
   error = sbp_register_callback(sbp_state_p, SBP_GPS_TIME, &sbp_gps_time_callback, NULL, &gps_time_node);
   printf("sbp_register_callback: %d\n", error);
+  fflush(stdout);
 
   error = sbp_register_callback(sbp_state_p, SBP_POS_LLH, &sbp_pos_llh_callback, NULL, &pos_llh_node);
   printf("sbp_register_callback: %d\n", error);
+  fflush(stdout);
   
   error = sbp_register_callback(sbp_state_p, SBP_BASELINE_NED, &sbp_baseline_ned_callback, NULL, &baseline_ned_node);
   printf("sbp_register_callback: %d\n", error);
+  fflush(stdout);
   
   error = sbp_register_callback(sbp_state_p, SBP_VEL_NED, &sbp_vel_ned_callback, NULL, &vel_ned_node);
   printf("sbp_register_callback: %d\n", error);
+  fflush(stdout);
   
   error = sbp_register_callback(sbp_state_p, SBP_DOPS, &sbp_dops_callback, NULL, &dops_node);
   printf("sbp_register_callback: %d\n", error);
+  fflush(stdout);
 }
 
 
@@ -223,7 +228,14 @@ void callback_data_print(FILE *data_file) {
   str_i += sprintf(str + str_i, "\tVDOP\t\t: %7s\n", rj);
   str_i += sprintf(str + str_i, "\n");
 
-  fprintf(data_file, "%s", str);
+  // fprintf(data_file, "%s", str);
+  // fflush(data_file);
+
+  fprintf(stdout, "%s", str);
+  fflush(stdout);
+
+  printf("new data in file at time %u\n", gps_time.tow);
+  fflush(stdout);
 }
 
 
@@ -246,6 +258,7 @@ int main(int argc, char *argv[]) {
   int piksi_fd = open_serial_connection(piksi_path, PIKSI_TTY_BAUD);
   if(piksi_fd < 0) {
     printf("[ERROR] Could not open serial connection %s !\n", piksi_path);
+    printf("[ERROR] %s\n", strerror(errno));
     exit(-1);
   }
 
