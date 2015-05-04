@@ -386,7 +386,7 @@ public:
     // cout << "  Id: " << detection.id
     //      << " (Hamming: " << detection.hammingDistance << ")";
     // printf("  Id: %d (Hamming: %d)", detection.id, detection.hammingDistance);
-    fprintf(m_data_file, "%d, %d", detection.id, detection.hammingDistance);
+    fprintf(m_data_file, "%d, %d, ", detection.id, detection.hammingDistance);
     fflush(m_data_file);
 
     // recovering the relative pose of a tag:

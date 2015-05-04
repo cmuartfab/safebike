@@ -81,7 +81,7 @@ def cb_pos_ecef(msg, shared_state):
   data_file = shared_state.file_pos_ecef
   check_file(data_file, "g_file_pos_ecef")
   m = sbp.navigation.MsgPosECEF(msg)
-  data_file.write("%d, %d, %d, %d, %d, %d, %d\n" % \
+  data_file.write("%d, %f, %f, %f, %d, %d, %d\n" % \
     (m.tow, m.x, m.y, m.z, m.accuracy, m.n_sats, m.flags))
 
 
@@ -89,7 +89,7 @@ def cb_pos_llh(msg, shared_state):
   data_file = shared_state.file_pos_llh
   check_file(data_file, "g_file_pos_llh")
   m = sbp.navigation.MsgPosLLH(msg)
-  data_file.write("%d, %d, %d, %d, %d, %d, %d, %d\n" % \
+  data_file.write("%d, %f, %f, %f, %d, %d, %d, %d\n" % \
     (m.tow, m.lat, m.lon, m.height, m.h_accuracy, m.v_accuracy, m.n_sats, m.flags))
 
 
