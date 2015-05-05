@@ -1,1 +1,1 @@
-./driver_accelerometers test localhost 4000
+./driver_accelerometers localhost 4000 test

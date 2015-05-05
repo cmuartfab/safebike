@@ -79,7 +79,7 @@ int main ()
 
 
   nrk_led_clr (ORANGE_LED);
-  nrk_led_clr (BLUE_LED);
+  nrk_led_set (BLUE_LED);
   nrk_led_clr (GREEN_LED);
   nrk_led_clr (RED_LED);
 
@@ -105,6 +105,10 @@ void rx_task ()
     v = tdma_recv (&rx_tdma_fd, &rx_buf, &len, TDMA_NONBLOCKING);
     if (v == NRK_OK && len > 0) {
       nrk_led_set(RED_LED);
+
+      // add rssi to end of buf
+      *(int16_t *)(&rx_buf[len]) = rx_tdma_fd.rssi;
+      len += 2;
       
       //send the packet to the SLIPstream client
       slip_tx (rx_buf,len);

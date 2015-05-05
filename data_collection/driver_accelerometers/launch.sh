@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e # stop on error
 
+trap "trap - SIGTERM && kill -- -$$" SIGINT SIGTERM EXIT
+
 SLIP_PORT=4000
 
 # Print help text and exit
@@ -15,15 +17,15 @@ if [[ "$1" == "" ]] || [[ "$2" == "" ]]; then
   echo "Missing required args!"
   helptext
 fi
-data_path=$1
-serial_device_path=$2
+serial_device_path=$1
+data_path=$2
 
-# change to script directory
-cd `dirname $0`
+# figure out script path from how this script was called
+calling_dir=$(dirname "$0")
 
 # launch slipstream server
-./slipstream_server "$serial_device_path" "$SLIP_PORT" &
+$calling_dir/slipstream_server "$serial_device_path" "$SLIP_PORT" &
 sleep 1
 
 # launch accelerometer data logging
-./driver_accelerometers "$data_path" localhost "$SLIP_PORT"
+$calling_dir/driver_accelerometers localhost "$SLIP_PORT" "$data_path"

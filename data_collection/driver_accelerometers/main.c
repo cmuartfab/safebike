@@ -23,6 +23,7 @@ typedef struct imu_pkt{
   uint16_t adxl345 [3];
   uint16_t itg3200 [3];
   uint16_t hmc5843 [3];
+  int16_t rssi;
 } IMU_PKT;
 
 typedef struct timer_pkt{
@@ -30,6 +31,7 @@ typedef struct timer_pkt{
   uint8_t timerNo;
   uint32_t secs;
   uint32_t nano_secs;
+  int16_t rssi;
 } TIMER_PKT;
 
 static volatile interrupted = 0;
@@ -46,6 +48,7 @@ void init()
 void interruptHandler(int dummy){
   interrupted = 1;
   printf("Keyboard Interrupt, exitting.\n");
+  fflush(stdout);
 }
 
 int unpack(IMU_PKT* pkt, int len, uint8_t* buffer)
@@ -56,14 +59,17 @@ int unpack(IMU_PKT* pkt, int len, uint8_t* buffer)
   seq = buffer[1];
   if (mac >= MAX_NODES){
     printf("Invalid mac\n");
+    fflush(stdout);
     return -1;
   }
-  if (len != 20){
+  if (len != 22){
     printf("wrong length:%d\n",len);
+    fflush(stdout);
     return -1;
   }
   else if  (seq <= sequences[mac] && seq != 0){
     printf("sequence seen %d \n",seq);
+    fflush(stdout);
     return -1;
   }
   sequences[mac] = seq;
@@ -88,6 +94,7 @@ int unpack(IMU_PKT* pkt, int len, uint8_t* buffer)
 int unpack_time(TIMER_PKT* pkt, int len, uint8_t* buffer){
   if (len != sizeof(TIMER_PKT)){
     printf("wrong length:%d\n",len);
+    fflush(stdout);
     return -1;
   }
 
@@ -124,6 +131,7 @@ int main (int argc, char *argv[])
   if (argc == 5){
     if (strcmp(argv[4],"-v") == 0){
       printf("Verbose on\n");
+      fflush(stdout);
       verbose = 1;
     }
   }
@@ -131,11 +139,11 @@ int main (int argc, char *argv[])
   //initialize sequence no to 0.
   init();
   // assign arguments
-  const char *data_file_base_path = argv[1];
+  const char *data_file_base_path = argv[3];
   char *data_file_path = malloc(strlen(data_file_base_path) + 5);
   sprintf(data_file_path, "%s.csv", data_file_base_path);
-  const char *slipstream_host = argv[2];
-  const int slipstream_port = atoi(argv[3]);
+  const char *slipstream_host = argv[1];
+  const int slipstream_port = atoi(argv[2]);
 
   // open data file
   FILE *data_file = fopen(data_file_path, "w");
@@ -165,19 +173,21 @@ int main (int argc, char *argv[])
         gettimeofday(&tsub,NULL);
         if (verbose)
         {
-          fprintf(data_file,"(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): (%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u)\n", 
+          fprintf(data_file,"(timestamp,microseconds,sequence,mac,accX,accY,accZ,gyrX,gyrY,gyrZ,hmcX,hmcY,hmcZ): (%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%d)\n", 
                      tsub.tv_sec,tsub.tv_usec,pkt.seq_no,pkt.mac,
                      pkt.adxl345[0],pkt.adxl345[1],pkt.adxl345[2],
                      pkt.itg3200[0],pkt.itg3200[1],pkt.itg3200[2],
-                     pkt.hmc5843[0],pkt.hmc5843[1],pkt.hmc5843[2]);
+                     pkt.hmc5843[0],pkt.hmc5843[1],pkt.hmc5843[2],
+                     pkt.rssi);
 
         }
         else
-          fprintf(data_file,"%u,%u,%u,%u,%x,%x,%x,%x,%x,%x,%x,%x,%x\n", 
+          fprintf(data_file,"%u,%u,%u,%u,%x,%x,%x,%x,%x,%x,%x,%x,%x,%d\n", 
                      tsub.tv_sec,tsub.tv_usec,pkt.seq_no,pkt.mac,
                      pkt.adxl345[0],pkt.adxl345[1],pkt.adxl345[2],
                      pkt.itg3200[0],pkt.itg3200[1],pkt.itg3200[2],
-                     pkt.hmc5843[0],pkt.hmc5843[1],pkt.hmc5843[2]);
+                     pkt.hmc5843[0],pkt.hmc5843[1],pkt.hmc5843[2],
+                     pkt.rssi);
 
 
       }
@@ -185,12 +195,12 @@ int main (int argc, char *argv[])
         if (unpack(&tpkt,v,buffer)){
             if (verbose)
             {
-              fprintf(data_file,"(timestamp,microseconds,mac,timerNo,secs,nano_secs): (%u,%u,%u,%u,%u,%u)\n", 
-                         tsub.tv_sec,tsub.tv_usec,tpkt.mac,tpkt.timerNo,tpkt.secs,tpkt.nano_secs);
+              fprintf(data_file,"(timestamp,microseconds,mac,timerNo,secs,nano_secs): (%u,%u,%u,%u,%u,%u,%d)\n", 
+                         tsub.tv_sec,tsub.tv_usec,tpkt.mac,tpkt.timerNo,tpkt.secs,tpkt.nano_secs,tpkt.rssi);
             }
             else
-              fprintf(data_file,"%u,%u,%u,%u,%u,%u\n", 
-                         tsub.tv_sec,tsub.tv_usec,tpkt.mac,tpkt.timerNo,tpkt.secs,tpkt.nano_secs);
+              fprintf(data_file,"%u,%u,%u,%u,%u,%u,%d\n", 
+                         tsub.tv_sec,tsub.tv_usec,tpkt.mac,tpkt.timerNo,tpkt.secs,tpkt.nano_secs,tpkt.rssi);
           }
         }
       }
