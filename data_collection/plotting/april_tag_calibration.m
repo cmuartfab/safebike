@@ -1,0 +1,5 @@
+asdf = csvread('../data/calibration square/apriltags.csv', 1, 0)
+plot(asdf(:,6), asdf(:,7))
+title('April Tags Test Pattern', 'FontSize', 24)
+xlabel('Distance from camera center (m)', 'FontSize', 18)
+ylabel('Distance offset from camera center (m)', 'FontSize', 18)

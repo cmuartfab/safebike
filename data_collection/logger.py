@@ -87,9 +87,9 @@ g_io_queue = Queue.Queue()
 g_data_directory = "data"
 g_driver_list = [
   # DataDriver(g_io_queue, "piksi", "./driver_piksi/driver_piksi", ["/dev/tty.usbserial-00001014"]),
-  # DataDriver(g_io_queue, "piksi", "/usr/local/bin/python", ["./driver_piksi/driver_piksi2.py", "-p", "/dev/cu.usbserial-00002014"], data_arg_flag="-d "),
-  DataDriver(g_io_queue, "accelerometers", "./driver_accelerometers/launch.sh", ["/dev/tty.usbserial-AE00BUKC"]), # need to update this driver
-  # DataDriver(g_io_queue, "apriltags", "./driver_apriltags/build/bin/apriltags_demo", [], data_arg_flag="-f"),
+  DataDriver(g_io_queue, "piksi", "/usr/local/bin/python", ["./driver_piksi/driver_piksi2.py", "-p", "/dev/cu.usbserial-00001014"], data_arg_flag="-d "),
+  # DataDriver(g_io_queue, "accelerometers", "./driver_accelerometers/launch.sh", ["/dev/tty.usbserial-AE00BUKC"]), # need to update this driver
+  DataDriver(g_io_queue, "apriltags", "./driver_apriltags/build/bin/apriltags_demo", ["-D1"], data_arg_flag="-f"),
   # DataDriver(g_io_queue, "test", "./driver_test/a.out", []),
 ]
 
